@@ -4,11 +4,13 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 03/08/2026 22:21 (rev.)
-     Publicação: versão empacotada como PWA para GitHub Pages (pasta site/).
-     Alterações desta versão: manifest.webmanifest + ícones PNG (192/512/180) + service
-     worker externo (sw.js) com precache para offline e instalação. Conteúdo do app
-     inalterado (Simulador, Escala com Semana/Mês, IQ, Tabela de Preços).
+     Gerado em: 03/08/2026 23:49 (rev.)
+     Alterações desta versão (Simulador): regras alinhadas à Tabela de Preços —
+     sem juros até 21x (cartão/boleto); 22–72x a 1% a.m. com 1ª parcela no ato (Price
+     antecipado). Desconto por alçada automático: Pix à vista 3%, cartão à vista 2%,
+     parcelado até 21x 1%; +3% na faixa 24–25k com autorização do coordenador.
+     "Reserva até 60x" desabilitada. Asterisco na Quadra Mista (informar 50% do valor).
+     Publicação: PWA em GitHub Pages (pasta site/) — manifest, sw.js, ícones PNG.
      ============================================ -->
 <html lang="pt-BR">
 <head>
@@ -93,6 +95,12 @@ main{margin-top:-14px; position:relative; z-index:3}
 }
 .seg button .s{display:block; font-size:10.5px; font-weight:500; letter-spacing:.3px; opacity:.8; margin-top:1px}
 .seg button[aria-pressed="true"]{background:#fff; color:var(--marrom); box-shadow:0 1px 3px rgba(66,39,12,.14)}
+.seg button:disabled{opacity:.38; cursor:not-allowed; text-decoration:line-through}
+.seg button:disabled .s{text-decoration:none}
+.fieldnote{font-size:11.5px; color:var(--muted); line-height:1.45; margin:9px 2px 0}
+.switchrow{display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--marrom); cursor:pointer; font-weight:600}
+.switchrow input{margin-top:1px; width:19px; height:19px; accent-color:var(--dourado); flex:0 0 auto}
+.switchrow .opt{font-weight:500; color:var(--muted)}
 .seg.gold button[aria-pressed="true"]{background:var(--marrom); color:var(--off-white)}
 
 /* ---------- Inputs ---------- */
@@ -462,7 +470,7 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
     <div class="step"><span class="n">1</span><h2>Produto</h2></div>
     <div class="seg gold" id="segProduto" role="group" aria-label="Produto">
       <button data-produto="perpetuo" aria-pressed="true">Perpétuo<span class="s">até 72x</span></button>
-      <button data-produto="reserva" aria-pressed="false">Reserva<span class="s">até 60x</span></button>
+      <button data-produto="reserva" aria-pressed="false" disabled aria-disabled="true">Reserva<span class="s">indisponível</span></button>
     </div>
   </section>
 
@@ -475,6 +483,7 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
         <input type="tel" inputmode="numeric" id="valor" placeholder="0,00" autocomplete="off">
       </div>
       <div class="chips" id="chipsValor"></div>
+      <p class="fieldnote">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo.</p>
     </div>
   </section>
 
@@ -482,26 +491,16 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   <section class="card">
     <div class="step"><span class="n">3</span><h2>Forma de pagamento</h2></div>
     <div class="seg" id="segForma" role="group" aria-label="Forma de pagamento">
-      <button data-forma="prazo" aria-pressed="true">A prazo<span class="s">financiado · 1% a.m.</span></button>
-      <button data-forma="avista" aria-pressed="false">À vista<span class="s">−5% · sem juros</span></button>
+      <button data-forma="prazo" aria-pressed="true">A prazo<span class="s">até 72x</span></button>
+      <button data-forma="avista" aria-pressed="false">À vista<span class="s">Pix ou cartão</span></button>
     </div>
 
     <!-- A PRAZO -->
     <div id="blocoPrazo">
       <div class="field">
-        <label>Desconto (alçada)</label>
-        <div class="seg" id="segDesc" role="group" aria-label="Desconto">
-          <button data-desc="0" aria-pressed="true">Sem desc.</button>
-          <button data-desc="0.02" aria-pressed="false">Vendedor<span class="s">2%</span></button>
-          <button data-desc="0.03" aria-pressed="false">Coord.<span class="s">3%</span></button>
-        </div>
-        <div class="alcada self" id="alcadaMsg"><span class="dot"></span><span id="alcadaTxt">Dentro da sua alçada.</span></div>
-      </div>
-
-      <div class="field">
         <label>Meio de pagamento</label>
         <div class="seg" id="segMeio" role="group" aria-label="Meio">
-          <button data-meio="carne" aria-pressed="true">Carnê / boleto<span class="s">s/ juros até 12x</span></button>
+          <button data-meio="boleto" aria-pressed="true">Boleto<span class="s">até 72x</span></button>
           <button data-meio="cartao" aria-pressed="false">Cartão<span class="s">até 21x</span></button>
         </div>
       </div>
@@ -528,14 +527,23 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
     <!-- A VISTA -->
     <div id="blocoAvista" hidden>
       <div class="field">
-        <label>Entrada / sinal <span class="opt">— à vista quita em até 1+2</span></label>
-        <div class="money">
-          <span class="cur">R$</span>
-          <input type="tel" inputmode="numeric" id="entradaAV" placeholder="0,00" autocomplete="off">
+        <label>Meio (à vista)</label>
+        <div class="seg" id="segMeioAV" role="group" aria-label="Meio à vista">
+          <button data-meioav="pix" aria-pressed="true">Pix<span class="s">−3%</span></button>
+          <button data-meioav="cartao" aria-pressed="false">Cartão<span class="s">−2%</span></button>
         </div>
-        <div class="chips" id="chipsAV"></div>
       </div>
     </div>
+
+    <!-- Desconto adicional — faixa 24–25k -->
+    <div class="field" id="coordField" hidden>
+      <label class="switchrow">
+        <input type="checkbox" id="coordChk">
+        <span>Desconto adicional <b>3%</b> — faixa 24–25k <span class="opt">(autorização do coordenador)</span></span>
+      </label>
+    </div>
+
+    <div class="alcada self" id="alcadaMsg"><span class="dot"></span><span id="alcadaTxt">—</span></div>
   </section>
 
   <!-- RESUMO -->
@@ -546,7 +554,7 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
 
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
-    <div>Boleto: sem juros até 12x, 1% a.m. (Price) acima disso. Cartão: sem juros, valor ÷ parcelas. À vista: −5%, sem juros, quitação em até 1+2. Parcelamento sobre o saldo devedor.</div>
+    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: Pix −3% ou cartão −2%. Descontos são tetos de alçada; +3% na faixa 24–25k com autorização do coordenador. Quadra Mista: informar 50% do valor.</div>
     <div class="inst" style="margin-top:8px">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
   </footer>
 </main>
@@ -943,27 +951,24 @@ const brl = v => BRL.format(isFinite(v)?v:0);
 const $ = s => document.querySelector(s);
 
 const state = {
-  produto:'perpetuo', forma:'prazo', desc:0, meio:'carne',
-  valor:0, entrada:0, entradaAV:0, prazo:60, entradaAVtouched:false
+  produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false,
+  valor:0, entrada:0, prazo:60
 };
-const MAXP = {perpetuo:{carne:72,cartao:21}, reserva:{carne:60,cartao:21}};
-const EXEMPLOS = {perpetuo:[18599,22273,25299], reserva:[12000,15000]};
+const MAXP = {perpetuo:{boleto:72,cartao:21}};
 
 // ---- currency input helpers (digita centavos) ----
 function bindMoney(el, key){
   el.addEventListener('input', ()=>{
     let d = el.value.replace(/\D/g,'');
-    if(!d){ el.value=''; state[key]=0; if(key==='entradaAV') state.entradaAVtouched=true; render(); return; }
+    if(!d){ el.value=''; state[key]=0; render(); return; }
     let n = parseInt(d,10)/100;
     el.value = n.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
     state[key]=n;
-    if(key==='entradaAV') state.entradaAVtouched=true;
     render();
   });
 }
 bindMoney($('#valor'),'valor');
 bindMoney($('#entrada'),'entrada');
-bindMoney($('#entradaAV'),'entradaAV');
 
 function setMoney(el,key,val){ state[key]=val; el.value = val? val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):''; }
 
@@ -982,8 +987,9 @@ seg('#segForma','forma','forma', v=>{
   $('#blocoPrazo').hidden = v!=='prazo';
   $('#blocoAvista').hidden = v!=='avista';
 });
-seg('#segDesc','desc','desc');
 seg('#segMeio','meio','meio', ()=>clampPrazo());
+seg('#segMeioAV','meioav','meioAV');
+$('#coordChk').addEventListener('change', e=>{ state.coord = e.target.checked; render(); });
 
 // prazo slider
 const prazoEl = $('#prazo');
@@ -1004,48 +1010,69 @@ function pmt(r,n,pv){ if(n<=0) return 0; if(r===0) return pv/n; return pv*r/(1-M
 function vpAnnuity(parc,n,r){ if(n<=0) return 0; if(r===0) return parc*n; return parc*(1-Math.pow(1+r,-n))/r; }
 const RATE = 0.01;
 
+// faixa 24–25k (valor informado): habilita o +3% do coordenador
+function bandExtra(){ return state.valor>=24000 && state.valor<26000; }
+// desconto aplicado (teto automático por meio) + adicional do coordenador
+function descInfo(){
+  let base = 0;
+  if(state.forma==='avista') base = (state.meioAV==='pix') ? 0.03 : 0.02;
+  else base = (state.prazo<=21) ? 0.01 : 0;      // parcelado até 21x: 1%; 22–72x: 0%
+  const extraOn = state.coord && bandExtra();
+  const extra = extraOn ? 0.03 : 0;
+  return {base, extra, total:base+extra, extraOn};
+}
+function descLabelText(d){
+  const p=[];
+  if(d.base>0) p.push(state.forma==='avista' ? (state.meioAV==='pix'?'Pix 3%':'cartão à vista 2%') : 'parcelado 1%');
+  if(d.extraOn) p.push('adicional coordenador');
+  return p.join(' + ');
+}
+
 function calc(){
   const v = state.valor;
   if(!v || v<=0) return null;
+  const d = descInfo();
+  const comDesc = v*(1-d.total);
   if(state.forma==='avista'){
-    const comDesc = v*0.95;
-    let ent = state.entradaAVtouched ? Math.min(state.entradaAV, comDesc) : Math.round(comDesc/3*100)/100;
-    let resto = Math.max(comDesc-ent,0);
-    const p1 = resto/2;
-    return {forma:'avista', tabela:v, comDesc, desconto:v-comDesc, entrada:ent, nparc:2, parcela:p1, total:comDesc, vp:comDesc};
+    return {forma:'avista', meioAV:state.meioAV, tabela:v, comDesc, desconto:v-comDesc, di:d, total:comDesc, vp:comDesc};
   } else {
-    const comDesc = v*(1-state.desc);
     const ent = Math.min(state.entrada, comDesc);
     const saldo = Math.max(comDesc-ent,0);
     const n = state.prazo;
-    // cartão: sempre sem juros. boleto/carnê: sem juros até 12x, 1% a.m. acima disso.
-    const semJuros = state.meio==='cartao' || n<=12;
+    const semJuros = n<=21;                        // até 21x: sem juros
     let parcela, totalParc, juros, vp;
-    if(semJuros){                     // sem juros: valor ÷ parcelas
+    if(semJuros){
       parcela = n>0 ? saldo/n : 0;
       totalParc = saldo;
       juros = 0;
-      vp = ent + vpAnnuity(parcela, n, RATE);   // valor presente real (parcelas diluídas no tempo)
-    } else {                          // boleto/carnê: 1% a.m. (Price)
-      parcela = pmt(RATE,n,saldo);
+      vp = ent + vpAnnuity(parcela, n, RATE);      // parcelas diluídas no tempo
+    } else {
+      // 22–72x: 1% a.m., 1ª parcela no ato (Price antecipado) — parcelas iguais
+      parcela = pmt(RATE,n,saldo)/(1+RATE);
       totalParc = parcela*n;
       juros = totalParc - saldo;
-      vp = comDesc;                   // 1% a.m. preserva o VP = principal
+      vp = comDesc;                                // parcelas antecipadas a 1% preservam o VP = principal
     }
-    return {forma:'prazo', tabela:v, comDesc, desconto:v-comDesc, entrada:ent, saldo, nparc:n,
-            parcela, totalParc, total:ent+totalParc, juros, vp, semJuros, meio:state.meio};
+    return {forma:'prazo', meio:state.meio, tabela:v, comDesc, desconto:v-comDesc, di:d, entrada:ent, saldo,
+            nparc:n, parcela, totalParc, total:ent+totalParc, juros, vp, semJuros};
   }
 }
 
 function alcada(){
   const el=$('#alcadaMsg'), t=$('#alcadaTxt');
-  if(state.desc===0.03){ el.className='alcada coord'; t.textContent='Requer aprovação do coordenador (alçada 3%).'; }
-  else if(state.desc===0.02){ el.className='alcada self'; t.textContent='Dentro da sua alçada de vendedor (2%).'; }
-  else { el.className='alcada self'; t.textContent='Sem desconto aplicado.'; }
+  const d=descInfo();
+  if(d.total<=0){ el.className='alcada self'; t.textContent='Sem desconto — valor cheio.'; return; }
+  const lbl=descLabelText(d);
+  if(d.extraOn){ el.className='alcada coord'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — requer autorização do coordenador.`; }
+  else { el.className='alcada self'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — dentro da alçada do vendedor.`; }
 }
 
 function render(){
-  clampPrazo(); alcada();
+  clampPrazo();
+  const inBand = bandExtra();
+  $('#coordField').hidden = !inBand;
+  if(!inBand && state.coord){ state.coord=false; $('#coordChk').checked=false; }
+  alcada();
   $('#prazoN').textContent = state.prazo;
   const r = calc();
   if(r && r.forma==='prazo') $('#prazoParc').textContent = brl(r.parcela);
@@ -1056,28 +1083,28 @@ function render(){
 
   const descRow = r.desconto>0.5 ? `
     <div class="row"><span class="k">Valor de tabela</span><span class="v strike">${brl(r.tabela)}</span></div>
-    <div class="row"><span class="k">Desconto ${state.forma==='avista'?'à vista (5%)':(state.desc*100)+'%'}</span><span class="v pos">− ${brl(r.desconto)}</span></div>
+    <div class="row"><span class="k">Desconto ${descLabelText(r.di)} (${(r.di.total*100).toFixed(0)}%)</span><span class="v pos">− ${brl(r.desconto)}</span></div>
     <div class="row"><span class="k">Valor com desconto</span><span class="v">${brl(r.comDesc)}</span></div>` : `
     <div class="row"><span class="k">Valor de tabela</span><span class="v">${brl(r.tabela)}</span></div>`;
 
   if(r.forma==='avista'){
+    const meioLbl = r.meioAV==='pix' ? 'Pix' : 'cartão';
+    const pct = (r.di.base*100).toFixed(0);
     box.innerHTML = `
       <div class="res-hero">
-        <div><div class="l">À vista · sem juros</div><div class="parcela">${brl(r.comDesc)}</div></div>
-        <div class="nx">quita em<br>até 1 + 2</div>
+        <div><div class="l">À vista · ${meioLbl} · sem juros</div><div class="parcela">${brl(r.comDesc)}</div></div>
+        <div class="nx">pagamento<br>à vista</div>
       </div>
       <div class="rows">
         ${descRow}
-        <div class="row"><span class="k">Entrada / sinal</span><span class="v">${brl(r.entrada)}</span></div>
-        <div class="row"><span class="k">+ 2 parcelas de</span><span class="v">${brl(r.parcela)}</span></div>
         <div class="row tot"><span class="k">Total à vista</span><span class="v">${brl(r.total)}</span></div>
       </div>
-      <div class="avnote">Melhor preço da casa: <b>5% de desconto</b>, sem juros. Não acumula com outros descontos.</div>
+      <div class="avnote">À vista no ${meioLbl}: <b>${pct}% de desconto</b>, sem juros${r.di.extraOn?' · +3% do coordenador aplicado':''}.</div>
       ${vpBlock(r)}
       ${actions()}`;
   } else {
     const meioLbl = r.meio==='cartao' ? 'cartão · sem juros'
-      : (r.semJuros ? 'boleto · sem juros' : 'boleto · 1% a.m.');
+      : (r.semJuros ? 'boleto · sem juros' : 'boleto · 1% a.m. (1ª no ato)');
     box.innerHTML = `
       <div class="res-hero">
         <div><div class="l">${r.nparc}× no ${meioLbl}${r.entrada>0?' + entrada':''}</div><div class="parcela">${brl(r.parcela)}<small>/mês</small></div></div>
@@ -1152,23 +1179,23 @@ function propostaTexto(){
   const r=calc(); if(!r) return '';
   const L=[];
   L.push('*Parque da Saudade — Proposta*');
-  L.push(state.produto==='perpetuo'?'Jazigo Perpétuo':'Jazigo Reserva');
+  L.push('Jazigo Perpétuo');
   L.push('');
   if(r.desconto>0.5){
     L.push('Valor de tabela: '+brl(r.tabela));
-    L.push('Desconto '+(state.forma==='avista'?'à vista (5%)':(state.desc*100)+'%')+': − '+brl(r.desconto));
+    L.push('Desconto '+descLabelText(r.di)+' ('+(r.di.total*100).toFixed(0)+'%): − '+brl(r.desconto));
     L.push('Valor com desconto: '+brl(r.comDesc));
+    if(r.di.extraOn) L.push('(+3% adicional — sujeito à autorização do coordenador)');
   } else { L.push('Valor: '+brl(r.tabela)); }
   L.push('');
   if(r.forma==='avista'){
-    L.push('*À vista (sem juros)*');
-    L.push('Entrada: '+brl(r.entrada));
-    L.push('+ 2 parcelas de '+brl(r.parcela));
+    L.push('*À vista — '+(r.meioAV==='pix'?'Pix':'cartão')+' (sem juros)*');
     L.push('Total: '+brl(r.total));
   } else {
-    L.push('*A prazo — '+(r.meio==='cartao'?'cartão (sem juros)':'carnê/boleto')+'*');
+    L.push('*A prazo — '+(r.meio==='cartao'?'cartão':'boleto')+'*');
     if(r.entrada>0){ L.push('Entrada: '+brl(r.entrada)); L.push('Saldo a parcelar: '+brl(r.saldo)); }
-    L.push(r.nparc+'x de '+brl(r.parcela)+(r.semJuros?'  (sem juros)':''));
+    L.push(r.nparc+'x de '+brl(r.parcela)+(r.semJuros?'  (sem juros)':'  (1% a.m., 1ª no ato)'));
+    L.push('Total a prazo: '+brl(r.total));
   }
   L.push('');
   L.push('Simulação sujeita a confirmação. Parque da Saudade.');
