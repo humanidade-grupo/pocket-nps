@@ -3,7 +3,7 @@
    Gerado em: 03/08/2026 22:21
    IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
    equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260804-0000';
+const CACHE = 'pocket-nps-260804-2355';
 
 const CORE = [
   './',
@@ -31,6 +31,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  // Deixa passar direto o que não é do próprio site (ex.: JSONP do Web App
+  // do Apps Script para o check-in) — o SW não intercepta cross-origin.
+  if (new URL(req.url).origin !== self.location.origin) return;
 
   // Navegações (abrir/atualizar o app): rede primeiro (pega a versão nova
   // quando online), com a cópia em cache como reserva offline.

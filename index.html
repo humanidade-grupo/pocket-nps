@@ -4,9 +4,12 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 04/08/2026 00:00 (rev.)
-     Melhoria de comunicação (Simulador): cartão "Regras de desconto e juros" (didático)
-     + aviso ao vivo no slider de prazo (sem juros até 21x / 1% a.m. da 2ª parcela).
+     Gerado em: 04/08/2026 23:55 (rev.)
+     Escala: check-in "Cheguei" — seletor "Eu sou" + botão que lê o posto de hoje da
+     escala mensal e grava presença numa aba Checkins via JSONP (Web App do Apps Script,
+     cross-origin sem CORS). LEMBRETE: preencher a constante ESCALA_API com a URL /exec
+     do Web App para ativar o registro. (Escala mensal de Agosto/2026 mantida.)
+     Versão anterior: cartão "Regras de desconto e juros" + aviso de juros no slider.
      Alterações desta versão (Simulador): regras alinhadas à Tabela de Preços —
      sem juros até 21x (cartão/boleto); 22–72x a 1% a.m. com 1ª parcela no ato (Price
      antecipado). Desconto por alçada automático: Pix à vista 3%, cartão à vista 2%,
@@ -291,6 +294,19 @@ table.escm tbody td{padding:3px 3px; border-top:1px solid rgba(66,39,12,.07)}
 .legend{display:flex; flex-direction:column; gap:8px; margin:16px 4px 2px}
 .legend .lg{display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--marrom); line-height:1.35}
 .legend .sw{width:14px; height:14px; border-radius:4px; flex:0 0 auto; margin-top:1px}
+/* check-in "Cheguei" */
+.ci-card{background:#fff; border:1px solid var(--border); border-left:4px solid var(--verde-2); border-radius:14px; padding:14px; margin:0 0 16px; box-shadow:var(--shadow)}
+.ci-card .ci-eu{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted)}
+.ci-card .ci-eu select{flex:1; font-family:inherit; font-size:13.5px; font-weight:700; color:var(--marrom); border:1.5px solid var(--border-strong); border-radius:10px; padding:8px 10px; background:#fff}
+.ci-titulo{font-size:11px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); margin-top:12px}
+.ci-info{font-size:15px; margin-top:7px; color:var(--marrom); display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.ci-chip{display:inline-block; padding:4px 11px; border-radius:20px; color:#fff; font-size:13px; font-weight:800}
+.ci-hint{font-size:12.5px; color:var(--muted); margin-top:8px; line-height:1.4}
+.ci-btn{width:100%; border:0; border-radius:12px; padding:14px; margin-top:11px; font-size:16px; font-weight:800; color:#fff; background:var(--verde-2); font-family:inherit; cursor:pointer}
+.ci-btn:active{transform:scale(.99)}
+.ci-btn[disabled]{opacity:.5; cursor:default}
+.ci-btn.ci-sec{background:#fff; color:var(--muted); border:1.5px solid var(--border-strong)}
+.ci-ok{background:rgba(103,127,95,.14); border:1px solid rgba(103,127,95,.35); color:var(--verde-2); border-radius:10px; padding:10px 12px; font-size:13px; font-weight:700; margin-top:11px}
 
 
 /* ---------- Tabela de Preços ---------- */
@@ -651,6 +667,15 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
 </header>
 
 <main class="wrap">
+  <!-- CHECK-IN "Cheguei" (presença de confiança, sem GPS) -->
+  <div class="ci-card" id="escCheckin">
+    <div class="ci-eu">
+      <label for="euSel">Eu sou:</label>
+      <select id="euSel"><option value="">— selecione seu nome</option></select>
+    </div>
+    <div id="ciBody"></div>
+  </div>
+
   <!-- navegação de dia -->
   <div class="esc2-nav">
     <button class="esc2-arrow" id="escPrev" aria-label="Dia anterior"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -991,6 +1016,26 @@ const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 const brl = v => BRL.format(isFinite(v)?v:0);
 const $ = s => document.querySelector(s);
 
+// ===== ESCALA — conexão com o Web App (Apps Script) para o check-in "Cheguei".
+// Cole a URL /exec do Web App na constante abaixo para ativar o registro de presença. =====
+const ESCALA_API = ''; // ex.: 'https://script.google.com/macros/s/AKfycbXXXX/exec'
+let _escJsonpId = 0;
+function escJSONP(params){
+  return new Promise(function(resolve, reject){
+    if(!ESCALA_API){ reject(new Error('sem_url')); return; }
+    const cb = 'escCB_' + (++_escJsonpId);
+    const s = document.createElement('script');
+    let finished = false;
+    const cleanup = ()=>{ try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(s.parentNode) s.parentNode.removeChild(s); };
+    window[cb] = (data)=>{ finished = true; resolve(data); cleanup(); };
+    s.onerror = ()=>{ if(!finished){ reject(new Error('rede')); cleanup(); } };
+    const qs = Object.keys(params||{}).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+    s.src = ESCALA_API + (ESCALA_API.indexOf('?')>=0?'&':'?') + 'callback=' + cb + (qs?('&'+qs):'');
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(!finished){ reject(new Error('timeout')); cleanup(); } }, 12000);
+  });
+}
+
 const state = {
   produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false,
   valor:0, entrada:0, prazo:60
@@ -1295,6 +1340,9 @@ const WD_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 let escSel = ESC_DIAS[0]; // dia selecionado (ISO)
 let escSelTocado = false;  // usuário já navegou manualmente?
 let escVisModo = 'semana'; // grade: 'semana' | 'mes'
+let escEu = '';            // vendedor selecionado ("Eu sou") — para o check-in
+try{ escEu = localStorage.getItem('pocket_escEu') || ''; }catch(e){}
+let _euSelInit = false;
 
 function escParseISO(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
 function escHojeISO(){
@@ -1384,9 +1432,61 @@ function renderEscala(){
   // se hoje estiver em agosto/2026, seleciona hoje ao abrir; senão, dia 1º
   const hoje = escHojeISO();
   if(ESCALA_AGOSTO_2026.escala[hoje] && !escSelTocado) escSel = hoje;
+  escInitEuSel();
   renderEscDia();
   renderEscGrade();
   renderEscLegenda();
+  renderCheckin();
+}
+
+// ---- check-in "Cheguei" (lê o posto de hoje da escala mensal; grava no Web App) ----
+function escInitEuSel(){
+  const sel=$('#euSel'); if(!sel) return;
+  if(!_euSelInit){
+    ESCALA_AGOSTO_2026.vendedores.forEach(function(v){ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+    sel.addEventListener('change', function(e){ escEu=e.target.value; try{ localStorage.setItem('pocket_escEu', escEu); }catch(err){} renderCheckin(); });
+    _euSelInit=true;
+  }
+  sel.value=escEu;
+}
+function renderCheckin(){
+  const box=$('#ciBody'); if(!box) return;
+  if(!escEu){ box.innerHTML='<div class="ci-hint">Selecione seu nome para registrar sua presença de hoje.</div>'; return; }
+  const hoje=escHojeISO();
+  const dia=ESCALA_AGOSTO_2026.escala[hoje];
+  if(!dia){ box.innerHTML='<div class="ci-hint">Sem escala para hoje (fora de Agosto/2026).</div>'; return; }
+  const dt=escParseISO(hoje), dd=hoje.split('-')[2], diaNome=WD_CURTO[dt.getDay()];
+  const posto=dia[escEu];
+  const conectado=!!ESCALA_API;
+  let h='<div class="ci-titulo">Check-in de hoje · '+diaNome+', '+dd+'/08</div>';
+  if(posto==='Livre'){
+    h+='<div class="ci-info">Hoje é sua <b>folga</b> (Livre) 🌿</div>';
+    if(conectado) h+='<button class="ci-btn ci-sec" data-posto="Livre">Vim trabalhar mesmo assim — registrar</button>';
+  } else if(posto){
+    const p=escPosto(posto);
+    h+='<div class="ci-info"><span class="ci-chip" style="background:'+p.cor+'">'+posto+'</span></div>';
+    if(conectado) h+='<button class="ci-btn" data-posto="'+posto+'">✓ Cheguei</button>';
+  } else {
+    h+='<div class="ci-hint">Você não está na escala de hoje.</div>';
+  }
+  if(!conectado) h+='<div class="ci-hint" style="margin-top:8px">Registro de presença será ativado assim que a conexão for configurada.</div>';
+  box.innerHTML=h;
+  box.querySelectorAll('.ci-btn').forEach(function(b){ b.onclick=function(){ fazerCheckin(b.dataset.posto); }; });
+}
+function fazerCheckin(posto){
+  if(!escEu){ toast('Selecione seu nome em "Eu sou".'); return; }
+  if(!ESCALA_API){ toast('Check-in ainda não conectado.'); return; }
+  const hoje=escHojeISO(), dt=escParseISO(hoje), diaNome=WD_CURTO[dt.getDay()];
+  const btns=document.querySelectorAll('#ciBody .ci-btn'); btns.forEach(function(b){ b.disabled=true; });
+  toast('Registrando…');
+  escJSONP({acao:'checkin', vendedor:escEu, posto:posto, dia:diaNome, data:hoje}).then(function(r){
+    btns.forEach(function(b){ b.disabled=false; });
+    if(r && r.ok!==false){
+      toast('Presença registrada ✓ '+(r.quando||''));
+      const box=$('#ciBody');
+      if(box) box.insertAdjacentHTML('afterbegin', '<div class="ci-ok">✓ Check-in às '+(r.quando||'')+' — '+posto+'</div>');
+    } else { toast((r&&r.erro)?r.erro:'Não foi possível registrar.'); }
+  }).catch(function(){ btns.forEach(function(b){ b.disabled=false; }); toast('Falha de conexão. Tente de novo.'); });
 }
 
 function escIrPara(iso){
