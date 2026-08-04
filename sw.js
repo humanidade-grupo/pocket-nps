@@ -3,7 +3,7 @@
    Gerado em: 03/08/2026 22:21
    IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
    equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260803-2349';
+const CACHE = 'pocket-nps-260804-0000';
 
 const CORE = [
   './',

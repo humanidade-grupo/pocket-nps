@@ -4,7 +4,9 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 03/08/2026 23:49 (rev.)
+     Gerado em: 04/08/2026 00:00 (rev.)
+     Melhoria de comunicação (Simulador): cartão "Regras de desconto e juros" (didático)
+     + aviso ao vivo no slider de prazo (sem juros até 21x / 1% a.m. da 2ª parcela).
      Alterações desta versão (Simulador): regras alinhadas à Tabela de Preços —
      sem juros até 21x (cartão/boleto); 22–72x a 1% a.m. com 1ª parcela no ato (Price
      antecipado). Desconto por alçada automático: Pix à vista 3%, cartão à vista 2%,
@@ -101,6 +103,24 @@ main{margin-top:-14px; position:relative; z-index:3}
 .switchrow{display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--marrom); cursor:pointer; font-weight:600}
 .switchrow input{margin-top:1px; width:19px; height:19px; accent-color:var(--dourado); flex:0 0 auto}
 .switchrow .opt{font-weight:500; color:var(--muted)}
+/* aviso de juros ao vivo (slider de prazo) */
+.prazojuros{font-size:12px; font-weight:700; margin-top:11px; padding:9px 11px; border-radius:9px; text-align:center; line-height:1.35}
+.prazojuros.ok{background:rgba(103,127,95,.14); color:var(--verde-2)}
+.prazojuros.warn{background:rgba(181,127,10,.14); color:var(--cta-hover)}
+/* cartão de regras (didático) */
+.regras{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-top:14px; box-shadow:var(--shadow); overflow:hidden}
+.regras>summary{list-style:none; cursor:pointer; padding:15px 16px; font-weight:700; color:var(--marrom); font-size:14px; display:flex; align-items:center; justify-content:space-between; gap:10px}
+.regras>summary::-webkit-details-marker{display:none}
+.regras>summary .chev{color:var(--muted); transition:transform .2s}
+.regras[open]>summary .chev{transform:rotate(90deg)}
+.regras .rbody{padding:2px 16px 16px}
+.regras .rgrp{margin-top:12px}
+.regras .rgrp h4{font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin:0 0 4px; font-weight:700}
+.regras .rrow{display:flex; justify-content:space-between; gap:14px; font-size:13px; padding:8px 0; border-top:1px solid rgba(66,39,12,.08)}
+.regras .rrow .rk{color:var(--marrom)}
+.regras .rrow .rv{font-weight:800; color:var(--verde-2); white-space:nowrap}
+.regras .rgrp.juros .rrow .rv{color:var(--marrom)}
+.regras .rnote{font-size:11.5px; color:var(--muted); margin-top:13px; line-height:1.5}
 .seg.gold button[aria-pressed="true"]{background:var(--marrom); color:var(--off-white)}
 
 /* ---------- Inputs ---------- */
@@ -521,6 +541,7 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
         </div>
         <input type="range" id="prazo" min="2" max="72" step="1" value="60">
         <div class="rangeticks"><span>2x</span><span id="tickMax">72x</span></div>
+        <div class="prazojuros ok" id="prazoJuros">—</div>
       </div>
     </div>
 
@@ -545,6 +566,26 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
 
     <div class="alcada self" id="alcadaMsg"><span class="dot"></span><span id="alcadaTxt">—</span></div>
   </section>
+
+  <!-- REGRAS (didático) -->
+  <details class="regras" open>
+    <summary>Regras de desconto e juros <span class="chev">▶</span></summary>
+    <div class="rbody">
+      <div class="rgrp">
+        <h4>Desconto — teto de alçada</h4>
+        <div class="rrow"><span class="rk">À vista no Pix</span><span class="rv">3%</span></div>
+        <div class="rrow"><span class="rk">À vista no cartão de crédito</span><span class="rv">2%</span></div>
+        <div class="rrow"><span class="rk">Parcelado até 21x (cartão ou boleto)</span><span class="rv">1%</span></div>
+        <div class="rrow"><span class="rk">Jazigo na faixa 24–25k · com coordenador</span><span class="rv">+3%</span></div>
+      </div>
+      <div class="rgrp juros">
+        <h4>Juros do parcelamento</h4>
+        <div class="rrow"><span class="rk">Até 21x (cartão ou boleto)</span><span class="rv">sem juros</span></div>
+        <div class="rrow"><span class="rk">De 22x a 72x (boleto)</span><span class="rv">1% a.m.*</span></div>
+      </div>
+      <p class="rnote">* No financiamento de 22–72x, a <b>1ª parcela é paga no ato</b> (sem juros) e o 1% incide da 2ª parcela em diante. Descontos são tetos — o vendedor pode aplicar menos. <b>Quadra Mista:</b> informe 50% do valor total do jazigo.</p>
+    </div>
+  </details>
 
   <!-- RESUMO -->
   <section class="card" id="resumo">
@@ -1074,6 +1115,11 @@ function render(){
   if(!inBand && state.coord){ state.coord=false; $('#coordChk').checked=false; }
   alcada();
   $('#prazoN').textContent = state.prazo;
+  const pj=$('#prazoJuros');
+  if(pj){
+    if(state.prazo<=21){ pj.className='prazojuros ok'; pj.textContent='Até 21x: sem juros · 1% de desconto'; }
+    else { pj.className='prazojuros warn'; pj.textContent='22–72x: juros 1% a.m. · 1ª parcela no ato'; }
+  }
   const r = calc();
   if(r && r.forma==='prazo') $('#prazoParc').textContent = brl(r.parcela);
   else $('#prazoParc').textContent='—';
