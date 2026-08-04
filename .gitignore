@@ -1,0 +1,10 @@
+# credenciais / ambiente — nunca versionar
+.env
+.env.*
+*.key
+*.pem
+
+# arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini

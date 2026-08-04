@@ -1,0 +1,20 @@
+{
+  "name": "Pocket NPS · Parque da Saudade",
+  "short_name": "Pocket NPS",
+  "description": "App de bolso da equipe de vendas do Parque da Saudade — simulador de financiamento, escala, IQ de venda e tabela de preços.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ECECE4",
+  "theme_color": "#42270C",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
