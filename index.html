@@ -4,12 +4,11 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 05/08/2026 00:21 (rev.)
-     Simulador: desconto agora é OPCIONAL (padrão = valor cheio). Botão "Aplicar desconto"
-     mostra o teto de alçada do meio (Pix 3% / cartão 2% / parcelado 1%) mas só aplica se
-     marcado; +3% da faixa 24–25k segue opcional (coordenador). Alinha com o IQ de Venda.
-     Versão anterior: Escala com check-in "Cheguei" via JSONP (constante ESCALA_API a
-     preencher com a URL /exec do Web App). Escala mensal de Agosto/2026 mantida.
+     Gerado em: 05/08/2026 00:50 (rev.)
+     Aderência ao sistemas/CLAUDE.md: carimbo "Atualizado em DD/MM/AAAA" na home,
+     casado com o bump de cache do sw.js a cada deploy.
+     Versão anterior: Simulador com desconto OPCIONAL (padrão valor cheio) + Escala com
+     check-in "Cheguei" via JSONP (constante ESCALA_API a preencher com a URL /exec).
      Alterações desta versão (Simulador): regras alinhadas à Tabela de Preços —
      sem juros até 21x (cartão/boleto); 22–72x a 1% a.m. com 1ª parcela no ato (Price
      antecipado). Desconto por alçada automático: Pix à vista 3%, cartão à vista 2%,
@@ -446,6 +445,7 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 05/08/2026</div>
     </footer>
   </main>
 </section>
