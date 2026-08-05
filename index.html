@@ -4,12 +4,12 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 04/08/2026 23:55 (rev.)
-     Escala: check-in "Cheguei" — seletor "Eu sou" + botão que lê o posto de hoje da
-     escala mensal e grava presença numa aba Checkins via JSONP (Web App do Apps Script,
-     cross-origin sem CORS). LEMBRETE: preencher a constante ESCALA_API com a URL /exec
-     do Web App para ativar o registro. (Escala mensal de Agosto/2026 mantida.)
-     Versão anterior: cartão "Regras de desconto e juros" + aviso de juros no slider.
+     Gerado em: 05/08/2026 00:21 (rev.)
+     Simulador: desconto agora é OPCIONAL (padrão = valor cheio). Botão "Aplicar desconto"
+     mostra o teto de alçada do meio (Pix 3% / cartão 2% / parcelado 1%) mas só aplica se
+     marcado; +3% da faixa 24–25k segue opcional (coordenador). Alinha com o IQ de Venda.
+     Versão anterior: Escala com check-in "Cheguei" via JSONP (constante ESCALA_API a
+     preencher com a URL /exec do Web App). Escala mensal de Agosto/2026 mantida.
      Alterações desta versão (Simulador): regras alinhadas à Tabela de Preços —
      sem juros até 21x (cartão/boleto); 22–72x a 1% a.m. com 1ª parcela no ato (Price
      antecipado). Desconto por alçada automático: Pix à vista 3%, cartão à vista 2%,
@@ -572,6 +572,14 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
       </div>
     </div>
 
+    <!-- Desconto (opcional — padrão: valor cheio) -->
+    <div class="field" id="descField" hidden>
+      <label class="switchrow">
+        <input type="checkbox" id="descChk">
+        <span>Aplicar desconto <span class="opt" id="descTeto">— até o teto do meio</span></span>
+      </label>
+    </div>
+
     <!-- Desconto adicional — faixa 24–25k -->
     <div class="field" id="coordField" hidden>
       <label class="switchrow">
@@ -599,7 +607,7 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
         <div class="rrow"><span class="rk">Até 21x (cartão ou boleto)</span><span class="rv">sem juros</span></div>
         <div class="rrow"><span class="rk">De 22x a 72x (boleto)</span><span class="rv">1% a.m.*</span></div>
       </div>
-      <p class="rnote">* No financiamento de 22–72x, a <b>1ª parcela é paga no ato</b> (sem juros) e o 1% incide da 2ª parcela em diante. Descontos são tetos — o vendedor pode aplicar menos. <b>Quadra Mista:</b> informe 50% do valor total do jazigo.</p>
+      <p class="rnote">* No financiamento de 22–72x, a <b>1ª parcela é paga no ato</b> (sem juros) e o 1% incide da 2ª parcela em diante. Descontos são <b>tetos de alçada e opcionais</b> — o padrão é vender pelo valor cheio. <b>Quadra Mista:</b> informe 50% do valor total do jazigo.</p>
     </div>
   </details>
 
@@ -1037,7 +1045,7 @@ function escJSONP(params){
 }
 
 const state = {
-  produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false,
+  produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false, descOn:false,
   valor:0, entrada:0, prazo:60
 };
 const MAXP = {perpetuo:{boleto:72,cartao:21}};
@@ -1076,6 +1084,7 @@ seg('#segForma','forma','forma', v=>{
 seg('#segMeio','meio','meio', ()=>clampPrazo());
 seg('#segMeioAV','meioav','meioAV');
 $('#coordChk').addEventListener('change', e=>{ state.coord = e.target.checked; render(); });
+$('#descChk').addEventListener('change', e=>{ state.descOn = e.target.checked; render(); });
 
 // prazo slider
 const prazoEl = $('#prazo');
@@ -1099,13 +1108,17 @@ const RATE = 0.01;
 // faixa 24–25k (valor informado): habilita o +3% do coordenador
 function bandExtra(){ return state.valor>=24000 && state.valor<26000; }
 // desconto aplicado (teto automático por meio) + adicional do coordenador
+// teto de desconto do meio escolhido (alçada máxima) — NÃO aplicado por padrão
+function descTetoMeio(){
+  if(state.forma==='avista') return (state.meioAV==='pix') ? 0.03 : 0.02;
+  return (state.prazo<=21) ? 0.01 : 0;           // parcelado até 21x: 1%; 22–72x: sem desconto
+}
 function descInfo(){
-  let base = 0;
-  if(state.forma==='avista') base = (state.meioAV==='pix') ? 0.03 : 0.02;
-  else base = (state.prazo<=21) ? 0.01 : 0;      // parcelado até 21x: 1%; 22–72x: 0%
+  const teto = descTetoMeio();
+  const base = (state.descOn && teto>0) ? teto : 0;  // desconto é OPCIONAL: só entra se marcado
   const extraOn = state.coord && bandExtra();
   const extra = extraOn ? 0.03 : 0;
-  return {base, extra, total:base+extra, extraOn};
+  return {base, extra, total:base+extra, extraOn, teto};
 }
 function descLabelText(d){
   const p=[];
@@ -1155,6 +1168,17 @@ function alcada(){
 
 function render(){
   clampPrazo();
+  // desconto opcional: mostra o teto do meio; some quando o meio não tem desconto (fin. 22–72x)
+  const _teto = descTetoMeio();
+  const df=$('#descField');
+  if(df){
+    if(_teto>0){
+      df.hidden=false;
+      const lbl = state.forma==='avista' ? (state.meioAV==='pix'?'Pix à vista: até 3%':'cartão à vista: até 2%') : 'parcelado até 21x: até 1%';
+      $('#descTeto').textContent='— '+lbl;
+      $('#descChk').checked=state.descOn;
+    } else { df.hidden=true; }
+  }
   const inBand = bandExtra();
   $('#coordField').hidden = !inBand;
   if(!inBand && state.coord){ state.coord=false; $('#coordChk').checked=false; }
@@ -1180,7 +1204,9 @@ function render(){
 
   if(r.forma==='avista'){
     const meioLbl = r.meioAV==='pix' ? 'Pix' : 'cartão';
-    const pct = (r.di.base*100).toFixed(0);
+    const avn = r.di.total>0
+      ? `À vista no ${meioLbl}: <b>${(r.di.total*100).toFixed(0)}% de desconto</b>, sem juros.`
+      : `À vista no ${meioLbl} · sem juros.`;
     box.innerHTML = `
       <div class="res-hero">
         <div><div class="l">À vista · ${meioLbl} · sem juros</div><div class="parcela">${brl(r.comDesc)}</div></div>
@@ -1190,7 +1216,7 @@ function render(){
         ${descRow}
         <div class="row tot"><span class="k">Total à vista</span><span class="v">${brl(r.total)}</span></div>
       </div>
-      <div class="avnote">À vista no ${meioLbl}: <b>${pct}% de desconto</b>, sem juros${r.di.extraOn?' · +3% do coordenador aplicado':''}.</div>
+      <div class="avnote">${avn}${r.di.extraOn?' <b>+3% do coordenador aplicado.</b>':''}</div>
       ${vpBlock(r)}
       ${actions()}`;
   } else {
