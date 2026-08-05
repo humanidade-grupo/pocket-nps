@@ -1,82 +1,46 @@
 <!--
-  grupo-humanidade / parque da saudade
-  Pocket NPS — README de publicação (PWA / GitHub Pages)
-  Gerado em: 03/08/2026 22:21
-  Resumo: instruções de deploy no GitHub Pages e de instalação no celular.
+  grupo-humanidade / parque da saudade / sistemas
+  Pocket NPS — README do repositório (monorepo)
+  Gerado em: 05/08/2026
+  Resumo: estrutura docs/ (PWA no GitHub Pages) + gas/ (backend da Escala via clasp).
 -->
 
-# Pocket NPS — publicação como PWA
+# Pocket NPS
 
-App de bolso da equipe de vendas do Parque da Saudade (Simulador de financiamento,
-Escala, IQ de Venda e Tabela de Preços). É um **PWA**: instala na tela inicial do
-celular e funciona **offline**.
+App de bolso da equipe de vendas do Parque da Saudade — **um único app** com quatro
+telas (Simulador de financiamento, Escala, IQ de Venda, Tabela de Preços). PWA que
+instala na tela inicial do celular e funciona **offline**.
 
-> ⚠️ **Acesso:** nesta fase o app é **público** (qualquer pessoa com o link abre).
-> A Tabela de Preços e a configuração do IQ são dados comerciais internos — quando
-> decidirmos, migramos para **login e senha** (ex.: Cloudflare Access / Netlify).
+Ao vivo: **https://humanidade-grupo.github.io/pocket-nps/**
 
-## Conteúdo desta pasta (`site/`)
+> ⚠️ **Acesso:** por ora o app é **público**. Tabela de Preços e config do IQ são
+> dados comerciais internos — depois migramos para login/senha.
 
-| Arquivo | Função |
-|---|---|
-| `index.html` | O app inteiro (HTML/CSS/JS/SVG num arquivo só). É a versão corrente. |
-| `manifest.webmanifest` | Metadados de instalação (nome, cores, ícones). |
-| `sw.js` | Service worker: precache para offline + habilita a instalação. |
-| `apple-touch-icon.png` | Ícone da tela inicial no iOS (180×180). |
-| `icons/icon-192.png`, `icons/icon-512.png` | Ícones de instalação (Android/PWA). |
+## Estrutura do repositório
 
-**Tudo é relativo** — funciona tanto em domínio próprio quanto em subpasta
-(`usuario.github.io/repo/`).
+| Pasta | O que é | Deploy |
+|---|---|---|
+| [`docs/`](docs/) | A PWA (HTML/CSS/JS/ícones num `index.html`). **Fonte do GitHub Pages.** | `git push` (Pages serve `/docs`) |
+| [`gas/`](gas/) | Backend da tela **Escala** (Google Apps Script) — o check-in "Cheguei". | `clasp push` + `clasp deploy` |
 
-## Publicar no GitHub Pages
+As duas partes são o **mesmo app**; ficam em pastas separadas só porque têm
+destinos de deploy diferentes (Pages para a web, Google/Apps Script para o backend).
 
-1. Criar um repositório **novo e próprio deste ecossistema** (não usar a infra
-   Mobile Digital/Vero). Ex.: `parque-da-saudade/pocket-nps`.
-2. Subir o **conteúdo desta pasta `site/`** na **raiz** do repositório (ou seja,
-   `index.html` na raiz — não dentro de outra subpasta).
-3. No GitHub: **Settings → Pages** → *Source*: **Deploy from a branch** →
-   Branch: `main` / pasta `/ (root)` → **Save**.
-4. Aguardar ~1 min. A URL sai como `https://<usuario|org>.github.io/<repo>/`.
-5. Abrir a URL no celular e instalar (ver abaixo).
+## Deploy da PWA (docs/)
 
-> Domínio próprio (opcional): em **Settings → Pages → Custom domain** dá para usar
-> algo como `pocket.parquedasaudade.com.br` (exige acesso ao DNS do domínio).
+1. Editar os arquivos em `docs/`.
+2. **Bumpar o cache** em `docs/sw.js` (`const CACHE = 'pocket-nps-AAMMDD-HHMM'`) e
+   atualizar o carimbo **"Atualizado em"** na home (`docs/index.html`).
+3. `git push`. O Pages republica em segundos (fonte: branch `main`, pasta `/docs`).
 
-### A cada nova versão
+## Deploy do backend (gas/)
 
-1. Substituir os arquivos alterados (normalmente só o `index.html`).
-2. **Bumpar a versão do cache** em `sw.js` — trocar a linha
-   `const CACHE = 'pocket-nps-AAMMDD-HHMM';` para a data/hora nova. Sem isso, a
-   equipe fica presa na versão antiga em cache.
-3. Commitar/subir. Em segundos o Pages atualiza; ao reabrir o app (online), o time
-   recebe a versão nova.
+Ver [`gas/README.md`](gas/README.md) — sobe por `clasp` (nunca colar no editor).
+Depois de publicar, colar a URL `/exec` na constante `ESCALA_API` em `docs/index.html`.
 
 ## Instalar no celular
 
-**Android (Chrome):** abrir a URL → aparece o aviso **"Instalar app"** (ou menu ⋮ →
-**Instalar app / Adicionar à tela inicial**).
+- **Android (Chrome):** abrir a URL → **Instalar app**.
+- **iPhone (Safari):** abrir a URL → **Compartilhar → Adicionar à Tela de Início**.
 
-**iPhone/iPad (Safari):** abrir a URL → botão **Compartilhar** → **Adicionar à Tela
-de Início**.
-
-Depois de instalado, o app abre em tela cheia (sem barra do navegador) e funciona
-sem internet.
-
-## Requisitos técnicos (já atendidos)
-
-- ✅ HTTPS (o GitHub Pages já serve em HTTPS).
-- ✅ Manifest com ícones 192 e 512 (PNG, incl. `maskable`).
-- ✅ Service worker com precache do app-shell (offline real + instalável).
-- ✅ Ícone de tela inicial para iOS (180 PNG).
-
-## Teste local (opcional, para conferir antes de subir)
-
-O service worker **não** roda via `file://` — precisa de `http`. Rodar dentro de
-`site/`:
-
-```bash
-python -m http.server 8080
-```
-
-Depois abrir `http://localhost:8080/` no navegador. Em DevTools → *Application* dá
-para ver o *Manifest*, o *Service Worker* e o cache.
+Funciona offline depois de abrir uma vez.

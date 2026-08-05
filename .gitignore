@@ -3,6 +3,10 @@
 .env.*
 *.key
 *.pem
+.clasprc.json
+
+# node (clasp)
+node_modules/
 
 # arquivos de sistema
 .DS_Store
