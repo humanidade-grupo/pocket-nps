@@ -4,9 +4,9 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 05/08/2026 00:50 (rev.)
-     Aderência ao sistemas/CLAUDE.md: carimbo "Atualizado em DD/MM/AAAA" na home,
-     casado com o bump de cache do sw.js a cada deploy.
+     Gerado em: 05/08/2026 01:45 (rev.)
+     Check-in ATIVADO: ESCALA_API preenchida com a URL /exec do Web App (deploy do
+     gas/ por clasp). O botão "Cheguei" grava presença na aba Checkins da planilha-base.
      Versão anterior: Simulador com desconto OPCIONAL (padrão valor cheio) + Escala com
      check-in "Cheguei" via JSONP (constante ESCALA_API a preencher com a URL /exec).
      Alterações desta versão (Simulador): regras alinhadas à Tabela de Preços —
@@ -1026,7 +1026,7 @@ const $ = s => document.querySelector(s);
 
 // ===== ESCALA — conexão com o Web App (Apps Script) para o check-in "Cheguei".
 // Cole a URL /exec do Web App na constante abaixo para ativar o registro de presença. =====
-const ESCALA_API = ''; // ex.: 'https://script.google.com/macros/s/AKfycbXXXX/exec'
+const ESCALA_API = 'https://script.google.com/macros/s/AKfycbzynb6r5H8li-1DgwVbGVZui6hK8fretIViOi8b2jLPLk2Yk6nujyOSlv34iixj7Kkkqg/exec';
 let _escJsonpId = 0;
 function escJSONP(params){
   return new Promise(function(resolve, reject){
