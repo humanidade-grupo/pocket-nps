@@ -4,7 +4,8 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 05/08/2026 01:45 (rev.)
+     Gerado em: 04/08/2026 23:20 (rev.) — Header em amarelo da marca + logomarca oficial;
+     nova tela FAQ — Jazigos Mistos (Quadra Mista, humano + pet), acordeão recolhido.
      Check-in ATIVADO: ESCALA_API preenchida com a URL /exec do Web App (deploy do
      gas/ por clasp). O botão "Cheguei" grava presença na aba Checkins da planilha-base.
      Versão anterior: Simulador com desconto OPCIONAL (padrão valor cheio) + Escala com
@@ -20,9 +21,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<meta name="theme-color" content="#42270C">
+<meta name="theme-color" content="#F4B417">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Pocket NPS">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Pocket NPS · Simulador Parque da Saudade</title>
@@ -55,8 +56,8 @@ h1,h2,h3,.serif{font-family:"PF Marlet Display","Playfair Display",serif; font-w
 
 /* ---------- Header ---------- */
 header{
-  background:linear-gradient(160deg,#4A2C0E 0%, var(--marrom) 55%, var(--marrom-2) 100%);
-  color:var(--off-white); padding:calc(env(safe-area-inset-top) + 18px) 16px 22px;
+  background:linear-gradient(160deg,#FDBE0E 0%, #EEAF16 52%, #CC900B 100%);
+  color:var(--marrom); padding:calc(env(safe-area-inset-top) + 18px) 16px 22px;
   position:relative; overflow:hidden;
 }
 header .hwrap{max-width:520px; margin:0 auto; position:relative; z-index:2}
@@ -67,11 +68,11 @@ header .hwrap{max-width:520px; margin:0 auto; position:relative; z-index:2}
 .brandtxt .sub{font-size:9.5px; letter-spacing:3px; color:var(--bege); margin-top:3px}
 .apptag{
   display:inline-flex; align-items:center; gap:6px; margin-top:16px;
-  font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--amarelo);
+  font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--marrom-2); font-weight:700;
 }
-.apptag::before{content:""; width:14px; height:1.5px; background:var(--dourado)}
-header h1{font-size:25px; margin:5px 0 0; color:#fff; line-height:1.12}
-header p.lead{margin:8px 0 0; font-size:13px; color:var(--muted-on-dark); max-width:38ch}
+.apptag::before{content:""; width:14px; height:1.5px; background:var(--marrom-2)}
+header h1{font-size:25px; margin:5px 0 0; color:var(--marrom-2); line-height:1.12}
+header p.lead{margin:8px 0 0; font-size:13px; color:rgba(53,31,9,.78); max-width:38ch}
 header .deco{position:absolute; right:-30px; top:-10px; width:190px; opacity:.13; z-index:1; color:var(--amarelo)}
 header .deco svg{width:100%; height:auto}
 
@@ -213,15 +214,15 @@ footer .sens{color:var(--verde-2); font-weight:600; margin-bottom:6px}
 
 /* ---------- Home ---------- */
 .home-head{
-  background:linear-gradient(160deg,#4A2C0E 0%, var(--marrom) 55%, var(--marrom-2) 100%);
-  color:var(--off-white); padding:calc(env(safe-area-inset-top) + 30px) 16px 34px; position:relative; overflow:hidden;
+  background:linear-gradient(160deg,#FDBE0E 0%, #EEAF16 52%, #CC900B 100%);
+  color:var(--marrom); padding:calc(env(safe-area-inset-top) + 30px) 16px 34px; position:relative; overflow:hidden;
 }
 .home-head .hwrap{max-width:520px; margin:0 auto; position:relative; z-index:2}
 .home-head .deco{position:absolute; right:-26px; top:14px; width:210px; opacity:.14; z-index:1}
 .home-head .deco svg{width:100%; height:auto}
 .home-head .brandrow{display:flex; align-items:center; gap:11px}
-.home-head h1{font-size:27px; margin:20px 0 0; color:#fff; line-height:1.1; max-width:15ch}
-.home-head p.lead{margin:9px 0 0; font-size:13.5px; color:var(--muted-on-dark); max-width:40ch}
+.home-head h1{font-size:27px; margin:20px 0 0; color:var(--marrom-2); line-height:1.1; max-width:15ch}
+.home-head p.lead{margin:9px 0 0; font-size:13.5px; color:rgba(53,31,9,.78); max-width:40ch}
 .greet{font-size:13.5px; color:var(--muted); margin:18px 2px 4px; padding:0 2px}
 .greet b{color:var(--verde-2)}
 .tools{display:flex; flex-direction:column; gap:12px; margin-top:10px}
@@ -246,11 +247,11 @@ footer .sens{color:var(--verde-2); font-weight:600; margin-bottom:6px}
 
 /* back button */
 .backbtn{
-  display:inline-flex; align-items:center; gap:6px; background:rgba(236,236,228,.12);
-  border:0; color:var(--off-white); font-family:inherit; font-size:12.5px; font-weight:600;
+  display:inline-flex; align-items:center; gap:6px; background:rgba(66,39,12,.10);
+  border:0; color:var(--marrom-2); font-family:inherit; font-size:12.5px; font-weight:600;
   padding:7px 13px 7px 10px; border-radius:20px; cursor:pointer; margin-bottom:2px;
 }
-.backbtn:active{background:rgba(236,236,228,.2)}
+.backbtn:active{background:rgba(66,39,12,.18)}
 .backbtn svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
 
 /* ---------- Escala (mensal) ---------- */
@@ -360,6 +361,35 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   body{background:#fff} #resumo{background:#fff!important; color:#000; border:1px solid #999}
   #resumo .lbl,.row .k,.res-hero .l{color:#333} .row .v,.res-hero .parcela,.row.tot .v,.row.tot .k{color:#000}
 }
+
+/* ---------- Logomarca oficial (header) ---------- */
+.brandlogo{height:60px; width:auto; display:block}
+.home-head .brandlogo{height:74px}
+/* grafismo de fundo (deco) legivel sobre o amarelo */
+header .deco svg path, .home-head .deco svg path{stroke:rgba(53,31,9,.6)}
+header .deco{opacity:.2} .home-head .deco{opacity:.2}
+
+/* ---------- FAQ (acordeao) ---------- */
+.faq-note{background:rgba(204,144,11,.10); border:1px solid rgba(204,144,11,.30); border-radius:var(--radius-sm); padding:12px 14px; font-size:12px; color:var(--marrom); line-height:1.55; margin:4px 2px 6px}
+.faq-note b{color:var(--marrom-2)}
+.faq-sec{margin-top:24px}
+.faq-sec:first-of-type{margin-top:10px}
+.faq-sec > h2{display:flex; align-items:center; gap:9px; font-family:"PF Marlet Display",serif; font-size:15px; color:var(--marrom); margin:0 0 2px; padding:0 2px; line-height:1.25}
+.faq-sec > h2 .num{font-size:11px; color:var(--dourado); border:1.5px solid var(--dourado); border-radius:50%; width:23px; height:23px; display:inline-grid; place-items:center; flex:0 0 auto; font-weight:700}
+.faq{background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); box-shadow:var(--shadow); overflow:hidden; margin-top:8px}
+.faq > summary{list-style:none; cursor:pointer; padding:14px 15px; font-weight:700; color:var(--marrom); font-size:14px; display:flex; align-items:flex-start; gap:11px; line-height:1.4}
+.faq > summary::-webkit-details-marker{display:none}
+.faq > summary .q{flex:1}
+.faq > summary .chev{color:var(--dourado); flex:0 0 auto; font-size:19px; line-height:1.15; transition:transform .2s}
+.faq[open] > summary{border-bottom:1px solid var(--border)}
+.faq[open] > summary .chev{transform:rotate(90deg)}
+.faq .a{padding:13px 15px 15px; font-size:13.5px; color:var(--marrom); line-height:1.58}
+.faq .a p{margin:0 0 9px}
+.faq .a p:last-child{margin-bottom:0}
+.faq .a strong{color:var(--marrom-2); font-weight:700}
+.faq .a ul{margin:2px 0 0; padding-left:18px}
+.faq .a li{margin-bottom:8px; line-height:1.5}
+.faq-foot{font-size:11.5px; color:var(--muted); line-height:1.55; text-align:center; margin:24px 6px 0; padding:0 4px}
 </style>
 </head>
 <body>
@@ -385,26 +415,8 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
 </div>
     <div class="hwrap">
       <div class="brandrow">
-        <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="670.779" height="780.139" viewBox="0 0 670.779 780.139">
-<defs>
-<clipPath id="clip_1">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M624.6104 149.93067H1295.3894V930.06967H624.6104Z" clip-rule="evenodd"/>
-</clipPath>
-<clipPath id="clip_2">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M0 1080H1920V0H0Z"/>
-</clipPath>
-</defs>
-<g clip-path="url(#clip_1)">
-<g clip-path="url(#clip_2)">
-<path transform="matrix(1,0,0,-1,335.39,772.1389)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0C34.22 159.004 156.107 295.971 327.389 382.07 156.107 468.169 34.22 605.134 0 764.139-34.22 605.134-156.108 468.169-327.39 382.07-156.108 295.971-34.22 159.004 0 0Z"/>
-</g>
-</g>
-</svg>
-</span>
-        <span class="brandtxt">
-          <span class="name">PARQUE DA SAUDADE</span>
-          <span class="sub">CEMITÉRIO-PARQUE</span>
-        </span>
+        <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+        
       </div>
       <span class="apptag">Pocket NPS</span>
       <h1>Ferramentas de bolso da equipe</h1>
@@ -441,11 +453,18 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
         <span class="badge">Ativo</span>
         <span class="arw">&rsaquo;</span>
       </button>
+
+      <button class="tool" data-go="faq">
+        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.7 2.7 0 1 1 3.4 2.6c-.85.28-1.2.9-1.2 1.75"/><line x1="12" y1="16.8" x2="12" y2="16.81"/></svg></span>
+        <span class="tx"><span class="t">FAQ — Jazigos Mistos</span><span class="d">Perguntas e respostas sobre a Quadra Mista: humano + pet.</span></span>
+        <span class="badge">Novo</span>
+        <span class="arw">&rsaquo;</span>
+      </button>
     </div>
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 05/08/2026</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 04/08/2026</div>
     </footer>
   </main>
 </section>
@@ -472,26 +491,8 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   <div class="hwrap">
     <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
     <div class="brandrow" style="margin-top:12px">
-      <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="670.779" height="780.139" viewBox="0 0 670.779 780.139">
-<defs>
-<clipPath id="clip_1">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M624.6104 149.93067H1295.3894V930.06967H624.6104Z" clip-rule="evenodd"/>
-</clipPath>
-<clipPath id="clip_2">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M0 1080H1920V0H0Z"/>
-</clipPath>
-</defs>
-<g clip-path="url(#clip_1)">
-<g clip-path="url(#clip_2)">
-<path transform="matrix(1,0,0,-1,335.39,772.1389)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0C34.22 159.004 156.107 295.971 327.389 382.07 156.107 468.169 34.22 605.134 0 764.139-34.22 605.134-156.108 468.169-327.39 382.07-156.108 295.971-34.22 159.004 0 0Z"/>
-</g>
-</g>
-</svg>
-</span>
-      <span class="brandtxt">
-        <span class="name">PARQUE DA SAUDADE</span>
-        <span class="sub">CEMITÉRIO-PARQUE</span>
-      </span>
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+      
     </div>
     <span class="apptag">Pocket NPS · Simulador</span>
     <h1>Simulador de<br>Financiamento</h1>
@@ -647,26 +648,8 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   <div class="hwrap">
     <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
     <div class="brandrow" style="margin-top:12px">
-      <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="670.779" height="780.139" viewBox="0 0 670.779 780.139">
-<defs>
-<clipPath id="clip_1">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M624.6104 149.93067H1295.3894V930.06967H624.6104Z" clip-rule="evenodd"/>
-</clipPath>
-<clipPath id="clip_2">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M0 1080H1920V0H0Z"/>
-</clipPath>
-</defs>
-<g clip-path="url(#clip_1)">
-<g clip-path="url(#clip_2)">
-<path transform="matrix(1,0,0,-1,335.39,772.1389)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0C34.22 159.004 156.107 295.971 327.389 382.07 156.107 468.169 34.22 605.134 0 764.139-34.22 605.134-156.108 468.169-327.39 382.07-156.108 295.971-34.22 159.004 0 0Z"/>
-</g>
-</g>
-</svg>
-</span>
-      <span class="brandtxt">
-        <span class="name">PARQUE DA SAUDADE</span>
-        <span class="sub">CEMITÉRIO-PARQUE</span>
-      </span>
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+      
     </div>
     <span class="apptag">Pocket NPS · Escala</span>
     <h1>Escala — Agosto/2026</h1>
@@ -741,26 +724,8 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   <div class="hwrap">
     <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
     <div class="brandrow" style="margin-top:12px">
-      <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="670.779" height="780.139" viewBox="0 0 670.779 780.139">
-<defs>
-<clipPath id="clip_1">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M624.6104 149.93067H1295.3894V930.06967H624.6104Z" clip-rule="evenodd"/>
-</clipPath>
-<clipPath id="clip_2">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M0 1080H1920V0H0Z"/>
-</clipPath>
-</defs>
-<g clip-path="url(#clip_1)">
-<g clip-path="url(#clip_2)">
-<path transform="matrix(1,0,0,-1,335.39,772.1389)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0C34.22 159.004 156.107 295.971 327.389 382.07 156.107 468.169 34.22 605.134 0 764.139-34.22 605.134-156.108 468.169-327.39 382.07-156.108 295.971-34.22 159.004 0 0Z"/>
-</g>
-</g>
-</svg>
-</span>
-      <span class="brandtxt">
-        <span class="name">PARQUE DA SAUDADE</span>
-        <span class="sub">CEMITÉRIO-PARQUE</span>
-      </span>
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+      
     </div>
     <span class="apptag">Pocket NPS · Tabelas</span>
     <h1>Tabela de Preços</h1>
@@ -850,26 +815,8 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   <div class="hwrap">
     <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
     <div class="brandrow" style="margin-top:12px">
-      <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="670.779" height="780.139" viewBox="0 0 670.779 780.139">
-<defs>
-<clipPath id="clip_1">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M624.6104 149.93067H1295.3894V930.06967H624.6104Z" clip-rule="evenodd"/>
-</clipPath>
-<clipPath id="clip_2">
-<path transform="matrix(1,0,0,-1,-624.6104,930.06967)" d="M0 1080H1920V0H0Z"/>
-</clipPath>
-</defs>
-<g clip-path="url(#clip_1)">
-<g clip-path="url(#clip_2)">
-<path transform="matrix(1,0,0,-1,335.39,772.1389)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0C34.22 159.004 156.107 295.971 327.389 382.07 156.107 468.169 34.22 605.134 0 764.139-34.22 605.134-156.108 468.169-327.39 382.07-156.108 295.971-34.22 159.004 0 0Z"/>
-</g>
-</g>
-</svg>
-</span>
-      <span class="brandtxt">
-        <span class="name">PARQUE DA SAUDADE</span>
-        <span class="sub">CEMITÉRIO-PARQUE</span>
-      </span>
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+      
     </div>
     <span class="apptag">Pocket NPS · IQ de Venda</span>
     <h1>IQ de Venda</h1>
@@ -1018,6 +965,127 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
 </section>
 
 <div class="toast" id="toast"></div>
+
+
+<!-- ==================== FAQ — QUADRA MISTA ==================== -->
+<section class="view" id="view-faq">
+<header>
+  <div class="deco"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="841.2131" height="910.218" viewBox="0 0 841.2131 910.218">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M539.3936 84.74298H1380.6067V994.961H539.3936Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M0 1080H1920V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,450.565,8)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0 39.455-2.633C61.893-4.131 83.315-5.447 105.486-10.131 111.29-11.357 166.219-41.418 157.827-61.496L146.269-89.144C131.02-125.624 102.772-162.096 129.505-198.98 136.188-208.201 141.169-221.389 151.2-227.426 165.82-236.224 185.306-239.266 202.379-239.124 227.095-238.918 249.814-240.622 273.885-244.55 311.902-250.754 301.477-273.252 327.468-281.478 346.204-287.407 363.741-291.099 382.648-298.884 350.667-299.915 332.522-290.925 300.013-303.691 257.192-320.506 220.098-328.385 182.035-354.84 177.871-360.255 178.284-369.867 177.167-376.312 169.849-418.538 190.961-439.82 222.392-462.144 237.094-472.586 251.073-483.241 264.88-494.492 273.333-501.38 274.309-510.595 273.047-520.843 270.195-544.003 265.849-565.771 260.744-588.691 254.373-617.292 223.033-658.015 205.757-682.235L148.385-762.668C114.531-810.131 46.061-872.147-7.337-893.475-9.198-894.218-13.887-894.002-13.65-893.067-13.415-892.139-12.861-889.431-12.266-888.562L18.183-844.164C39.188-813.535 67.443-720.838 80.434-681.673L92.654-644.832C96.349-633.693 101.356-623.503 106.007-612.557 109.763-603.717 107.718-592.309 118.558-586.37 114.525-576.881 111.718-568.263 107.249-559.243 95.11-534.739 64.168-510.128 45.543-488.538 33.208-474.239 15.298-438.638 8.667-420.308 7.029-415.779 1.862-410.643-4.443-412.774-26.31-420.163-50.823-420.37-72.801-429.176L-408.043-595.624C-419.411-601.268-429.321-605.469-442.565-607.204-432.425-595.965-421.025-586.917-407.767-580.269L-300.965-526.711C-295.829-524.135-289.703-520.776-285.378-517.485L-225.259-471.73C-251.787-478.146-274.937-483.541-298.41-492.729L-382.242-525.545C-392.651-529.619-402.372-533.223-415.031-532.096-399.52-518.871-382.099-511.863-363.619-504.17L-180.964-428.141C-156.325-417.885-134.406-404.577-111.419-391.26-79.046-372.504-50.426-349.557-25.492-322.018-13.253-308.5-24.651-276.461-24.868-268.069L-25.665-237.32C-26.092-220.837-23.532-202.922-18.587-187.216L.804-125.621-4.837-99.897C-15.247-101.327-19.566-94.486-26.155-91.343L-52.34-78.85C-66.665-72.016-81.418-67.622-96.66-63.116-109.996-59.174-122.582-53.707-136.214-50.758-154.613-46.778-173.118-44.396-191.986-43.043-207.544-41.927-221.81-45.471-239.071-42.484-185.262-15.717-127.614-5.808-69.832 0H0Z"/>
+</g>
+</g>
+</svg>
+</div>
+  <div class="hwrap">
+    <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
+    <div class="brandrow" style="margin-top:12px">
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    </div>
+    <span class="apptag">Pocket NPS · FAQ</span>
+    <h1>FAQ — Jazigos Mistos</h1>
+    <p class="lead">Perguntas e respostas sobre a Quadra Mista — sepultamento de humanos e pets no mesmo espaço.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="faq-note"><b>Base normativa.</b> Lei Municipal nº 15.417, de 29/05/2026 (Juiz de Fora/MG) e Regulamento Interno para Sepultamento de Animais Domésticos de Estimação — Modelo Quadra Mista (v3.0, julho/2026). Este FAQ é um material de apoio; em caso de divergência, prevalece o texto do Regulamento e da Lei.</div>
+  <section class="faq-sec">
+    <h2><span class="num">1</span>Conceitos básicos</h2>
+    <details class="faq"><summary><span class="q">O que é a Quadra Mista?</span><span class="chev">›</span></summary><div class="a"><p>É uma área física exclusiva e delimitada do Parque da Saudade, destinada ao sepultamento conjunto de seres humanos e de animais domésticos de estimação no mesmo espaço. Só nela é permitido sepultar pets — em nenhum outro ponto do cemitério.</p></div></details>
+    <details class="faq"><summary><span class="q">O que é um Jazigo Misto?</span><span class="chev">›</span></summary><div class="a"><p>É o espaço funerário localizado na Quadra Mista, com aptidão expressa, registrada e contratual para receber tanto restos mortais humanos quanto de animais de estimação. Existem dois tipos: o <strong>Jazigo Misto Definitivo</strong> e o <strong>Jazigo Transitório</strong>.</p></div></details>
+    <details class="faq"><summary><span class="q">Qual a diferença entre Quadra Mista Definitiva e Provisória?</span><span class="chev">›</span></summary><div class="a"><p>A <strong>Definitiva</strong> é a área permanente, com previsão de disponibilização ao público até o <strong>final de agosto de 2027</strong>. A <strong>Provisória (Transitória)</strong> é uma área temporária que funciona <em>durante o Período de Transição</em> — ou seja, até a Definitiva ficar pronta — para atender quem já quer comprar ou migrar agora.</p></div></details>
+    <details class="faq"><summary><span class="q">O que é o "Período de Transição"?</span><span class="chev">›</span></summary><div class="a"><p>É o intervalo entre a entrada em vigor do Regulamento e a efetiva disponibilização da Quadra Mista Definitiva (previsão: final de agosto de 2027). Nesse período valem regras especiais do Capítulo III, e as vendas/migrações são feitas na Quadra Mista Provisória.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">2</span>Quem pode comprar e sepultar</h2>
+    <details class="faq"><summary><span class="q">Quem pode solicitar o sepultamento de um pet na Quadra Mista?</span><span class="chev">›</span></summary><div class="a"><p>Podem solicitar: o tutor do animal que também seja titular do Jazigo Misto; o tutor que apresente autorização escrita do titular; o responsável legal (no caso de menores ou incapazes); ou um familiar do titular que comprove o vínculo e apresente autorização.</p></div></details>
+    <details class="faq"><summary><span class="q">Como o Regulamento define "família"?</span><span class="chev">›</span></summary><div class="a"><p>De forma abrangente: cônjuge, companheiro(a) em união estável, descendentes, ascendentes e colaterais até o 2º grau. O conceito contempla arranjos contemporâneos, incluindo uniões homoafetivas e famílias recompostas, desde que comprovado o vínculo.</p></div></details>
+    <details class="faq"><summary><span class="q">Preciso já ter um jazigo para sepultar meu pet?</span><span class="chev">›</span></summary><div class="a"><p>Sim — o sepultamento do pet só ocorre em um Jazigo Misto (Definitivo ou Transitório). Quem não tem jazigo misto tem duas saídas: <strong>migrar</strong> um jazigo existente para a Quadra Mista, ou <strong>adquirir</strong> um novo jazigo misto.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">3</span>Animais elegíveis</h2>
+    <details class="faq"><summary><span class="q">Quais animais podem ser sepultados?</span><span class="chev">›</span></summary><div class="a"><p>Animais domésticos de estimação que atendam, cumulativamente, a estes requisitos: convivência habitual com humanos por companheirismo; residência efetiva na casa do tutor; características compatíveis com convívio sadio; <strong>peso máximo de 120 kg</strong>; e ausência de risco sanitário atestada por médico-veterinário.</p></div></details>
+    <details class="faq"><summary><span class="q">Que espécies são aceitas?</span><span class="chev">›</span></summary><div class="a"><p>De forma exemplificativa: cães de qualquer raça ou porte, gatos de qualquer raça, coelhos, pássaros ornamentais, hamsters, porquinhos-da-índia, peixes ornamentais e répteis domésticos de pequeno porte. Outros animais que comprovadamente viviam como pets podem ser aceitos, a critério da Administração (com possível consulta à Vigilância Sanitária).</p></div></details>
+    <details class="faq"><summary><span class="q">Quais animais NÃO são aceitos?</span><span class="chev">›</span></summary><div class="a"><p>Animais acima de 120 kg; animais de produção agropecuária (mesmo que mantidos como pet); animais silvestres em cativeiro sem autorização ambiental; animais com risco de contaminação, zoonose ativa ou risco sanitário; e animais já em decomposição avançada sem acondicionamento hermético adequado.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">4</span>Como adquirir ou migrar (durante o Período de Transição)</h2>
+    <details class="faq"><summary><span class="q">Quero comprar um jazigo misto agora. Como funciona?</span><span class="chev">›</span></summary><div class="a"><p>Durante o Período de Transição, o cliente que adquire um jazigo misto escolhe diretamente um jazigo na <strong>Quadra Mista Provisória</strong> (Jazigo Transitório). O contrato indica expressamente essa condição e a futura transferência, sem custo adicional pelo procedimento, para o Jazigo Misto Definitivo correspondente quando ele estiver disponível.</p></div></details>
+    <details class="faq"><summary><span class="q">Já tenho um jazigo só de humanos e quero sepultar meu pet junto. É possível?</span><span class="chev">›</span></summary><div class="a"><p>Sim, por meio da <strong>migração</strong>. O titular adere ao processo, assina o <em>Termo de Adesão à Migração</em> (Anexo V) e o Parque da Saudade exuma os restos mortais humanos do jazigo de origem e os transfere para um Jazigo Transitório na Quadra Mista Provisória, onde também será sepultado o pet.</p></div></details>
+    <details class="faq"><summary><span class="q">A migração tem custo?</span><span class="chev">›</span></summary><div class="a"><p>O <strong>procedimento de transição em si</strong> (exumação, translado e nova inumação dos restos humanos) <strong>não gera cobrança adicional</strong> — corre por conta do Parque da Saudade. Permanecem devidas apenas as taxas ordinárias do sepultamento do animal (Capítulo XII).</p></div></details>
+    <details class="faq"><summary><span class="q">Preciso da concordância de outras pessoas para migrar?</span><span class="chev">›</span></summary><div class="a"><p>Sim. A adesão exige anuência expressa e por escrito de <strong>todos os cotitulares</strong> do jazigo de origem, além de declaração do titular de que não há oposição conhecida de familiares diretos das pessoas sepultadas. Havendo controvérsia, o pedido fica suspenso até solução consensual ou judicial.</p></div></details>
+    <details class="faq"><summary><span class="q">Como funciona a ordem de escolha dos jazigos definitivos?</span><span class="chev">›</span></summary><div class="a"><p>Vale rigorosamente a <strong>ordem cronológica</strong> dos pedidos, pela data e hora de protocolo do Termo de Adesão (migração) ou da assinatura do contrato e pagamento inicial (aquisição). No ato, o titular recebe um comprovante com o número de ordem. Empates no mesmo dia são resolvidos pelo horário de protocolo registrado em sistema.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">5</span>Migração ordinária (após o Período de Transição)</h2>
+    <details class="faq"><summary><span class="q">E depois que a Quadra Mista Definitiva estiver pronta, ainda dá para migrar?</span><span class="chev">›</span></summary><div class="a"><p>Sim. Encerrado o Período de Transição, a família titular de jazigo fora da Quadra Mista pode solicitar a migração direta para um Jazigo Misto Definitivo, mediante formulário próprio.</p></div></details>
+    <details class="faq"><summary><span class="q">Quais as condições da migração ordinária?</span><span class="chev">›</span></summary><div class="a"><p>Os custos de exumação, translado interno e nova inumação dos restos humanos são <strong>integralmente custeados pelo Parque da Saudade</strong>. A família devolve os direitos sobre o jazigo de origem. Se o jazigo de destino tiver valor de mercado maior, a diferença pode ser parcelada em até <strong>12 vezes</strong>; se for menor, o titular recebe <strong>crédito</strong> da diferença, utilizável em serviços do Parque. Tudo sujeito ao estoque disponível.</p></div></details>
+    <details class="faq"><summary><span class="q">A gratuidade vale para transferências de outros cemitérios?</span><span class="chev">›</span></summary><div class="a"><p>Não. A gratuidade dos custos de transferência aplica-se <strong>exclusivamente</strong> a jazigos dentro do próprio Parque da Saudade — não abrange traslados vindos de outros cemitérios ou localidades.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">6</span>Documentação necessária</h2>
+    <details class="faq"><summary><span class="q">Quais documentos são exigidos?</span><span class="chev">›</span></summary><div class="a"><p>Do <strong>solicitante/tutor</strong>: documento oficial com foto, CPF e comprovante de residência dos últimos 90 dias (mesmo endereço em que o animal vivia). Quando o solicitante não é o titular, também documentos do titular e autorização escrita com firma reconhecida. Se o titular for pessoa jurídica: CNPJ, atos constitutivos e procuração/ata do representante.</p><p>Do <strong>jazigo</strong>: comprovante de titularidade/concessão do Jazigo Misto (com o regime — Definitivo ou Transitório) e certidão de situação regular, sem pendências.</p><p>Do <strong>animal</strong>: Declaração de Óbito emitida por médico-veterinário registrado no CRMV, contendo identificação completa do animal, do tutor, data e causa da morte, atestado de segurança sanitária, e número/assinatura/carimbo do veterinário. Quando disponíveis: microchip, carteira de vacinação ou documento que comprove a tutoria.</p><p><strong>Formulários e termos</strong>: Formulário de Solicitação — Quadra Mista, Contrato de Prestação de Serviços e Termo de Responsabilidade do Tutor (com firma reconhecida ou assinado na presença do funcionário). Nos casos de transição: Termo de Adesão à Migração (Anexo V) ou contrato de aquisição de Jazigo Transitório.</p></div></details>
+    <details class="faq"><summary><span class="q">E se faltar algum documento?</span><span class="chev">›</span></summary><div class="a"><p>Havendo documentação incompleta, o solicitante tem prazo de até <strong>48 horas</strong> para complementar, salvo urgência sanitária documentada.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">7</span>Capelas e cerimônias</h2>
+    <details class="faq"><summary><span class="q">Posso velar meu pet na capela?</span><span class="chev">›</span></summary><div class="a"><p>Não. As capelas são de <strong>uso exclusivamente humano</strong> (velórios, missas de corpo presente, celebrações religiosas). É vedado usá-las para velório, exposição, cerimônia ou permanência do corpo, ossada ou cinzas de animais — em qualquer de seus espaços (entrada, corredor, altar, sala de estar e adjacências).</p></div></details>
+    <details class="faq"><summary><span class="q">Onde acontece a cerimônia do pet, então?</span><span class="chev">›</span></summary><div class="a"><p>Exclusivamente <strong>na própria Quadra Mista</strong> — no jazigo ou em área externa aberta da quadra, nunca nas capelas.</p></div></details>
+    <details class="faq"><summary><span class="q">Há limite de pessoas e de tempo na cerimônia?</span><span class="chev">›</span></summary><div class="a"><p>Sim: até <strong>20 pessoas</strong> presentes e duração máxima de <strong>60 minutos</strong>, prorrogável a critério da Administração em casos justificados.</p></div></details>
+    <details class="faq"><summary><span class="q">Posso levar outros animais vivos à cerimônia?</span><span class="chev">›</span></summary><div class="a"><p>Não é permitido, com a única exceção de <strong>animais de serviço</strong> que acompanhem pessoas com deficiência.</p></div></details>
+    <details class="faq"><summary><span class="q">Existe algum apoio ao tutor enlutado?</span><span class="chev">›</span></summary><div class="a"><p>Sim. O Parque reconhece a legitimidade do luto pet e oferece atendimento humanizado. Excepcionalmente pode disponibilizar uma <strong>sala de apoio</strong> (separada das capelas), mediante agendamento, e informações sobre grupos de apoio ao luto pet quando solicitadas.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">8</span>Regras sanitárias e de acondicionamento</h2>
+    <details class="faq"><summary><span class="q">Como o corpo do animal deve ser acondicionado?</span><span class="chev">›</span></summary><div class="a"><p>Em <strong>invólucro hermético</strong> individual, de material neutro e resistente, que impeça vazamento de líquidos, odores e agentes biológicos. São aceitos: urnas funerárias para animais (madeira, metal ou composto resistente) e embalagens de polipropileno/PEAD com fechamento hermético. <strong>É proibido</strong> usar sacos plásticos comuns, caixas de papelão ou qualquer material que não garanta vedação e durabilidade.</p></div></details>
+    <details class="faq"><summary><span class="q">O pet fica em contato com os restos humanos no jazigo?</span><span class="chev">›</span></summary><div class="a"><p>Nunca. É <strong>absolutamente vedado</strong> o contato direto. O animal é posicionado com separação física completa dos restos mortais humanos, e a equipe técnica avalia a capacidade do jazigo antes de autorizar.</p></div></details>
+    <details class="faq"><summary><span class="q">O que acontece em caso de suspeita de zoonose?</span><span class="chev">›</span></summary><div class="a"><p>O sepultamento é suspenso até manifestação da Vigilância Sanitária. Se ela não se manifestar em 5 dias úteis, o Parque pode, com parecer veterinário e biossegurança reforçada, autorizar excepcionalmente o sepultamento, sujeito a fiscalização posterior.</p></div></details>
+    <details class="faq"><summary><span class="q">Enquanto aguarda o sepultamento, como conservar o corpo?</span><span class="chev">›</span></summary><div class="a"><p>Refrigerado a <strong>temperatura inferior a 5 °C</strong> ou mantido em estabelecimento veterinário com estrutura de conservação adequada.</p></div></details>
+    <details class="faq"><summary><span class="q">Em quanto tempo o sepultamento deve ser agendado?</span><span class="chev">›</span></summary><div class="a"><p>Em até <strong>5 dias corridos</strong> contados da certificação do óbito, salvo caso fortuito ou força maior justificado.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">9</span>Prazos, bloqueios e carência</h2>
+    <details class="faq"><summary><span class="q">Por quanto tempo a gaveta fica ocupada num Jazigo Misto Definitivo?</span><span class="chev">›</span></summary><div class="a"><p>O sepultamento do pet ocupa integralmente a gaveta e a impede de nova utilização pelo prazo mínimo de <strong>3 anos</strong> (mesma regra dos sepultamentos humanos), contados da data do sepultamento. Nesse período a gaveta não pode ser reaberta para nenhuma finalidade.</p></div></details>
+    <details class="faq"><summary><span class="q">E no Jazigo Transitório, qual o prazo?</span><span class="chev">›</span></summary><div class="a"><p>O Jazigo Transitório fica bloqueado para novos sepultamentos por prazo mínimo de <strong>12 meses</strong>, contados do sepultamento do animal. Esse bloqueio é autônomo e <strong>não se confunde</strong> com a carência de 3 anos, que só passa a valer após a transferência para o Jazigo Misto Definitivo.</p></div></details>
+    <details class="faq"><summary><span class="q">Quando ocorre a transferência do Transitório para o Definitivo?</span><span class="chev">›</span></summary><div class="a"><p>Depende de <strong>duas condições cumulativas</strong>: ter decorrido o prazo mínimo de 12 meses <strong>e</strong> já existir Jazigo Misto Definitivo disponível. Cumpridas ambas, o Parque faz a transferência de ofício, sem novo pagamento, transferindo em conjunto e no mesmo ato os restos humanos e do animal (vedada a separação). O titular é avisado por escrito com no mínimo <strong>15 dias</strong> de antecedência e pode acompanhar o ato.</p></div></details>
+    <details class="faq"><summary><span class="q">O que acontece ao fim da carência de 3 anos?</span><span class="chev">›</span></summary><div class="a"><p>O titular é comunicado com pelo menos <strong>30 dias</strong> de antecedência para decidir entre renovar a concessão ou realizar a exumação. Sem manifestação, há renovação automática por mais 1 ano e nova tentativa de contato antes de qualquer medida administrativa. Findo o prazo, é autorizada a exumação, com acondicionamento dos restos em caixa específica; eles podem permanecer no jazigo, ser transladados para outro Jazigo Misto ou retirados pela família.</p></div></details>
+    <details class="faq"><summary><span class="q">A data de agosto/2027 é garantida?</span><span class="chev">›</span></summary><div class="a"><p>É uma <strong>estimativa de planejamento</strong>. Pode ser prorrogada por caso fortuito, força maior, exigência de órgãos públicos ou fatores técnicos, hipótese em que a Administração comunica os titulares por escrito em até 30 dias, mantendo integralmente os direitos e a ordem cronológica já constituídos.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">10</span>Valores e responsabilidades financeiras</h2>
+    <details class="faq"><summary><span class="q">Quem paga as despesas do sepultamento do pet?</span><span class="chev">›</span></summary><div class="a"><p>Todas as despesas do sepultamento do animal são de responsabilidade exclusiva do tutor/responsável, ressalvadas as gratuidades expressamente previstas (como o procedimento de transição e a migração).</p></div></details>
+    <details class="faq"><summary><span class="q">O que está incluído na taxa básica de sepultamento?</span><span class="chev">›</span></summary><div class="a"><p>Análise e processamento da documentação; emissão da Guia de Autorização; abertura e fechamento do Jazigo Misto; mão de obra operacional; registro interno; e emissão do Comprovante de Sepultamento.</p></div></details>
+    <details class="faq"><summary><span class="q">Quais serviços são opcionais (custo adicional)?</span><span class="chev">›</span></summary><div class="a"><p>Fornecimento de urna funerária; fornecimento de invólucro hermético; preparação e acondicionamento do animal pelo Parque; placa de identificação personalizada; serviço de translado; e ornamentação do jazigo.</p></div></details>
+    <details class="faq"><summary><span class="q">Como os valores são definidos e reajustados?</span><span class="chev">›</span></summary><div class="a"><p>Por tabela específica, publicada no site oficial e nas dependências do Parque, reajustada anualmente pelo INPC ou índice equivalente, e comunicada ao solicitante antes da contratação.</p></div></details>
+    <details class="faq"><summary><span class="q">E se houver inadimplência?</span><span class="chev">›</span></summary><div class="a"><p>Incidem juros de mora de 1% ao mês e multa de 2% sobre o valor em atraso, sem prejuízo de cobrança administrativa ou judicial. É <strong>vedado</strong> suspender serviços já prestados ou violar a integridade do jazigo por inadimplemento.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">11</span>Regras e vedações importantes (resumo rápido)</h2>
+    <details class="faq"><summary><span class="q">Ver o resumo rápido</span><span class="chev">›</span></summary><div class="a"><ul><li>Pet só pode ser sepultado <strong>na Quadra Mista</strong>, em Jazigo Misto — nunca em qualquer outro espaço, mesmo com autorização de todos os titulares ou se as cinzas estiverem cremadas.</li><li>Capelas são <strong>exclusivamente humanas</strong>.</li><li><strong>Sem contato direto</strong> entre o corpo do animal e os restos humanos.</li><li><strong>Peso máximo do animal: 120 kg.</strong></li><li>É <strong>vedado</strong> plantar flores/vegetação ou colocar flores artificiais e adornos externos ao jazigo, a qualquer tempo.</li><li>Invólucro <strong>hermético obrigatório</strong> — nada de sacos plásticos ou papelão.</li></ul></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">12</span>Indeferimento e recurso</h2>
+    <details class="faq"><summary><span class="q">A solicitação pode ser negada?</span><span class="chev">›</span></summary><div class="a"><p>Sim, de forma fundamentada, quando houver impedimento sanitário, estrutural, registral, sucessório ou regulamentar, ou documentação incompleta/inválida. O indeferimento é comunicado por escrito em até <strong>5 dias úteis</strong>, com os motivos.</p></div></details>
+    <details class="faq"><summary><span class="q">Cabe recurso?</span><span class="chev">›</span></summary><div class="a"><p>Sim. Cabe recurso administrativo à Diretoria do Parque da Saudade, em até <strong>10 dias corridos</strong> do recebimento da comunicação. O recurso é decidido em até 10 dias úteis. A interposição, por si só, não autoriza o sepultamento até a decisão final.</p></div></details>
+  </section>
+  <section class="faq-sec">
+    <h2><span class="num">13</span>Dados pessoais (LGPD)</h2>
+    <details class="faq"><summary><span class="q">Como meus dados são tratados?</span><span class="chev">›</span></summary><div class="a"><p>Exclusivamente para identificação, autorização, execução e registro do sepultamento, com base legal na LGPD (Lei nº 13.709/2018). É vedado uso para outra finalidade, comercialização ou compartilhamento com terceiros não autorizados (salvo requisição de autoridade). Registros fotográficos servem apenas a controle interno e não podem ser divulgados sem autorização. O titular pode exercer os direitos do art. 18 da LGPD mediante solicitação à Administração. Os registros são mantidos por, no mínimo, <strong>20 anos</strong>.</p></div></details>
+  </section>
+  <div class="faq-foot">Material de apoio elaborado a partir do Regulamento Interno v3.0 (julho/2026). Para situações não previstas aqui, consultar a Administração do Parque da Saudade, que resolve os casos omissos com base na legislação aplicável.</div>
+</main>
+</section>
+
 
 <script>
 const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
@@ -1347,6 +1415,7 @@ if(location.hash==='#sim') go('sim', false);
 if(location.hash==='#escala') go('escala', false);
 if(location.hash==='#tabelas') go('tabelas', false);
 if(location.hash==='#iq') go('iq', false);
+if(location.hash==='#faq') go('faq', false);
 
 // ==================== ESCALA DA EQUIPE — Agosto/2026 ====================
 // Escala mensal fixa. Rodízio contínuo nos 7 dias; a cada 5 dias cada

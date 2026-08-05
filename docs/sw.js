@@ -1,14 +1,15 @@
 /* Pocket NPS — Parque da Saudade
    Service worker: offline + instalação PWA.
-   Gerado em: 03/08/2026 22:21
+   Gerado em: 04/08/2026 23:20
    IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
    equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260805-0145';
+const CACHE = 'pocket-nps-260804-2320';
 
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './logo-ps.svg',
   './apple-touch-icon.png',
   './icons/icon-192.png',
   './icons/icon-512.png'
