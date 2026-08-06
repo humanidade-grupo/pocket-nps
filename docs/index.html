@@ -4,7 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 04/08/2026 23:20 (rev.) — Header em amarelo da marca + logomarca oficial;
+     Gerado em: 06/08/2026 16:22 (rev.) — (1) Produto "Reserva" HABILITADO: boleto até 60x
+     (com juros 1% a.m. de 22–60x); cartão 21x e condições à vista iguais ao Perpétuo.
+     Sublabels de prazo passam a refletir o teto do produto (Perpétuo 72x / Reserva 60x).
+     (2) Novo botão "Carta proposta (PDF)" no resultado: monta um documento formal com os
+     mesmos números da simulação e aciona a impressão (Salvar como PDF). Impressão isolada
+     via body.print-carta (só a carta sai no papel). Envio ao cliente segue com revisão humana.
+     Pendente p/ outra sessão: seletor "Preencher pela tabela", comparador de pagamentos e
+     botão WhatsApp — descartados desta leva a pedido do Ricardo.
+     Rev. anterior 04/08/2026 23:20 — Header em amarelo da marca + logomarca oficial;
      nova tela FAQ — Jazigos Mistos (Quadra Mista, humano + pet), acordeão recolhido.
      Check-in ATIVADO: ESCALA_API preenchida com a URL /exec do Web App (deploy do
      gas/ por clasp). O botão "Cheguei" grava presença na aba Checkins da planilha-base.
@@ -14,7 +22,7 @@
      sem juros até 21x (cartão/boleto); 22–72x a 1% a.m. com 1ª parcela no ato (Price
      antecipado). Desconto por alçada automático: Pix à vista 3%, cartão à vista 2%,
      parcelado até 21x 1%; +3% na faixa 24–25k com autorização do coordenador.
-     "Reserva até 60x" desabilitada. Asterisco na Quadra Mista (informar 50% do valor).
+     Produto "Reserva": boleto até 60x (antes desabilitado). Asterisco na Quadra Mista (informar 50% do valor).
      Publicação: PWA em GitHub Pages (pasta site/) — manifest, sw.js, ícones PNG.
      ============================================ -->
 <html lang="pt-BR">
@@ -362,6 +370,33 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   #resumo .lbl,.row .k,.res-hero .l{color:#333} .row .v,.res-hero .parcela,.row.tot .v,.row.tot .k{color:#000}
 }
 
+/* ---------- Carta proposta (impressão → Salvar como PDF) ---------- */
+#cartaProposta{display:none}
+#cartaProposta .cp-doc{color:#1a1a1a; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.5}
+#cartaProposta .cp-head{border-bottom:2px solid #4A2C0E; padding-bottom:10px; margin-bottom:16px}
+#cartaProposta .cp-brand{font-size:22px; font-weight:800; color:#4A2C0E; letter-spacing:.3px}
+#cartaProposta .cp-org{font-size:11px; color:#555; margin-top:2px}
+#cartaProposta .cp-titlebar{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px}
+#cartaProposta .cp-h1{font-size:16px; font-weight:700; color:#4A2C0E; margin:0}
+#cartaProposta .cp-meta{font-size:11px; color:#555}
+#cartaProposta .cp-t{width:100%; border-collapse:collapse; margin:0 0 14px}
+#cartaProposta .cp-t td{padding:7px 2px; border-bottom:1px solid #e2ddd3}
+#cartaProposta .cp-t .cp-num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+#cartaProposta .cp-t .cp-cap td{font-weight:700; color:#4A2C0E; border-bottom:1.5px solid #4A2C0E; padding-top:0}
+#cartaProposta .cp-t .cp-tot td{font-weight:800; border-top:1.5px solid #4A2C0E; border-bottom:none}
+#cartaProposta .cp-cond-title{font-weight:700; color:#4A2C0E; margin:0 0 6px}
+#cartaProposta .cp-notes{margin:14px 0 0; padding-left:18px; color:#444; font-size:11px}
+#cartaProposta .cp-notes li{margin-bottom:4px}
+#cartaProposta .cp-sign{display:flex; gap:24px; margin:40px 0 0}
+#cartaProposta .cp-line{flex:1; border-top:1px solid #999; padding-top:5px; font-size:11px; color:#555; text-align:center}
+#cartaProposta .cp-foot{margin-top:26px; padding-top:8px; border-top:1px solid #e2ddd3; font-size:10px; color:#888; text-align:center}
+@media print{
+  body.print-carta > *:not(#cartaProposta){display:none!important}
+  body.print-carta #cartaProposta{display:block!important}
+  body.print-carta{background:#fff}
+  @page{size:A4; margin:16mm}
+}
+
 /* ---------- Logomarca oficial (header) ---------- */
 .brandlogo{height:60px; width:auto; display:block}
 .home-head .brandlogo{height:74px}
@@ -469,7 +504,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 04/08/2026</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 06/08/2026</div>
     </footer>
   </main>
 </section>
@@ -512,7 +547,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <div class="step"><span class="n">1</span><h2>Produto</h2></div>
     <div class="seg gold" id="segProduto" role="group" aria-label="Produto">
       <button data-produto="perpetuo" aria-pressed="true">Perpétuo<span class="s">até 72x</span></button>
-      <button data-produto="reserva" aria-pressed="false" disabled aria-disabled="true">Reserva<span class="s">indisponível</span></button>
+      <button data-produto="reserva" aria-pressed="false">Reserva<span class="s">até 60x</span></button>
     </div>
   </section>
 
@@ -533,7 +568,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
   <section class="card">
     <div class="step"><span class="n">3</span><h2>Forma de pagamento</h2></div>
     <div class="seg" id="segForma" role="group" aria-label="Forma de pagamento">
-      <button data-forma="prazo" aria-pressed="true">A prazo<span class="s">até 72x</span></button>
+      <button data-forma="prazo" aria-pressed="true">A prazo<span class="s" id="formaPrazoHint">até 72x</span></button>
       <button data-forma="avista" aria-pressed="false">À vista<span class="s">Pix ou cartão</span></button>
     </div>
 
@@ -542,7 +577,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
       <div class="field">
         <label>Meio de pagamento</label>
         <div class="seg" id="segMeio" role="group" aria-label="Meio">
-          <button data-meio="boleto" aria-pressed="true">Boleto<span class="s">até 72x</span></button>
+          <button data-meio="boleto" aria-pressed="true">Boleto<span class="s" id="meioBoletoHint">até 72x</span></button>
           <button data-meio="cartao" aria-pressed="false">Cartão<span class="s">até 21x</span></button>
         </div>
       </div>
@@ -1091,6 +1126,8 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 </main>
 </section>
 
+<!-- Carta proposta: preenchida sob demanda pelo JS; visível apenas na impressão (Salvar como PDF) -->
+<div id="cartaProposta" aria-hidden="true"></div>
 
 <script>
 const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
@@ -1121,7 +1158,7 @@ const state = {
   produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false, descOn:false,
   valor:0, entrada:0, prazo:60
 };
-const MAXP = {perpetuo:{boleto:72,cartao:21}};
+const MAXP = {perpetuo:{boleto:72,cartao:21}, reserva:{boleto:60,cartao:21}};
 
 // ---- currency input helpers (digita centavos) ----
 function bindMoney(el, key){
@@ -1166,7 +1203,12 @@ function clampPrazo(){
   const max = MAXP[state.produto][state.meio];
   prazoEl.max = max; $('#tickMax').textContent = max+'x';
   if(state.prazo>max){ state.prazo=max; prazoEl.value=max; }
+  // sublabels honestos: teto de boleto do produto (Perpétuo 72x, Reserva 60x)
+  const pmax = MAXP[state.produto].boleto;
+  const fh = $('#formaPrazoHint'); if(fh) fh.textContent = 'até '+pmax+'x';
+  const bh = $('#meioBoletoHint'); if(bh) bh.textContent = 'até '+pmax+'x';
 }
+clampPrazo();
 function buildChips(){
   // máscaras/valores sugeridos removidos — o campo "Valor do jazigo" fica livre
   const box = $('#chipsValor'); if(box) box.innerHTML='';
@@ -1359,9 +1401,10 @@ function vpBlock(r){
 }
 
 function actions(){
-  return `<div class="actions">
+  return `<div class="actions" style="flex-wrap:wrap">
     <button class="btn-primary" id="btnCopiar">📋 Copiar proposta</button>
     <button class="btn-ghost" id="btnShare">Compartilhar</button>
+    <button class="btn-ghost" id="btnCarta" style="flex-basis:100%">🖨️ Carta proposta (PDF)</button>
   </div>`;
 }
 
@@ -1369,7 +1412,7 @@ function propostaTexto(){
   const r=calc(); if(!r) return '';
   const L=[];
   L.push('*Parque da Saudade — Proposta*');
-  L.push('Jazigo Perpétuo');
+  L.push(produtoLabel());
   L.push('');
   if(r.desconto>0.5){
     L.push('Valor de tabela: '+brl(r.tabela));
@@ -1392,8 +1435,70 @@ function propostaTexto(){
   return L.join('\n');
 }
 
+function produtoLabel(){ return state.produto==='reserva' ? 'Jazigo — Reserva' : 'Jazigo Perpétuo'; }
+
+// Carta proposta: monta um documento formal e aciona a impressão (Salvar como PDF).
+// Reaproveita os mesmos números do resumo (calc/brl). Sempre com revisão humana antes do envio.
+function cartaPropostaHTML(r){
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const rows=[];
+  if(r.desconto>0.5){
+    rows.push(['Valor de tabela', brl(r.tabela)]);
+    rows.push(['Desconto '+descLabelText(r.di)+' ('+(r.di.total*100).toFixed(0)+'%)', '− '+brl(r.desconto)]);
+    rows.push(['Valor com desconto', brl(r.comDesc)]);
+  } else {
+    rows.push(['Valor do jazigo', brl(r.tabela)]);
+  }
+  let condTitulo, cond=[];
+  if(r.forma==='avista'){
+    condTitulo = 'À vista — '+(r.meioAV==='pix'?'Pix':'cartão')+' (sem juros)';
+    cond.push(['Total à vista', brl(r.total)]);
+  } else {
+    condTitulo = 'A prazo — '+(r.meio==='cartao'?'cartão de crédito (sem juros)':(r.semJuros?'boleto (sem juros)':'boleto (1% a.m.)'));
+    if(r.entrada>0){ cond.push(['Entrada / sinal', brl(r.entrada)]); cond.push(['Saldo a parcelar', brl(r.saldo)]); }
+    cond.push([r.nparc+'× de', brl(r.parcela)]);
+    if(!r.semJuros) cond.push(['Juros (1% a.m. · 1ª parcela no ato)', brl(r.juros)]);
+    cond.push(['Total a prazo', brl(r.total)]);
+  }
+  const notas=[];
+  if(r.forma==='prazo'){
+    notas.push(r.meio==='cartao'
+      ? 'No cartão de crédito, o jazigo fica quitado no ato — uso imediato liberado, caso a família precise.'
+      : 'No boleto, o uso do jazigo é liberado após a quitação integral do parcelamento.');
+  }
+  if(r.di && r.di.extraOn) notas.push('O adicional de 3% está sujeito à autorização do coordenador.');
+  notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
+  notas.push('Proposta sujeita a confirmação e à disponibilidade de jazigos. Valores em reais (R$).');
+
+  const trs = a => a.map(([k,v],i)=>`<tr${(a===cond && i===cond.length-1)?' class="cp-tot"':''}><td>${k}</td><td class="cp-num">${v}</td></tr>`).join('');
+  return `<div class="cp-doc">
+    <div class="cp-head">
+      <div class="cp-brand">Parque da Saudade</div>
+      <div class="cp-org">Cemitério-Parque e Serviços Memoriais · Juiz de Fora/MG</div>
+    </div>
+    <div class="cp-titlebar"><h1 class="cp-h1">Proposta Comercial</h1><div class="cp-meta">Emitida em ${hoje}</div></div>
+    <table class="cp-t"><tr class="cp-cap"><td>${produtoLabel()}</td><td class="cp-num">&nbsp;</td></tr>${trs(rows)}</table>
+    <div class="cp-cond-title">${condTitulo}</div>
+    <table class="cp-t">${trs(cond)}</table>
+    <ul class="cp-notes">${notas.map(n=>`<li>${n}</li>`).join('')}</ul>
+    <div class="cp-sign"><div class="cp-line">Consultor(a)</div><div class="cp-line">Cliente</div></div>
+    <div class="cp-foot">Parque da Saudade · Documento gerado no Pocket NPS (app da equipe) em ${hoje}</div>
+  </div>`;
+}
+
+function emitirCarta(){
+  const r=calc();
+  if(!r){ toast('Preencha o valor para gerar a carta'); return; }
+  $('#cartaProposta').innerHTML = cartaPropostaHTML(r);
+  document.body.classList.add('print-carta');
+  const cleanup=()=>{ document.body.classList.remove('print-carta'); window.removeEventListener('afterprint', cleanup); };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(()=>{ try{ window.print(); }catch(e){ cleanup(); toast('Impressão indisponível neste dispositivo'); } }, 60);
+}
+
 function bindActions(){
-  const c=$('#btnCopiar'), s=$('#btnShare');
+  const c=$('#btnCopiar'), s=$('#btnShare'), p=$('#btnCarta');
+  if(p) p.onclick=emitirCarta;
   if(c) c.onclick=async()=>{ try{ await navigator.clipboard.writeText(propostaTexto()); toast('Proposta copiada'); }catch(e){ toast('Copie manualmente'); } };
   if(s) s.onclick=async()=>{
     const text=propostaTexto();
