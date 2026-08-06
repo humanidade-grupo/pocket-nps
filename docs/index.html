@@ -7,9 +7,10 @@
      Gerado em: 06/08/2026 16:22 (rev.) — (1) Produto "Reserva" HABILITADO: boleto até 60x
      (com juros 1% a.m. de 22–60x); cartão 21x e condições à vista iguais ao Perpétuo.
      Sublabels de prazo passam a refletir o teto do produto (Perpétuo 72x / Reserva 60x).
-     (2) Novo botão "Carta proposta (PDF)" no resultado: monta um documento formal com os
-     mesmos números da simulação e aciona a impressão (Salvar como PDF). Impressão isolada
-     via body.print-carta (só a carta sai no papel). Envio ao cliente segue com revisão humana.
+     (2) Botão "Carta proposta (PDF)" no resultado: monta um documento formal com os mesmos
+     números da simulação e aciona a impressão (Salvar como PDF), isolada via body.print-carta.
+     DESABILITADO por ora (rev. 06/08 20:49, a pedido do Ricardo) — código pronto (emitirCarta);
+     para reativar, remover disabled/opacity do #btnCarta em actions(). Envio com revisão humana.
      Pendente p/ outra sessão: seletor "Preencher pela tabela", comparador de pagamentos e
      botão WhatsApp — descartados desta leva a pedido do Ricardo.
      Rev. anterior 04/08/2026 23:20 — Header em amarelo da marca + logomarca oficial;
@@ -1404,7 +1405,7 @@ function actions(){
   return `<div class="actions" style="flex-wrap:wrap">
     <button class="btn-primary" id="btnCopiar">📋 Copiar proposta</button>
     <button class="btn-ghost" id="btnShare">Compartilhar</button>
-    <button class="btn-ghost" id="btnCarta" style="flex-basis:100%">🖨️ Carta proposta (PDF)</button>
+    <button class="btn-ghost" id="btnCarta" style="flex-basis:100%;opacity:.5;cursor:not-allowed" disabled aria-disabled="true" title="Em breve">🖨️ Carta proposta (PDF)<span style="font-weight:400;opacity:.85"> — em breve</span></button>
   </div>`;
 }
 
@@ -1498,7 +1499,7 @@ function emitirCarta(){
 
 function bindActions(){
   const c=$('#btnCopiar'), s=$('#btnShare'), p=$('#btnCarta');
-  if(p) p.onclick=emitirCarta;
+  if(p && !p.disabled) p.onclick=emitirCarta;
   if(c) c.onclick=async()=>{ try{ await navigator.clipboard.writeText(propostaTexto()); toast('Proposta copiada'); }catch(e){ toast('Copie manualmente'); } };
   if(s) s.onclick=async()=>{
     const text=propostaTexto();
