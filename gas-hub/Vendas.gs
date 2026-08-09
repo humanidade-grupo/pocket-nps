@@ -1,8 +1,9 @@
 /**
- * Vendas.gs — módulo de vendas do cofre (sucessor do Codigo_Ponte.gs).
- * Mesmo contrato do script-ponte antigo (headers + vendas em JSON),
- * mas lendo/gravando na ABA 'Vendas' do cofre único (não mais na
- * primeira aba de uma planilha dedicada).
+ * Vendas.gs — v2 (09/08/2026). Substitui o Vendas.gs anterior no gas-hub/.
+ * Única mudança vs v1: default de Empreendimento no Vendas_add (escopo GRUPO).
+ *
+ * Módulo de vendas do cofre (sucessor do Codigo_Ponte.gs). Mesmo contrato do
+ * script-ponte antigo (headers + vendas em JSON), lendo/gravando na aba 'Vendas'.
  */
 
 var ABA_VENDAS = 'Vendas';
@@ -39,6 +40,8 @@ function Vendas_list() {
 function Vendas_add(body) {
   var sh = _abaVendas();
   var headers = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  // rede de segurança: se o painel não mandar o empreendimento, assume Parque
+  if (!body['Empreendimento']) body['Empreendimento'] = 'Parque da Saudade';
   var row = headers.map(function (h) {
     return body[h] !== undefined && body[h] !== null ? body[h] : '';
   });
