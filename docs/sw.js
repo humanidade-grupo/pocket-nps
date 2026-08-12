@@ -1,13 +1,14 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
-Gerado em: 06/08/2026 20:49
+Gerado em: 12/08/2026 14:34
 Alterações: Rev. 11/08/2026 — corrige bug em que QUALQUER navegação era
 gravada no cache como a home ('./'), o que podia servir outra página no
 lugar do app offline; o SW agora ignora tudo sob /gestao/ (área da gestão,
 fora do app do time) e só regrava './' quando a navegação é a própria home.
+Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260811-1730';
+const CACHE = 'pocket-nps-260812-1434';
 
 const CORE = [
 './',

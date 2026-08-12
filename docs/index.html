@@ -4,7 +4,10 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 06/08/2026 16:22 (rev.) — (1) Produto "Reserva" HABILITADO: boleto até 60x
+     Gerado em: 12/08/2026 14:34 (rev.) — Tela "IQ de Venda" DESABILITADA na home: card vira
+     estado "soon" (badge "Em breve", sem data-go → não navega). A tela view-iq segue no código,
+     só sem porta de entrada; para reativar, restaurar class="tool" data-go="iq" e o badge.
+     Rev. 06/08/2026 16:22 — (1) Produto "Reserva" HABILITADO: boleto até 60x
      (com juros 1% a.m. de 22–60x); cartão 21x e condições à vista iguais ao Perpétuo.
      Sublabels de prazo passam a refletir o teto do produto (Perpétuo 72x / Reserva 60x).
      (2) Botão "Carta proposta (PDF)" no resultado: monta um documento formal com os mesmos
@@ -481,11 +484,10 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
         <span class="arw">›</span>
       </button>
 
-      <button class="tool" data-go="iq">
+      <button class="tool soon" aria-disabled="true" disabled>
         <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.6"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/><line x1="3" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/></svg></span>
         <span class="tx"><span class="t">IQ de Venda</span><span class="d">A nota de qualidade da venda — preço, prazo, desconto e canal.</span></span>
-        <span class="badge">Ativo</span>
-        <span class="arw">&rsaquo;</span>
+        <span class="badge">Em breve</span>
       </button>
 
       <button class="tool" data-go="tabelas">
@@ -505,7 +507,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 06/08/2026</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 12/08/2026</div>
     </footer>
   </main>
 </section>
@@ -1525,7 +1527,7 @@ window.addEventListener('popstate', e=> go((e.state&&e.state.view)||'home', fals
 if(location.hash==='#sim') go('sim', false);
 if(location.hash==='#escala') go('escala', false);
 if(location.hash==='#tabelas') go('tabelas', false);
-if(location.hash==='#iq') go('iq', false);
+if(location.hash==='#iq') go('home', false);   // IQ desabilitado: link antigo cai na home
 if(location.hash==='#faq') go('faq', false);
 
 // ==================== ESCALA DA EQUIPE — Agosto/2026 ====================
