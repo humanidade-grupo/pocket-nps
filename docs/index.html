@@ -4,7 +4,14 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 12/08/2026 14:34 (rev.) — Tela "IQ de Venda" DESABILITADA na home: card vira
+     Gerado em: 12/08/2026 22:52 (rev.) — Tela nova "CARTEIRA DO DIA" (view-carteira): fila
+     diária de contatos do mailing, um por vez, pelo WhatsApp do próprio vendedor via wa.me.
+     O app NUNCA envia mensagem sozinho — monta a fila, pré-escreve o texto, abre o WhatsApp
+     e registra o desfecho que o vendedor declara. Login por PIN (a tela traz nome e telefone
+     de pessoas reais num site público); sessão em localStorage. Backend: gas-hub/Carteira.gs.
+     FALTA: preencher CARTEIRA_API com a URL /exec depois de publicar a nova versão da
+     implantação, e o modo offline (lote e fila de desfechos em localStorage) — próxima etapa.
+     Rev. 12/08/2026 14:34 — Tela "IQ de Venda" DESABILITADA na home: card vira
      estado "soon" (badge "Em breve", sem data-go → não navega). A tela view-iq segue no código,
      só sem porta de entrada; para reativar, restaurar class="tool" data-go="iq" e o badge.
      Rev. 06/08/2026 16:22 — (1) Produto "Reserva" HABILITADO: boleto até 60x
@@ -434,6 +441,51 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 .faq .a ul{margin:2px 0 0; padding-left:18px}
 .faq .a li{margin-bottom:8px; line-height:1.5}
 .faq-foot{font-size:11.5px; color:var(--muted); line-height:1.55; text-align:center; margin:24px 6px 0; padding:0 4px}
+/* ---------- Carteira do Dia ---------- */
+.cart-tela{display:none}
+.cart-tela.on{display:block; animation:fade .22s ease}
+.cart-pin{width:100%; border:1.5px solid var(--border-strong); background:#fff; border-radius:12px; padding:13px 14px; font-family:inherit; font-size:22px; font-weight:700; color:var(--marrom); outline:none; text-align:center; letter-spacing:9px}
+.cart-pin:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.16)}
+.cart-pin.erro{border-color:var(--danger)}
+.cart-sel{width:100%; font-family:inherit; font-size:15px; font-weight:700; color:var(--marrom); border:1.5px solid var(--border-strong); border-radius:12px; padding:12px 13px; background:#fff}
+.cart-btn{width:100%; border:0; border-radius:12px; padding:15px; font-family:inherit; font-weight:700; font-size:16px; cursor:pointer; background:var(--dourado); color:#fff}
+.cart-btn:active{background:var(--cta-hover)}
+.cart-btn[disabled]{opacity:.5; cursor:not-allowed}
+.cart-btn.sec{background:transparent; color:var(--muted); border:1.5px solid var(--border-strong)}
+.cart-zap{width:100%; border:0; border-radius:12px; padding:15px; font-family:inherit; font-weight:700; font-size:16px; cursor:pointer; background:#25D366; color:#fff; display:flex; align-items:center; justify-content:center; gap:9px; margin-top:14px}
+.cart-zap:active{background:#1DA851}
+.cart-zap[disabled]{background:rgba(66,39,12,.22); cursor:not-allowed}
+.cart-barra{height:7px; background:rgba(66,39,12,.10); border-radius:99px; overflow:hidden; margin:2px 2px 8px}
+.cart-barra i{display:block; height:100%; background:var(--dourado); border-radius:99px; transition:width .3s}
+.cart-contador{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin:0 2px 12px}
+.cart-contador b{color:var(--marrom)}
+.cart-nome{font-family:"PF Marlet Display",serif; font-size:25px; font-weight:700; letter-spacing:-.2px; margin:10px 0 0; line-height:1.15}
+.cart-fone{font-size:15px; color:var(--muted); margin:3px 0 14px; font-variant-numeric:tabular-nums}
+.cart-chips{display:flex; flex-wrap:wrap; gap:7px}
+.cart-chip{font-size:10.5px; font-weight:700; padding:5px 10px; border-radius:20px; background:rgba(66,39,12,.07); color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+.cart-chip.aviso{background:rgba(181,127,10,.16); color:var(--cta-hover)}
+.cart-rotulo{display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; font-weight:600; color:var(--marrom); margin-bottom:6px}
+.cart-rotulo span{font-size:11.5px; font-weight:500; color:var(--muted)}
+.cart-msg{width:100%; font-family:inherit; font-size:15px; line-height:1.55; color:var(--marrom); background:#fff; border:1.5px solid var(--border-strong); border-radius:12px; padding:12px 13px; min-height:150px; resize:vertical; outline:none}
+.cart-msg:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.16)}
+.cart-desf{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px}
+.cart-desf button{border:1.5px solid var(--border-strong); background:#fff; color:var(--marrom); font-family:inherit; font-size:14px; font-weight:700; padding:13px 10px; border-radius:12px; cursor:pointer}
+.cart-desf button:active{background:var(--bege)}
+.cart-desf button.larga{grid-column:1/-1}
+.cart-desf button.perigo{color:var(--danger); border-color:rgba(154,59,42,.35)}
+.cart-aviso{display:none; background:rgba(181,127,10,.13); border:1px solid rgba(181,127,10,.32); color:var(--cta-hover); border-radius:var(--radius-sm); padding:11px 13px; font-size:13px; line-height:1.45; margin:0 2px 12px; font-weight:600}
+.cart-aviso.on{display:block}
+.cart-aviso.erro{background:rgba(154,59,42,.10); border-color:rgba(154,59,42,.30); color:var(--danger)}
+.cart-fila{display:none; cursor:pointer; background:rgba(103,127,95,.14); border:1px solid rgba(103,127,95,.32); color:var(--verde-2); border-radius:var(--radius-sm); padding:10px 12px; font-size:12.5px; font-weight:700; margin:0 2px 10px; text-align:center}
+.cart-fila.on{display:block}
+.cart-fim{text-align:center; padding:28px 16px}
+.cart-fim .ok{width:56px; height:56px; margin:0 auto; border-radius:50%; background:rgba(103,127,95,.16); color:var(--verde-2); display:grid; place-items:center; font-size:28px; font-weight:800}
+.cart-fim h2{margin:14px 0 6px; font-size:19px}
+.cart-fim p{color:var(--muted); margin:0; font-size:13.5px}
+.cart-kpis{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:20px}
+.cart-kpi{background:#fff; border:1px solid var(--border); border-radius:12px; padding:13px 6px}
+.cart-kpi b{display:block; font-family:"PF Marlet Display",serif; font-size:22px; line-height:1}
+.cart-kpi span{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; font-weight:700}
 </style>
 </head>
 <body>
@@ -482,6 +534,13 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
         <span class="tx"><span class="t">Escala da Equipe</span><span class="d">Escala de Agosto/2026, dia a dia — o posto de cada vendedor.</span></span>
         <span class="badge">Ativo</span>
         <span class="arw">›</span>
+      </button>
+
+      <button class="tool" data-go="carteira">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v14.5"/><path d="M4 6.5V18a2 2 0 0 0 2 2h13"/><line x1="8" y1="9" x2="15" y2="9"/><line x1="8" y1="13" x2="12.5" y2="13"/></svg></span>
+        <span class="tx"><span class="t">Carteira do Dia</span><span class="d">Sua lista de contatos do dia, um por vez, pelo seu WhatsApp.</span></span>
+        <span class="badge">Novo</span>
+        <span class="arw">&rsaquo;</span>
       </button>
 
       <button class="tool soon" aria-disabled="true" disabled>
@@ -1132,6 +1191,144 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 <!-- Carta proposta: preenchida sob demanda pelo JS; visível apenas na impressão (Salvar como PDF) -->
 <div id="cartaProposta" aria-hidden="true"></div>
 
+
+<!-- ==================== CARTEIRA DO DIA ==================== -->
+<section class="view" id="view-carteira">
+<header>
+  <div class="deco"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="841.2131" height="910.218" viewBox="0 0 841.2131 910.218">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M539.3936 84.74298H1380.6067V994.961H539.3936Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M0 1080H1920V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,450.565,8)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0 39.455-2.633C61.893-4.131 83.315-5.447 105.486-10.131 111.29-11.357 166.219-41.418 157.827-61.496L146.269-89.144C131.02-125.624 102.772-162.096 129.505-198.98 136.188-208.201 141.169-221.389 151.2-227.426 165.82-236.224 185.306-239.266 202.379-239.124 227.095-238.918 249.814-240.622 273.885-244.55 311.902-250.754 301.477-273.252 327.468-281.478 346.204-287.407 363.741-291.099 382.648-298.884 350.667-299.915 332.522-290.925 300.013-303.691 257.192-320.506 220.098-328.385 182.035-354.84 177.871-360.255 178.284-369.867 177.167-376.312 169.849-418.538 190.961-439.82 222.392-462.144 237.094-472.586 251.073-483.241 264.88-494.492 273.333-501.38 274.309-510.595 273.047-520.843 270.195-544.003 265.849-565.771 260.744-588.691 254.373-617.292 223.033-658.015 205.757-682.235L148.385-762.668C114.531-810.131 46.061-872.147-7.337-893.475-9.198-894.218-13.887-894.002-13.65-893.067-13.415-892.139-12.861-889.431-12.266-888.562L18.183-844.164C39.188-813.535 67.443-720.838 80.434-681.673L92.654-644.832C96.349-633.693 101.356-623.503 106.007-612.557 109.763-603.717 107.718-592.309 118.558-586.37 114.525-576.881 111.718-568.263 107.249-559.243 95.11-534.739 64.168-510.128 45.543-488.538 33.208-474.239 15.298-438.638 8.667-420.308 7.029-415.779 1.862-410.643-4.443-412.774-26.31-420.163-50.823-420.37-72.801-429.176L-408.043-595.624C-419.411-601.268-429.321-605.469-442.565-607.204-432.425-595.965-421.025-586.917-407.767-580.269L-300.965-526.711C-295.829-524.135-289.703-520.776-285.378-517.485L-225.259-471.73C-251.787-478.146-274.937-483.541-298.41-492.729L-382.242-525.545C-392.651-529.619-402.372-533.223-415.031-532.096-399.52-518.871-382.099-511.863-363.619-504.17L-180.964-428.141C-156.325-417.885-134.406-404.577-111.419-391.26-79.046-372.504-50.426-349.557-25.492-322.018-13.253-308.5-24.651-276.461-24.868-268.069L-25.665-237.32C-26.092-220.837-23.532-202.922-18.587-187.216L.804-125.621-4.837-99.897C-15.247-101.327-19.566-94.486-26.155-91.343L-52.34-78.85C-66.665-72.016-81.418-67.622-96.66-63.116-109.996-59.174-122.582-53.707-136.214-50.758-154.613-46.778-173.118-44.396-191.986-43.043-207.544-41.927-221.81-45.471-239.071-42.484-185.262-15.717-127.614-5.808-69.832 0H0Z"/>
+</g>
+</g>
+</svg>
+</div>
+  <div class="hwrap">
+    <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
+    <div class="brandrow" style="margin-top:12px">
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    </div>
+    <span class="apptag">Pocket NPS · Carteira</span>
+    <h1>Carteira do Dia</h1>
+    <p class="lead">Sua lista de contatos do dia. Um por vez, pelo seu WhatsApp, no seu ritmo.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ---- login ---- -->
+  <section class="cart-tela on" id="cart-login">
+    <div class="card">
+      <div class="step"><span class="n">1</span><h2>Entrar</h2></div>
+      <p class="fieldnote" style="margin:0 0 14px">Sua carteira é pessoal — ela traz nome e telefone de pessoas reais. O PIN foi entregue pela coordenação.</p>
+      <div class="field">
+        <label for="cart-vendedor">Vendedor</label>
+        <select class="cart-sel" id="cart-vendedor"></select>
+      </div>
+      <div class="field">
+        <label for="cart-pin">PIN de 6 dígitos</label>
+        <input class="cart-pin" id="cart-pin" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="······">
+      </div>
+      <div class="cart-aviso" id="cart-erro-login" style="margin:12px 2px 0"></div>
+      <div style="margin-top:14px"><button class="cart-btn" id="cart-btn-entrar">Entrar</button></div>
+    </div>
+  </section>
+
+  <!-- ---- início ---- -->
+  <section class="cart-tela" id="cart-inicio">
+    <div class="card">
+      <div class="step"><span class="n">2</span><h2 id="cart-ola">Bom dia</h2></div>
+      <p class="fieldnote" id="cart-linha-inicio" style="margin:0 0 14px">Pegue sua lista de hoje para começar.</p>
+      <div class="cart-aviso" id="cart-erro-inicio" style="margin:0 2px 12px"></div>
+      <button class="cart-btn" id="cart-btn-lista">Pegar minha lista de hoje</button>
+      <p class="fieldnote">Você fala do seu próprio WhatsApp. O app só organiza a fila e guarda o que aconteceu.</p>
+    </div>
+    <div class="card">
+      <div class="lbl">Como funciona</div>
+      <p class="fieldnote" style="font-size:13px; margin-top:9px">
+        Um contato por vez. Você confere a mensagem, toca em <b>Abrir no WhatsApp</b>, envia,
+        volta e diz o que aconteceu. Quem responder cai direto no seu celular.
+      </p>
+      <p class="fieldnote" style="margin-top:10px">
+        O app nunca envia mensagem sozinho — quem envia é você, do seu número.
+      </p>
+    </div>
+    <div style="margin-top:14px"><button class="cart-btn sec" id="cart-btn-sair">Sair desta conta</button></div>
+  </section>
+
+  <!-- ---- card do lead ---- -->
+  <section class="cart-tela" id="cart-card">
+    <div class="cart-barra"><i id="cart-barra" style="width:0%"></i></div>
+    <div class="cart-contador">
+      <span><b id="cart-feitos">0</b> de <b id="cart-total">0</b> hoje</span>
+      <span id="cart-restam"></span>
+    </div>
+
+    <div class="cart-fila"></div>
+    <div class="cart-aviso" id="cart-faixa"></div>
+
+    <div class="card">
+      <div class="cart-chips">
+        <span class="cart-chip" id="cart-c-origem">—</span>
+        <span class="cart-chip" id="cart-c-data"></span>
+        <span class="cart-chip aviso" id="cart-c-tent" style="display:none"></span>
+      </div>
+      <p class="cart-nome" id="cart-lead-nome">—</p>
+      <p class="cart-fone" id="cart-lead-fone"></p>
+
+      <label class="cart-rotulo" for="cart-msg">Mensagem <span id="cart-conta">0 caracteres</span></label>
+      <textarea class="cart-msg" id="cart-msg"></textarea>
+      <p class="fieldnote">Pode ajustar antes de enviar. Sem link e sem preço na primeira mensagem.</p>
+
+      <button class="cart-zap" id="cart-btn-zap">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.13c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.36c0-4.54 3.7-8.24 8.25-8.24 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.83c0 4.54-3.7 8.21-8.24 8.21Z"/></svg>
+        Abrir no WhatsApp
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="lbl">O que aconteceu?</div>
+      <div class="cart-desf">
+        <button data-desf="enviado">Enviei</button>
+        <button data-desf="respondeu">Já respondeu</button>
+        <button data-desf="invalido">Número inválido</button>
+        <button data-desf="pulado">Pular por ora</button>
+        <button class="larga perigo" data-desf="optout">Pediu para não receber mais</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- conclusão ---- -->
+  <section class="cart-tela" id="cart-fim">
+    <div class="card cart-fim">
+      <div class="ok">✓</div>
+      <h2 id="cart-fim-titulo">Lista de hoje concluída</h2>
+      <p id="cart-fim-texto">Amanhã tem mais. Quem responder chega no seu WhatsApp.</p>
+      <div class="cart-kpis">
+        <div class="cart-kpi"><b id="cart-k-env">0</b><span>enviados</span></div>
+        <div class="cart-kpi"><b id="cart-k-resp">0</b><span>respostas</span></div>
+        <div class="cart-kpi"><b id="cart-k-out">0</b><span>saíram</span></div>
+      </div>
+      <div class="cart-fila" style="margin-top:16px"></div>
+      <div style="margin-top:20px"><button class="cart-btn sec" id="cart-btn-voltar">Voltar ao início</button></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
+    <div class="inst">O app não envia mensagem sozinho. Quem fala é você, do seu número.</div>
+  </footer>
+</main>
+</section>
+
 <script>
 const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 const brl = v => BRL.format(isFinite(v)?v:0);
@@ -1520,6 +1717,7 @@ function go(view, push){
   window.scrollTo(0,0);
   if(view==='escala' && typeof renderEscala==='function') renderEscala();
   if(view==='iq' && typeof iqRender==='function') iqRender();
+  if(view==='carteira' && typeof cartAoEntrar==='function') cartAoEntrar();
   if(push!==false){ try{ history.pushState({view}, '', '#'+view); }catch(e){} }
 }
 document.querySelectorAll('[data-go]').forEach(b=> b.addEventListener('click', ()=> go(b.dataset.go)) );
@@ -1529,6 +1727,7 @@ if(location.hash==='#escala') go('escala', false);
 if(location.hash==='#tabelas') go('tabelas', false);
 if(location.hash==='#iq') go('home', false);   // IQ desabilitado: link antigo cai na home
 if(location.hash==='#faq') go('faq', false);
+if(location.hash==='#carteira') go('carteira', false);
 
 // ==================== ESCALA DA EQUIPE — Agosto/2026 ====================
 // Escala mensal fixa. Rodízio contínuo nos 7 dias; a cada 5 dias cada
@@ -1929,6 +2128,402 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   });
 }
+// ==================== CARTEIRA DO DIA ====================
+// Fila diária de contatos do mailing. O app NUNCA envia mensagem sozinho:
+// monta a fila, pré-escreve o texto, abre o WhatsApp do vendedor com o texto
+// pronto e registra o desfecho que ele declara. Backend: gas-hub/Carteira.gs.
+//
+// Offline é regra, não exceção — o vendedor trabalha em zona morta de sinal.
+// Por isso o lote do dia e a fila de desfechos vivem no localStorage: marcar
+// desfecho nunca espera a rede, e a fila sobe sozinha quando a conexão volta.
+// O `ts` gravado é o instante em que o vendedor declarou, não o do envio; é
+// isso que faz o servidor reconhecer o reenvio e não duplicar nada.
+
+// URL /exec do Web App do Hub Comercial (implantação de 12/08/2026).
+const CARTEIRA_API = 'https://script.google.com/macros/s/AKfycbydLmUEX3g6FeojFGAcVHfNKoPsr4d9oTBUdi7GtcfsirQL6xHJM0BELVGcCrcqrICY/exec';
+
+// Precisa bater com a coluna vendedor da aba Config_Carteira do cofre.
+// O servidor compara ignorando maiúsculas e acentos, mas não adivinha apelido.
+const CARTEIRA_VENDEDORES = ['Ana Luiza','Ana Maria','Guilherme','Wanderson','Felipe','Jaime'];
+
+// Texto padrão, usado enquanto não houver @msg_v1..@msg_v4 no Config_Carteira.
+const CARTEIRA_MSG_PADRAO = [
+  '{{saudacao}} {{nome}}, tudo bem? Aqui é o {{vendedor}}, do Parque da Saudade, em Juiz de Fora. Vi que você deixou seu contato com a gente e acabamos não conversando na época. Posso te passar as informações por aqui mesmo?\n\nSe preferir não receber mensagens, é só me avisar.',
+  '{{saudacao}} {{nome}}. Meu nome é {{vendedor}}, sou consultor do Parque da Saudade, aqui em Juiz de Fora. Você chegou até a gente e ficou sem retorno. Ainda faz sentido conversar sobre isso?\n\nSe não fizer, me diz que eu não te procuro mais.',
+  '{{saudacao}} {{nome}}, aqui é {{vendedor}}, do Parque da Saudade (Juiz de Fora). Você deixou seu contato conosco e eu passei para perguntar uma coisa só: essa questão do jazigo da família você já resolveu, ou ainda está em aberto?\n\nSe preferir não receber mensagem, é só falar.',
+  '{{saudacao}} {{nome}}, tudo certo? {{vendedor}} falando, do Parque da Saudade, em Juiz de Fora. Estou retomando os contatos que ficaram para trás. Se ainda tiver interesse em entender como funciona, me responde que eu te explico sem compromisso.\n\nSe não for o caso, me avisa que eu encerro por aqui.'
+];
+
+const CART_K_SESSAO = 'carteira_sessao';
+const CART_K_FILA = 'carteira_fila';
+const cartKLote = d => 'carteira_lote_' + d;
+
+let cartSes = null;      // {token, vendedor, papel, limite, janela, mensagens}
+let cartLote = [];       // leads do dia; status 'reservado' = ainda por fazer
+let cartPos = 0;
+let cartJanela = true;
+let cartFila = [];       // desfechos aguardando envio
+let cartSubindo = false;
+
+// ---- persistência ----
+function cartLer(chave, padrao){
+  try{ const v = localStorage.getItem(chave); return v ? JSON.parse(v) : padrao; }catch(e){ return padrao; }
+}
+function cartGravar(chave, valor){
+  try{ valor === null ? localStorage.removeItem(chave) : localStorage.setItem(chave, JSON.stringify(valor)); }catch(e){}
+}
+function cartHoje(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function cartGuardarSessao(s){ cartSes = s; cartGravar(CART_K_SESSAO, s); }
+
+function cartSalvarLote(){
+  cartGravar(cartKLote(cartHoje()), { janela_aberta: cartJanela, leads: cartLote });
+}
+function cartCarregarLote(){
+  // limpa lotes de dias anteriores — o do dia é o único que importa
+  try{
+    const hoje = cartKLote(cartHoje());
+    for(let i = localStorage.length - 1; i >= 0; i--){
+      const k = localStorage.key(i);
+      if(k && k.indexOf('carteira_lote_') === 0 && k !== hoje) localStorage.removeItem(k);
+    }
+  }catch(e){}
+  const g = cartLer(cartKLote(cartHoje()), null);
+  if(!g || !Array.isArray(g.leads)) return false;
+  cartLote = g.leads;
+  cartJanela = g.janela_aberta !== false;
+  return true;
+}
+
+// ---- fila de desfechos ----
+function cartEnfileirar(item){
+  cartFila.push(item);
+  cartGravar(CART_K_FILA, cartFila);
+  cartPintarFila();
+}
+
+function cartPintarFila(){
+  const n = cartFila.length;
+  document.querySelectorAll('#view-carteira .cart-fila').forEach(el => {
+    el.textContent = n
+      ? (n === 1 ? '1 registro aguardando envio — toque para tentar agora'
+                 : n + ' registros aguardando envio — toque para tentar agora')
+      : '';
+    el.className = 'cart-fila' + (n ? ' on' : '');
+  });
+}
+
+/** Sobe a fila inteira em lote. Item que volta do servidor sai da fila —
+ *  aplicado, repetido e rejeitado são todos definitivos. Só falha de rede segura. */
+async function cartSubirFila(){
+  if(cartSubindo || !cartFila.length || !cartSes || !cartSes.token) return;
+  if(navigator.onLine === false){ cartPintarFila(); return; }
+  cartSubindo = true;
+  const enviados = cartFila.slice(0, 200);
+  try{
+    const r = await cartAPI({
+      acao: 'marcar_desfecho',
+      token: cartSes.token,
+      itens: enviados.map(i => ({ id:i.id, desfecho:i.desfecho, obs:i.obs, ts:i.ts }))
+    });
+    if(!r.ok){
+      if(r.erro === 'TOKEN_INVALIDO' || r.erro === 'VENDEDOR_INATIVO') cartSessaoCaiu(r.msg);
+      return;
+    }
+    const idos = {}; enviados.forEach(i => idos[i.u] = true);
+    cartFila = cartFila.filter(i => !idos[i.u]);
+    cartGravar(CART_K_FILA, cartFila);
+    if(r.rejeitados) toast(r.rejeitados + ' registro(s) recusado(s) pelo servidor.');
+  }catch(e){
+    // sem rede: a fila fica onde está e tenta de novo na próxima oportunidade
+  }finally{
+    cartSubindo = false;
+    cartPintarFila();
+  }
+}
+
+/** POST sem header customizado: com Content-Type explícito o browser dispara
+ *  preflight OPTIONS, que o Apps Script não responde, e a chamada quebra. */
+async function cartAPI(payload){
+  if(!CARTEIRA_API) throw new Error('sem_url');
+  const r = await fetch(CARTEIRA_API, { method:'POST', body: JSON.stringify(payload) });
+  return await r.json();
+}
+
+function cartSessaoCaiu(msg){
+  cartGuardarSessao(null);
+  cartLote = []; cartPos = 0;
+  cartVer('login');
+  cartAvisar('cart-erro-login', msg || 'Sua sessão expirou. Entre de novo com o seu PIN.', true);
+}
+
+function cartVer(tela){
+  document.querySelectorAll('#view-carteira .cart-tela').forEach(s=>s.classList.remove('on'));
+  const el = document.getElementById('cart-' + tela);
+  if(el) el.classList.add('on');
+  window.scrollTo(0,0);
+}
+
+function cartAvisar(id, texto, erro){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = texto || '';
+  el.className = 'cart-aviso' + (texto ? ' on' : '') + (erro ? ' erro' : '');
+}
+
+const cartSaudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
+const cartPrimeiro = n => String(n||'').trim().split(/\s+/)[0] || '';
+
+function cartFoneBonito(f){
+  const d = String(f||'').replace(/\D/g,'');
+  const s = d.indexOf('55') === 0 ? d.slice(2) : d;
+  if(s.length < 10) return d;
+  return '(' + s.slice(0,2) + ') ' + s.slice(2, s.length-4) + '-' + s.slice(-4);
+}
+
+function cartMesAno(iso){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(iso||''))) return '';
+  const M = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const p = iso.split('-');
+  return M[Number(p[1]) - 1] + '/' + p[0];
+}
+
+function cartTextoDe(lead){
+  const lista = (cartSes && cartSes.mensagens && cartSes.mensagens.length)
+    ? cartSes.mensagens.map(m => m.texto)
+    : CARTEIRA_MSG_PADRAO;
+  const bruto = lista[(lead.msg_versao || 0) % lista.length] || lista[0];
+  return bruto
+    .replace(/\{\{saudacao\}\}/g, cartSaudacao())
+    .replace(/\{\{nome\}\}/g, cartPrimeiro(lead.nome))
+    .replace(/\{\{vendedor\}\}/g, cartPrimeiro(cartSes && cartSes.vendedor));
+}
+
+/** Desfecho já dado neste lead — o local (offline) vale sobre o do servidor. */
+function cartDesfechoDe(l){
+  if(l.feito) return l.feito;
+  const s = String(l.status||'').toLowerCase();
+  if(s === 'abordado') return 'enviado';
+  if(s === 'respondeu' || s === 'invalido' || s === 'optout') return s;
+  return '';
+}
+const cartPendente = l => !cartDesfechoDe(l) && String(l.status||'').toLowerCase() === 'reservado';
+
+// ---- entrada na tela ----
+function cartAoEntrar(){
+  const sel = document.getElementById('cart-vendedor');
+  if(sel && !sel.options.length){
+    CARTEIRA_VENDEDORES.forEach(function(n){
+      const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
+    });
+    let ultimo = ''; try{ ultimo = localStorage.getItem('pocket_escEu') || ''; }catch(e){}
+    if(ultimo && CARTEIRA_VENDEDORES.indexOf(ultimo) >= 0) sel.value = ultimo;
+  }
+  if(!CARTEIRA_API){
+    cartVer('login');
+    cartAvisar('cart-erro-login', 'A carteira ainda não está conectada ao servidor. Fale com a coordenação.', true);
+    return;
+  }
+  if(!cartSes || !cartSes.token){ cartVer('login'); return; }
+
+  cartPintarFila();
+  cartSubirFila();
+
+  if(cartCarregarLote() && cartLote.length){
+    const p = cartLote.findIndex(cartPendente);
+    if(p >= 0){ cartPos = p; cartMostrar(); cartVer('card'); return; }
+    cartConcluir();
+    return;
+  }
+  cartPreparaInicio();
+  cartVer('inicio');
+}
+
+function cartPreparaInicio(){
+  document.getElementById('cart-ola').textContent = cartSaudacao() + ', ' + cartPrimeiro(cartSes.vendedor);
+  document.getElementById('cart-linha-inicio').textContent = cartSes.limite
+    ? ('Sua lista de hoje tem até ' + cartSes.limite + ' contatos.')
+    : 'Pegue sua lista de hoje para começar.';
+  cartAvisar('cart-erro-inicio', '');
+  cartPintarFila();
+}
+
+// ---- login ----
+async function cartEntrar(){
+  const inp = document.getElementById('cart-pin');
+  const pin = inp.value.replace(/\D/g,'');
+  const vendedor = document.getElementById('cart-vendedor').value;
+  if(pin.length !== 6){ inp.classList.add('erro'); inp.focus(); cartAvisar('cart-erro-login','O PIN tem 6 dígitos.',true); return; }
+  inp.classList.remove('erro');
+
+  const btn = document.getElementById('cart-btn-entrar');
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  try{
+    const r = await cartAPI({ acao:'login', vendedor: vendedor, pin: pin });
+    if(!r.ok){ cartAvisar('cart-erro-login', r.msg || 'Não foi possível entrar.', true); return; }
+    cartGuardarSessao({
+      token: r.token, vendedor: r.vendedor, papel: r.papel,
+      limite: r.limite_diario, janela: r.janela, mensagens: r.mensagens || []
+    });
+    inp.value = '';
+    cartAvisar('cart-erro-login','');
+    cartAoEntrar();
+  }catch(e){
+    cartAvisar('cart-erro-login', e.message === 'sem_url'
+      ? 'A carteira ainda não está conectada ao servidor.'
+      : 'Sem conexão com o servidor. Tente de novo em instantes.', true);
+  }finally{
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+}
+
+// ---- lista do dia ----
+async function cartPegarLista(){
+  const btn = document.getElementById('cart-btn-lista');
+  btn.disabled = true; btn.textContent = 'Buscando…';
+  try{
+    const r = await cartAPI({ acao:'carteira_hoje', token: cartSes.token });
+    if(!r.ok){
+      if(r.erro === 'TOKEN_INVALIDO' || r.erro === 'VENDEDOR_INATIVO'){ cartSessaoCaiu(r.msg); return; }
+      cartAvisar('cart-erro-inicio', r.msg || 'Não foi possível montar a lista.', true);
+      return;
+    }
+    cartLote = r.leads || [];
+    cartJanela = r.janela_aberta !== false;
+
+    // desfecho ainda na fila não pode reaparecer como pendente
+    const naFila = {}; cartFila.forEach(i => naFila[i.id] = i.desfecho);
+    cartLote.forEach(l => { if(naFila[l.id]) l.feito = naFila[l.id]; });
+    cartSalvarLote();
+
+    if(!cartLote.length){
+      cartAvisar('cart-erro-inicio', 'Não há contatos novos para hoje. Amanhã tem mais.', false);
+      return;
+    }
+    const p = cartLote.findIndex(cartPendente);
+    if(p < 0){ cartConcluir('Você já passou por todos os contatos de hoje.'); return; }
+    cartPos = p;
+    cartMostrar();
+    cartVer('card');
+  }catch(e){
+    cartAvisar('cart-erro-inicio', navigator.onLine === false
+      ? 'Você está sem conexão. A lista de hoje precisa ser buscada uma vez com sinal.'
+      : 'Sem conexão com o servidor. Tente de novo em instantes.', true);
+  }finally{
+    btn.disabled = false; btn.textContent = 'Pegar minha lista de hoje';
+  }
+}
+
+function cartMostrar(){
+  const l = cartLote[cartPos];
+  document.getElementById('cart-lead-nome').textContent = l.nome || '(sem nome)';
+  document.getElementById('cart-lead-fone').textContent = cartFoneBonito(l.telefone);
+  document.getElementById('cart-c-origem').textContent = l.origem || 'origem não informada';
+
+  const data = cartMesAno(l.data_captacao);
+  const chipData = document.getElementById('cart-c-data');
+  chipData.style.display = data ? 'inline-block' : 'none';
+  chipData.textContent = data ? ('deixou o contato em ' + data) : '';
+
+  const chipTent = document.getElementById('cart-c-tent');
+  chipTent.style.display = l.tentativas ? 'inline-block' : 'none';
+  chipTent.textContent = (Number(l.tentativas) + 1) + 'ª tentativa';
+
+  document.getElementById('cart-msg').value = cartTextoDe(l);
+  cartContarLetras();
+
+  const total = cartLote.length;
+  const feitos = cartLote.filter(x => !cartPendente(x)).length;
+  document.getElementById('cart-feitos').textContent = feitos;
+  document.getElementById('cart-total').textContent = total;
+  document.getElementById('cart-restam').textContent = 'faltam ' + (total - feitos);
+  document.getElementById('cart-barra').style.width = (total ? (feitos / total * 100) : 0) + '%';
+
+  const zap = document.getElementById('cart-btn-zap');
+  zap.disabled = !cartJanela || !String(l.telefone||'').replace(/\D/g,'');
+  if(!cartJanela){
+    const j = (cartSes && cartSes.janela) || {};
+    cartAvisar('cart-faixa', 'Fora do horário de abordagem (' + (j.inicio||'09:00') + ' às ' + (j.fim||'18:00') +
+      '). A lista fica guardada — você ainda pode registrar o que já fez.', false);
+  } else if(!l.telefone){
+    cartAvisar('cart-faixa', 'Este contato está sem telefone aproveitável. Marque como número inválido.', true);
+  } else {
+    cartAvisar('cart-faixa', '');
+  }
+  cartPintarFila();
+}
+
+function cartContarLetras(){
+  document.getElementById('cart-conta').textContent = document.getElementById('cart-msg').value.length + ' caracteres';
+}
+
+function cartAbrirZap(){
+  const l = cartLote[cartPos];
+  const fone = String(l.telefone||'').replace(/\D/g,'');
+  if(!fone){ toast('Contato sem telefone válido.'); return; }
+  window.open('https://wa.me/' + fone + '?text=' + encodeURIComponent(document.getElementById('cart-msg').value), '_blank', 'noopener');
+}
+
+// ---- desfecho ----
+// Nunca espera a rede: grava, avança e tenta subir por baixo.
+function cartDesfecho(tipo){
+  const l = cartLote[cartPos];
+  l.feito = tipo;
+  cartSalvarLote();
+  cartEnfileirar({
+    u: Date.now() + '-' + Math.random().toString(36).slice(2,8),
+    id: l.id, desfecho: tipo, obs: '', ts: new Date().toISOString()
+  });
+  cartSubirFila();
+
+  const proximo = cartLote.findIndex(cartPendente);
+  if(proximo < 0){ cartConcluir(); return; }
+  cartPos = proximo;
+  cartMostrar();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function cartConcluir(texto){
+  const conta = t => cartLote.filter(l => cartDesfechoDe(l) === t).length;
+  document.getElementById('cart-k-env').textContent = conta('enviado');
+  document.getElementById('cart-k-resp').textContent = conta('respondeu');
+  document.getElementById('cart-k-out').textContent = conta('optout');
+  document.getElementById('cart-fim-texto').textContent = texto ||
+    (cartFila.length ? 'Ainda há registros para subir — assim que a conexão voltar eles sobem sozinhos.'
+                     : 'Amanhã tem mais. Quem responder chega no seu WhatsApp.');
+  cartPintarFila();
+  cartVer('fim');
+}
+
+// ---- ligações ----
+(function cartLigar(){
+  const btnEntrar = document.getElementById('cart-btn-entrar');
+  if(!btnEntrar) return;   // a tela não está nesta build
+
+  cartSes = cartLer(CART_K_SESSAO, null);
+  cartFila = cartLer(CART_K_FILA, []) || [];
+
+  btnEntrar.addEventListener('click', cartEntrar);
+  document.getElementById('cart-pin').addEventListener('keydown', e => { if(e.key === 'Enter') cartEntrar(); });
+  document.getElementById('cart-btn-lista').addEventListener('click', cartPegarLista);
+  document.getElementById('cart-btn-zap').addEventListener('click', cartAbrirZap);
+  document.getElementById('cart-msg').addEventListener('input', cartContarLetras);
+  document.getElementById('cart-btn-voltar').addEventListener('click', () => { cartPreparaInicio(); cartVer('inicio'); });
+  document.getElementById('cart-btn-sair').addEventListener('click', () => {
+    cartGuardarSessao(null); cartLote = []; cartPos = 0; cartVer('login');
+  });
+  document.querySelectorAll('#view-carteira .cart-desf button').forEach(b => {
+    b.addEventListener('click', () => cartDesfecho(b.dataset.desf));
+  });
+  document.querySelectorAll('#view-carteira .cart-fila').forEach(el => el.addEventListener('click', cartSubirFila));
+
+  window.addEventListener('online', cartSubirFila);
+  if(cartFila.length) cartSubirFila();   // sobrou fila da sessão anterior
+  cartPintarFila();
+})();
+
 </script>
 </body>
 </html>

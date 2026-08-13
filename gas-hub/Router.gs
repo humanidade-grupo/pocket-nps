@@ -6,6 +6,11 @@
  *   GET  ?app=vendas&fn=list&token=...   -> lista as vendas (dashboard lê)
  *   POST ?app=vendas&fn=add              -> grava uma venda (lançamento manda; token no corpo)
  *   GET  ?app=ping                       -> {ok:true} sem token (teste de vida)
+ *   POST {acao:'...'}                    -> Carteira do Dia (Carteira.gs)
+ *
+ * A Carteira do Dia não usa o TOKEN_GESTAO: o vendedor entra com PIN e recebe
+ * um token de sessão. Por isso o corpo com `acao` é despachado ANTES da
+ * verificação do Auth_ok — cada ação da carteira valida a própria sessão.
  *
  * Rotas futuras (stubs em Coletor.gs / Proxy.gs):
  *   ?app=leads&fn=list                   -> leads coletados do Facilita (FAROL)
@@ -38,6 +43,9 @@ function _route(e, method) {
 
     // teste de vida, sem token
     if (app === 'ping') return _json({ ok: true, hub: 'comercial', ts: new Date().toISOString() });
+
+    // Carteira do Dia: autentica por sessão (PIN), não pelo TOKEN_GESTAO
+    if (method === 'post' && body && body.acao) return _json(Carteira_acao(body.acao, body));
 
     // autenticação (token na query OU no corpo)
     var token = String(p.token || body.token || '');
