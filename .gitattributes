@@ -1,0 +1,6 @@
+# O clasp compara byte a byte com o projeto do Apps Script, que guarda LF.
+# Sem isto o git converte para CRLF no Windows e TODO push avisa que o
+# manifesto "mudou" e pede para sobrescrever — falso alarme que custou uma
+# investigação inteira em 12/08/2026. Escopo só em gas-hub/: gas/ é o backend
+# do check-in em produção e não se mexe.
+gas-hub/** text eol=lf
