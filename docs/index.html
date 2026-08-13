@@ -4,7 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 13/08/2026 11:29 (rev.) — Carteira: (1) "Sair desta conta" passa a apagar
+     Gerado em: 13/08/2026 11:57 (rev.) — CORREÇÃO GRAVE: abrir o app direto em #carteira
+     (o PWA reabre na última URL) ou em #escala matava o script inteiro. A rota inicial por
+     hash ficava no meio do arquivo e chamava telas cujos dados são declarados com const
+     mais abaixo; const em zona morta temporal lança ReferenceError e o erro abortava todo
+     o resto — Carteira sem lista de vendedores e sem botão, Escala sem dados. O de #escala
+     já existia ANTES da Carteira. A rota inicial passou para o fim do script (rotaInicial),
+     com try/catch que cai na home em vez de derrubar o app. Quem entrava pela home nunca
+     via o problema, porque o clique acontece com o script já carregado.
+     Rev. 13/08/2026 11:29 — Carteira: (1) "Sair desta conta" passa a apagar
      o lote guardado no aparelho — sem isso, dois vendedores no mesmo celular e o segundo
      via a lista do primeiro; a fila de desfechos NÃO é apagada (guarda trabalho já feito
      que ainda não subiu) e o app avisa antes de sair com pendência. (2) Os textos das
@@ -1732,12 +1740,7 @@ function go(view, push){
 }
 document.querySelectorAll('[data-go]').forEach(b=> b.addEventListener('click', ()=> go(b.dataset.go)) );
 window.addEventListener('popstate', e=> go((e.state&&e.state.view)||'home', false));
-if(location.hash==='#sim') go('sim', false);
-if(location.hash==='#escala') go('escala', false);
-if(location.hash==='#tabelas') go('tabelas', false);
-if(location.hash==='#iq') go('home', false);   // IQ desabilitado: link antigo cai na home
-if(location.hash==='#faq') go('faq', false);
-if(location.hash==='#carteira') go('carteira', false);
+// A rota inicial por hash NÃO mora aqui — ver rotaInicial() no fim do script.
 
 // ==================== ESCALA DA EQUIPE — Agosto/2026 ====================
 // Escala mensal fixa. Rodízio contínuo nos 7 dias; a cada 5 dias cada
@@ -2561,6 +2564,29 @@ function cartConcluir(texto){
   window.addEventListener('online', cartSubirFila);
   if(cartFila.length) cartSubirFila();   // sobrou fila da sessão anterior
   cartPintarFila();
+})();
+
+// ==================== ROTA INICIAL POR HASH ====================
+// Roda no FIM do script de propósito. Quando isto ficava lá em cima, junto do
+// router, abrir o app em #carteira (ou #escala) chamava go() antes de as
+// constantes dessas telas terem sido inicializadas — const em zona morta
+// temporal lança ReferenceError, e o erro abortava TODO o resto do script:
+// a Carteira ficava sem lista de vendedores e sem botão, e a Escala ficava sem
+// dados. Aconteceu em produção em 13/08/2026. Quem entrava pela home não via
+// nada disso, porque aí o clique acontece com o script já carregado inteiro.
+// Se mudar de lugar, tem que continuar depois da última declaração do arquivo.
+(function rotaInicial(){
+  var rotas = { '#sim':'sim', '#escala':'escala', '#tabelas':'tabelas', '#faq':'faq',
+                '#carteira':'carteira', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
+  var destino = rotas[location.hash];
+  if(!destino) return;
+  try{
+    go(destino, false);
+  }catch(e){
+    // uma tela quebrada não pode levar o app junto
+    console.error('rota inicial ' + location.hash + ':', e);
+    go('home', false);
+  }
 })();
 
 </script>
