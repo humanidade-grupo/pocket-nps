@@ -663,6 +663,93 @@ function carteiraDiagnostico() {
   Logger.log(out.join('\n'));
 }
 
+/**
+ * "Vendedor ou PIN incorreto" e você tem certeza de que está certo? Rode isto.
+ *
+ * Refaz, uma por uma, as checagens do login e diz QUAL delas reprovou — o login
+ * de verdade responde sempre a mesma coisa de propósito (não entregar a lista de
+ * quem existe no cofre para quem está chutando), e é isso que esconde a causa.
+ *
+ * SOMENTE LEITURA e NÃO conta tentativa errada (não passa pelo Carteira_login),
+ * então pode rodar à vontade sem arriscar bloquear ninguém.
+ *
+ * Não imprime o PIN nem o hash. Preencha as duas variáveis, rode, leia o
+ * registro e APAGUE O PIN daqui — PIN em claro não fica versionado.
+ */
+function carteiraPorQueNaoEntra() {
+  var VENDEDOR = '';   // exatamente como aparece na lista da tela de login
+  var PIN = '';        // apague depois de rodar
+
+  var out = ['', '=== Por que o login não passa ===', ''];
+  if (!VENDEDOR || !PIN) {
+    Logger.log('Preencha VENDEDOR e PIN dentro da função antes de rodar (e apague o PIN depois).');
+    return;
+  }
+
+  var salt = PropertiesService.getScriptProperties().getProperty('CARTEIRA_SALT');
+  out.push('1. CARTEIRA_SALT: ' + (salt ? 'configurado' : 'AUSENTE — nenhum PIN vai bater'));
+  if (!salt) { Logger.log(out.join('\n')); return; }
+
+  var cfg = _cLerConfig();
+  var H = cfg.H;
+
+  // 2. a linha existe?
+  var achou = null, nomes = [];
+  for (var r = 0; r < cfg.linhas.length; r++) {
+    var vend = _cTexto(cfg.linhas[r][H.i('vendedor')]);
+    if (!vend || vend.charAt(0) === '@') continue;
+    nomes.push(vend);
+    if (_cMesmoNome(vend, VENDEDOR)) achou = { row: cfg.linhas[r], nome: vend, linha: r + 2 };
+  }
+  if (!achou) {
+    out.push('2. Nome: NÃO encontrado na Config_Carteira.');
+    out.push('   Você informou: "' + VENDEDOR + '"');
+    out.push('   Nomes que existem na planilha: ' + (nomes.length ? nomes.map(function (n) { return '"' + n + '"'; }).join(' · ') : '(nenhum)'));
+    out.push('   >>> A lista do app (CARTEIRA_VENDEDORES no index.html) tem que bater com estes.');
+    Logger.log(out.join('\n'));
+    return;
+  }
+  out.push('2. Nome: encontrado na linha ' + achou.linha + ' como "' + achou.nome + '"');
+
+  // 3. papel
+  var papel = _cNormalizar(achou.row[H.i('papel')]);
+  out.push('3. Papel: "' + _cTexto(achou.row[H.i('papel')]) + '"' +
+    (papel === 'parametro' ? '  <-- linha tratada como PARÂMETRO, não como pessoa' : '  (ok)'));
+  if (papel === 'parametro') { Logger.log(out.join('\n')); return; }
+
+  // 4. ativo
+  var ativo = _cAtivo(achou.row[H.i('ativo')]);
+  out.push('4. Ativo: "' + _cTexto(achou.row[H.i('ativo')]) + '" -> ' + (ativo ? 'ativo' : 'INATIVO — o login recusa'));
+
+  // 5. bloqueio por tentativas
+  var bloq = _cBloqueioAtivo(achou.nome);
+  out.push('5. Bloqueio por erro de PIN: ' + (bloq ? ('ATIVO até ' + bloq + ' — rode carteiraLiberarBloqueio()') : 'nenhum'));
+
+  // 6. o hash bate?
+  var guardado = _cTexto(achou.row[H.i('pin_hash')]).toLowerCase();
+  var calculado = _cHashPin(PIN);
+  out.push('6. pin_hash na planilha: ' + (guardado ? (guardado.length + ' caracteres') : 'VAZIO'));
+  if (guardado && !/^[0-9a-f]{64}$/.test(guardado)) {
+    out.push('   >>> Não parece um SHA-256: esperado 64 caracteres hexadecimais.');
+    out.push('   >>> Se a célula estiver formatada como número, o Sheets pode ter mutilado o valor.');
+  }
+  out.push('   PIN informado bate com o hash guardado? ' + (guardado === calculado ? 'SIM' : 'NÃO'));
+
+  if (guardado !== calculado) {
+    out.push('');
+    out.push('   O hash foi gerado com OUTRO salt, com outro PIN, ou por outra fórmula.');
+    out.push('   A regra é: SHA-256(pin + salt), em hexadecimal minúsculo.');
+    out.push('   Para regravar: rode carteiraGerarHash() com o PIN desejado e cole o');
+    out.push('   resultado na coluna pin_hash desta linha.');
+  }
+
+  out.push('');
+  var okTudo = ativo && !bloq && guardado === calculado;
+  out.push(okTudo ? 'Todas as portas abrem — este login deveria entrar.'
+                  : 'Reprovou no item marcado acima. É ali que está a causa.');
+  Logger.log(out.join('\n'));
+}
+
 /** Solta o bloqueio de PIN de alguém que errou demais. Use com o nome exato do cofre. */
 function carteiraLiberarBloqueio() {
   var nome = 'Fulano de Tal'; // troque antes de rodar

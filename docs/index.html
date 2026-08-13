@@ -4,7 +4,11 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 12/08/2026 22:52 (rev.) — Tela nova "CARTEIRA DO DIA" (view-carteira): fila
+     Gerado em: 13/08/2026 10:56 (rev.) — Carteira: nome do lead em CAIXA ALTA (é como o
+     mailing chega) passa a sair em caixa normal no card e na mensagem — "Bom dia VALTENCIR"
+     não é jeito de abrir conversa sobre jazigo de família. Nome que já vem em caixa mista
+     é respeitado. Acento não é adivinhado: se a base não traz, "JOSE" vira "Jose".
+     Rev. 12/08/2026 22:52 — Tela nova "CARTEIRA DO DIA" (view-carteira): fila
      diária de contatos do mailing, um por vez, pelo WhatsApp do próprio vendedor via wa.me.
      O app NUNCA envia mensagem sozinho — monta a fila, pré-escreve o texto, abre o WhatsApp
      e registra o desfecho que o vendedor declara. Login por PIN (a tela traz nome e telefone
@@ -2274,7 +2278,21 @@ function cartAvisar(id, texto, erro){
 }
 
 const cartSaudacao = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
-const cartPrimeiro = n => String(n||'').trim().split(/\s+/)[0] || '';
+
+/**
+ * Mailing costuma vir todo em CAIXA ALTA (é como sai da maioria das bases).
+ * "Bom dia VALTENCIR" é gritar com a pessoa — e esta é uma conversa sobre
+ * jazigo de família. Nome que já vem em caixa mista é respeitado como está.
+ */
+const CART_PARTICULAS = {de:1, da:1, do:1, das:1, dos:1, e:1, di:1, du:1, van:1, von:1};
+function cartNomeBonito(n){
+  const s = String(n||'').trim().replace(/\s+/g,' ');
+  if(!s || s !== s.toUpperCase()) return s;
+  return s.toLowerCase().split(' ').map((p,i) =>
+    (i > 0 && CART_PARTICULAS[p]) ? p : p.charAt(0).toUpperCase() + p.slice(1)
+  ).join(' ');
+}
+const cartPrimeiro = n => cartNomeBonito(n).split(' ')[0] || '';
 
 function cartFoneBonito(f){
   const d = String(f||'').replace(/\D/g,'');
@@ -2418,7 +2436,7 @@ async function cartPegarLista(){
 
 function cartMostrar(){
   const l = cartLote[cartPos];
-  document.getElementById('cart-lead-nome').textContent = l.nome || '(sem nome)';
+  document.getElementById('cart-lead-nome').textContent = cartNomeBonito(l.nome) || '(sem nome)';
   document.getElementById('cart-lead-fone').textContent = cartFoneBonito(l.telefone);
   document.getElementById('cart-c-origem').textContent = l.origem || 'origem não informada';
 

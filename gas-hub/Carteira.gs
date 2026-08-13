@@ -559,7 +559,15 @@ function _cLerConfig() {
   return { H: H, linhas: linhas };
 }
 
-/** Acha a pessoa (papel vendedor|gestao) por nome, ignorando caixa e acento. */
+/**
+ * Acha a pessoa por nome, ignorando caixa e acento.
+ *
+ * Só descarta linha de parâmetro. O papel é normalizado e, se não for gestão,
+ * vale como vendedor — de propósito: exigir o papel escrito exatamente como no
+ * briefing transformava um "gestão" com til, ou uma célula em branco, em
+ * "Vendedor ou PIN incorreto", uma mensagem que manda procurar o erro no lugar
+ * errado. Quem guarda a porta é o pin_hash, não a grafia desta coluna.
+ */
 function _cAcharPessoa(cfg, nome) {
   var H = cfg.H;
   for (var r = 0; r < cfg.linhas.length; r++) {
@@ -567,8 +575,9 @@ function _cAcharPessoa(cfg, nome) {
     var vend = _cTexto(row[H.i('vendedor')]);
     if (vend.charAt(0) === '@') continue;                 // linha de parâmetro
     if (!_cMesmoNome(vend, nome)) continue;
-    var papel = _cTexto(row[H.i('papel')]).toLowerCase();
-    if (papel !== 'vendedor' && papel !== 'gestao') continue;
+    var papel = _cNormalizar(row[H.i('papel')]);
+    if (papel === 'parametro') continue;
+    papel = (papel === 'gestao') ? 'gestao' : 'vendedor';
     return {
       vendedor: vend,
       papel: papel,
