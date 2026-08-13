@@ -4,7 +4,13 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 13/08/2026 10:56 (rev.) — Carteira: nome do lead em CAIXA ALTA (é como o
+     Gerado em: 13/08/2026 11:29 (rev.) — Carteira: (1) "Sair desta conta" passa a apagar
+     o lote guardado no aparelho — sem isso, dois vendedores no mesmo celular e o segundo
+     via a lista do primeiro; a fila de desfechos NÃO é apagada (guarda trabalho já feito
+     que ainda não subiu) e o app avisa antes de sair com pendência. (2) Os textos das
+     mensagens são recarregados a cada "Pegar minha lista": a sessão dura 30 dias, e sem
+     isso trocar o texto no Config_Carteira levaria um mês para chegar ao vendedor.
+     Rev. 13/08/2026 10:56 — Carteira: nome do lead em CAIXA ALTA (é como o
      mailing chega) passa a sair em caixa normal no card e na mensagem — "Bom dia VALTENCIR"
      não é jeito de abrir conversa sobre jazigo de família. Nome que já vem em caixa mista
      é respeitado. Acento não é adivinhado: se a base não traz, "JOSE" vira "Jose".
@@ -2411,6 +2417,11 @@ async function cartPegarLista(){
     cartLote = r.leads || [];
     cartJanela = r.janela_aberta !== false;
 
+    // Textos vem do Config_Carteira e podem mudar a qualquer momento. Sincroniza
+    // a cada lista: sem isso, a sessao dura 30 dias e o vendedor passaria um mes
+    // com a mensagem velha depois de a coordenacao ter trocado o texto.
+    if(cartSes){ cartSes.mensagens = r.mensagens || []; cartGuardarSessao(cartSes); }
+
     // desfecho ainda na fila não pode reaparecer como pendente
     const naFila = {}; cartFila.forEach(i => naFila[i.id] = i.desfecho);
     cartLote.forEach(l => { if(naFila[l.id]) l.feito = naFila[l.id]; });
@@ -2530,6 +2541,16 @@ function cartConcluir(texto){
   document.getElementById('cart-msg').addEventListener('input', cartContarLetras);
   document.getElementById('cart-btn-voltar').addEventListener('click', () => { cartPreparaInicio(); cartVer('inicio'); });
   document.getElementById('cart-btn-sair').addEventListener('click', () => {
+    // Sair tem que levar o lote junto: sem isso, o proximo a entrar neste
+    // aparelho veria a lista de quem saiu. A fila de desfechos NAO e apagada —
+    // ela guarda trabalho ja feito que ainda nao subiu.
+    if(cartFila.length && !confirm('Há ' + cartFila.length + ' registro(s) ainda não enviado(s). Sair mesmo assim?')) return;
+    try{
+      for(let i = localStorage.length - 1; i >= 0; i--){
+        const k = localStorage.key(i);
+        if(k && k.indexOf('carteira_lote_') === 0) localStorage.removeItem(k);
+      }
+    }catch(e){}
     cartGuardarSessao(null); cartLote = []; cartPos = 0; cartVer('login');
   });
   document.querySelectorAll('#view-carteira .cart-desf button').forEach(b => {

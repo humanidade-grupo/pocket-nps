@@ -1,8 +1,9 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
-Gerado em: 13/08/2026 11:12
-Alterações: Rev. 13/08/2026 11:12 — só bump de cache (Ricardo entra na lista de
-login da Carteira).
+Gerado em: 13/08/2026 11:29
+Alterações: Rev. 13/08/2026 11:29 — só bump de cache (Sair limpa o lote do
+aparelho; textos das mensagens recarregam a cada lista).
+Rev. 13/08/2026 11:12 — Ricardo entra na lista de login da Carteira.
 Rev. 13/08/2026 10:56 — só bump de cache (nomes do mailing em CAIXA
 ALTA passam a sair em caixa normal na mensagem e no card).
 Rev. 12/08/2026 23:20 — só bump de cache (tela nova "Carteira do Dia").
@@ -17,7 +18,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260813-1112';
+const CACHE = 'pocket-nps-260813-1129';
 
 const CORE = [
 './',
