@@ -4,7 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Gerado em: 13/08/2026 11:57 (rev.) — CORREÇÃO GRAVE: abrir o app direto em #carteira
+     Gerado em: 13/08/2026 12:43 (rev.) — Carteira: (1) abrir o app com lote em andamento
+     não joga mais o vendedor direto no card — ele caía cara a cara com o dado de uma
+     pessoa e uma mensagem pronta, sem ter pedido, e sem saída visível. Agora cai na tela
+     inicial, com "Continuar — faltam N". (2) A tela do lead ganhou "Pausar e voltar ao
+     início": antes só se saía declarando um desfecho. (3) Retomar passa pelo servidor,
+     então os textos editados no Config_Carteira chegam ao vendedor — sem isso, quem caía
+     direto no card nunca sincronizava e seguia com a mensagem velha. Sem sinal, retomar
+     usa o lote guardado e não depende da rede.
+     Rev. 13/08/2026 11:57 — CORREÇÃO GRAVE: abrir o app direto em #carteira
      (o PWA reabre na última URL) ou em #escala matava o script inteiro. A rota inicial por
      hash ficava no meio do arquivo e chamava telas cujos dados são declarados com const
      mais abaixo; const em zona morta temporal lança ReferenceError e o erro abortava todo
@@ -1321,7 +1329,10 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
         <button data-desf="pulado">Pular por ora</button>
         <button class="larga perigo" data-desf="optout">Pediu para não receber mais</button>
       </div>
+      <p class="fieldnote">Nenhum botão aqui envia mensagem. Eles só registram o que você já fez.</p>
     </div>
+
+    <div style="margin-top:14px"><button class="cart-btn sec" id="cart-btn-pausar">Pausar e voltar ao início</button></div>
   </section>
 
   <!-- ---- conclusão ---- -->
@@ -2358,21 +2369,43 @@ function cartAoEntrar(){
   cartPintarFila();
   cartSubirFila();
 
-  if(cartCarregarLote() && cartLote.length){
-    const p = cartLote.findIndex(cartPendente);
-    if(p >= 0){ cartPos = p; cartMostrar(); cartVer('card'); return; }
-    cartConcluir();
-    return;
-  }
+  // Carrega o lote guardado mas NÃO pula a tela inicial. Cair direto no card
+  // ao abrir o app deixava o vendedor cara a cara com o dado de uma pessoa e
+  // uma mensagem pronta, sem ter pedido — e sem porta de saída visível.
+  cartCarregarLote();
   cartPreparaInicio();
   cartVer('inicio');
 }
 
+/** Abre o primeiro lead ainda pendente; se não houver, vai para o resumo. */
+function cartRetomar(){
+  const p = cartLote.findIndex(cartPendente);
+  if(p < 0){ cartConcluir(); return; }
+  cartPos = p;
+  cartMostrar();
+  cartVer('card');
+}
+
 function cartPreparaInicio(){
   document.getElementById('cart-ola').textContent = cartSaudacao() + ', ' + cartPrimeiro(cartSes.vendedor);
-  document.getElementById('cart-linha-inicio').textContent = cartSes.limite
-    ? ('Sua lista de hoje tem até ' + cartSes.limite + ' contatos.')
-    : 'Pegue sua lista de hoje para começar.';
+
+  const pendentes = cartLote.filter(cartPendente).length;
+  const btn = document.getElementById('cart-btn-lista');
+  const linha = document.getElementById('cart-linha-inicio');
+
+  if(cartLote.length && pendentes){
+    btn.textContent = 'Continuar — faltam ' + pendentes;
+    linha.textContent = 'Você parou no meio da lista de hoje.';
+  } else if(cartLote.length){
+    btn.textContent = 'Ver o resumo de hoje';
+    linha.textContent = 'Você já passou por todos os contatos de hoje.';
+  } else {
+    btn.textContent = 'Pegar minha lista de hoje';
+    linha.textContent = cartSes.limite
+      ? ('Sua lista de hoje tem até ' + cartSes.limite + ' contatos.')
+      : 'Pegue sua lista de hoje para começar.';
+  }
+
   cartAvisar('cart-erro-inicio', '');
   cartPintarFila();
 }
@@ -2409,6 +2442,11 @@ async function cartEntrar(){
 // ---- lista do dia ----
 async function cartPegarLista(){
   const btn = document.getElementById('cart-btn-lista');
+
+  // Sem sinal, com lote guardado: continua de onde parou, sem falar com o servidor.
+  if(navigator.onLine === false && cartLote.length){ cartRetomar(); return; }
+
+  const rotulo = btn.textContent;
   btn.disabled = true; btn.textContent = 'Buscando…';
   try{
     const r = await cartAPI({ acao:'carteira_hoje', token: cartSes.token });
@@ -2434,17 +2472,13 @@ async function cartPegarLista(){
       cartAvisar('cart-erro-inicio', 'Não há contatos novos para hoje. Amanhã tem mais.', false);
       return;
     }
-    const p = cartLote.findIndex(cartPendente);
-    if(p < 0){ cartConcluir('Você já passou por todos os contatos de hoje.'); return; }
-    cartPos = p;
-    cartMostrar();
-    cartVer('card');
+    cartRetomar();
   }catch(e){
-    cartAvisar('cart-erro-inicio', navigator.onLine === false
-      ? 'Você está sem conexão. A lista de hoje precisa ser buscada uma vez com sinal.'
-      : 'Sem conexão com o servidor. Tente de novo em instantes.', true);
+    // Falhou a rede mas existe lote guardado: segue de onde parou.
+    if(cartLote.length){ cartRetomar(); return; }
+    cartAvisar('cart-erro-inicio', 'Você está sem conexão. A lista de hoje precisa ser buscada uma vez com sinal.', true);
   }finally{
-    btn.disabled = false; btn.textContent = 'Pegar minha lista de hoje';
+    btn.disabled = false; btn.textContent = rotulo;
   }
 }
 
@@ -2543,6 +2577,7 @@ function cartConcluir(texto){
   document.getElementById('cart-btn-zap').addEventListener('click', cartAbrirZap);
   document.getElementById('cart-msg').addEventListener('input', cartContarLetras);
   document.getElementById('cart-btn-voltar').addEventListener('click', () => { cartPreparaInicio(); cartVer('inicio'); });
+  document.getElementById('cart-btn-pausar').addEventListener('click', () => { cartPreparaInicio(); cartVer('inicio'); });
   document.getElementById('cart-btn-sair').addEventListener('click', () => {
     // Sair tem que levar o lote junto: sem isso, o proximo a entrar neste
     // aparelho veria a lista de quem saiu. A fila de desfechos NAO e apagada —
