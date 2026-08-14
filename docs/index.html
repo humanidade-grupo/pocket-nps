@@ -4,6 +4,10 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 14/08/2026 17:10 (Ricardo) — QUADRA MISTA SÓ NO PERPÉTUO: a nota dos 50%
+       ("Se o financiamento for na Quadra Mista...") some do passo 2 quando o produto
+       é Reserva ou Temporário, e a mesma nota deixa de sair na carta proposta nesses
+       dois produtos. Quadra Mista é um arranjo exclusivo do Uso Perpétuo.
      Rev. 14/08/2026 (Ricardo) — JAZIGO TEMPORÁRIO:
        (1) Passo 1 "Produto" ganhou o terceiro botão: Perpétuo · Reserva · Temporário.
        (2) Passo 2 passou a se chamar "Valor do jazigo <Produto>", acompanhando o filtro
@@ -665,7 +669,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
       </div>
       <div class="chips" id="chipsValor"></div>
       <p class="fieldnote" id="notaTemporario" hidden>* Informe o valor da coluna <b>Uso Temporário</b> da tabela (20% do valor do Perpétuo).</p>
-      <p class="fieldnote">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo.</p>
+      <p class="fieldnote" id="notaMista">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo.</p>
     </div>
   </section>
 
@@ -1436,10 +1440,12 @@ function seg(id, attr, key, cb){
 }
 seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); syncProduto(); });
 
-// Reflete o produto escolhido no passo 2 ("Valor do jazigo <Produto>") e na nota do Temporário.
+// Reflete o produto escolhido no passo 2 ("Valor do jazigo <Produto>") e nas notas do campo.
 function syncProduto(){
   const lbl = $('#valorProdLabel'); if(lbl) lbl.textContent = PRODUTO_NOME[state.produto] || 'Perpétuo';
   const nt = $('#notaTemporario'); if(nt) nt.hidden = state.produto!=='temporario';
+  // Quadra Mista existe só no Perpétuo — a nota dos 50% some em Reserva e Temporário.
+  const nm = $('#notaMista'); if(nm) nm.hidden = state.produto!=='perpetuo';
 }
 syncProduto();
 seg('#segForma','forma','forma', v=>{
@@ -1734,7 +1740,7 @@ function cartaPropostaHTML(r){
   }
   if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
   if(r.di && r.di.extraOn) notas.push('O adicional de 3% está sujeito à autorização do coordenador.');
-  notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
+  if(state.produto==='perpetuo') notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
   notas.push('Proposta sujeita a confirmação e à disponibilidade de jazigos. Valores em reais (R$).');
 
   const trs = a => a.map(([k,v],i)=>`<tr${(a===cond && i===cond.length-1)?' class="cp-tot"':''}><td>${k}</td><td class="cp-num">${v}</td></tr>`).join('');
