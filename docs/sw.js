@@ -1,7 +1,10 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
-Gerado em: 13/08/2026 12:43
-Alterações: Rev. 13/08/2026 12:43 — só bump de cache (app deixa de abrir direto
+Gerado em: 14/08/2026 15:30
+Alterações: Rev. 14/08/2026 15:30 — só bump de cache (simulador ganha o produto
+Temporário, teto de 21x, Uso Temporário a 20% do Perpétuo; correção dos links
+das tabelas M-20 e M-21).
+Rev. 13/08/2026 12:43 — só bump de cache (app deixa de abrir direto
 no lead; tela do lead ganha saída; textos da planilha chegam ao retomar).
 Rev. 13/08/2026 11:57 — corrige app morto ao abrir
 direto em #carteira ou #escala).
@@ -22,7 +25,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260813-1243';
+const CACHE = 'pocket-nps-260814-1530';
 
 const CORE = [
 './',

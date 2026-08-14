@@ -4,6 +4,21 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 14/08/2026 (Ricardo) — JAZIGO TEMPORÁRIO:
+       (1) Passo 1 "Produto" ganhou o terceiro botão: Perpétuo · Reserva · Temporário.
+       (2) Passo 2 passou a se chamar "Valor do jazigo <Produto>", acompanhando o filtro
+           do passo 1 (Perpétuo / Reserva / Temporário). O mesmo rótulo aparece no resumo,
+           na carta proposta e no texto enviado por WhatsApp.
+       (3) Temporário: teto de 21x (uso imediato — não se vende boleto 22–72x nessa
+           condição) e o vendedor informa o valor da coluna "Uso Temporário" da tabela.
+       (4) O Uso Temporário passou de 30% para **20%** do Uso Perpétuo — textos das
+           telas Tabela de Preços, Regras, rodapé, WhatsApp e carta atualizados.
+       Os 3 PDFs de tabela de preços foram regerados no mesmo dia com o 72x pela regra
+       deste simulador (Price antecipado) e o Temporário a 20%.
+       (5) Links da tela Tabela de Preços: ao subir os PDFs novos, o M-20 e o M-21 foram
+           recriados no Drive (os antigos foram para a lixeira), então mudaram de ID e os
+           dois links da tela apontavam para arquivo inexistente. IDs atualizados aqui.
+           O M-19 foi sobrescrito no lugar e manteve o ID.
      Gerado em: 13/08/2026 12:43 (rev.) — Carteira: (1) abrir o app com lote em andamento
      não joga mais o vendedor direto no card — ele caía cara a cara com o dado de uma
      pessoa e uma mensagem pronta, sem ter pedido, e sem saída visível. Agora cai na tela
@@ -592,7 +607,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 12/08/2026</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 14/08/2026</div>
     </footer>
   </main>
 </section>
@@ -636,18 +651,20 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <div class="seg gold" id="segProduto" role="group" aria-label="Produto">
       <button data-produto="perpetuo" aria-pressed="true">Perpétuo<span class="s">até 72x</span></button>
       <button data-produto="reserva" aria-pressed="false">Reserva<span class="s">até 60x</span></button>
+      <button data-produto="temporario" aria-pressed="false">Temporário<span class="s">até 21x</span></button>
     </div>
   </section>
 
   <!-- STEP 2: valor -->
   <section class="card">
-    <div class="step"><span class="n">2</span><h2>Valor do jazigo</h2></div>
+    <div class="step"><span class="n">2</span><h2>Valor do jazigo <span id="valorProdLabel">Perpétuo</span></h2></div>
     <div class="field">
       <div class="money">
         <span class="cur">R$</span>
         <input type="tel" inputmode="numeric" id="valor" placeholder="0,00" autocomplete="off">
       </div>
       <div class="chips" id="chipsValor"></div>
+      <p class="fieldnote" id="notaTemporario" hidden>* Informe o valor da coluna <b>Uso Temporário</b> da tabela (20% do valor do Perpétuo).</p>
       <p class="fieldnote">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo.</p>
     </div>
   </section>
@@ -736,7 +753,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
         <div class="rrow"><span class="rk">Até 21x (cartão ou boleto)</span><span class="rv">sem juros</span></div>
         <div class="rrow"><span class="rk">De 22x a 72x (boleto)</span><span class="rv">1% a.m.*</span></div>
       </div>
-      <p class="rnote">* No financiamento de 22–72x, a <b>1ª parcela é paga no ato</b> (sem juros) e o 1% incide da 2ª parcela em diante. Descontos são <b>tetos de alçada e opcionais</b> — o padrão é vender pelo valor cheio. <b>Quadra Mista:</b> informe 50% do valor total do jazigo.</p>
+      <p class="rnote">* No financiamento de 22–72x, a <b>1ª parcela é paga no ato</b> (sem juros) e o 1% incide da 2ª parcela em diante. Descontos são <b>tetos de alçada e opcionais</b> — o padrão é vender pelo valor cheio. <b>Quadra Mista:</b> informe 50% do valor total do jazigo. <b>Jazigo Temporário:</b> uso imediato, teto de 21x sem juros, e o valor corresponde a <b>20%</b> do Perpétuo.</p>
     </div>
   </details>
 
@@ -748,7 +765,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
-    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: Pix −3% ou cartão −2%. Descontos são tetos de alçada; +3% na faixa 24–25k com autorização do coordenador. Quadra Mista: informar 50% do valor.</div>
+    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: Pix −3% ou cartão −2%. Descontos são tetos de alçada; +3% na faixa 24–25k com autorização do coordenador. Quadra Mista: informar 50% do valor. Jazigo Temporário: 20% do Perpétuo, uso imediato, até 21x sem juros.</div>
     <div class="inst" style="margin-top:8px">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
   </footer>
 </main>
@@ -870,22 +887,22 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
       <span class="tx">
         <span class="t">Quadra M-19</span>
         <span class="d">Perpétuo e Temporário &middot; à vista de R$ 25.299 a R$ 17.599.</span>
-        <span class="tabmeta"><span>277 jazigos</span><span>10 faixas</span><span>21x &middot; 72x</span></span>
+        <span class="tabmeta"><span>277 jazigos</span><span>10 faixas</span><span>21x &middot; 72x</span><span>Temp. 20%</span></span>
       </span>
       <span class="arw">&rsaquo;</span>
     </a>
 
-    <a class="tool" href="https://drive.google.com/file/d/1QoOSITsgkcINms_ZqIxqs__LvnfY_7bo/view" target="_blank" rel="noopener">
+    <a class="tool" href="https://drive.google.com/file/d/1CWFZ0hGJLBUQPp2wHgunmUKDlfIaf7m6/view" target="_blank" rel="noopener">
       <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>
       <span class="tx">
         <span class="t">Quadra M-20</span>
         <span class="d">Perpétuo e Temporário &middot; à vista R$ 15.999 e R$ 15.699.</span>
-        <span class="tabmeta"><span>31 jazigos</span><span>2 faixas</span><span>21x &middot; 72x</span></span>
+        <span class="tabmeta"><span>31 jazigos</span><span>2 faixas</span><span>21x &middot; 72x</span><span>Temp. 20%</span></span>
       </span>
       <span class="arw">&rsaquo;</span>
     </a>
 
-    <a class="tool" href="https://drive.google.com/file/d/17e2qQeCO8qOqDKDpTHsqHSVjXlHCeubH/view" target="_blank" rel="noopener">
+    <a class="tool" href="https://drive.google.com/file/d/1J3o6Eh3HoUelSQPWVTFdiV1U4qoTEW0e/view" target="_blank" rel="noopener">
       <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>
       <span class="tx">
         <span class="t">Quadra M-21 &middot; Mista</span>
@@ -900,7 +917,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <div class="lbl">M-19 e M-20 &middot; observações</div>
     <ol>
       <li><b>Jazigo Perpétuo (uso imediato):</b> à vista via Pix ou cartão, ou parcelado em até 21x sem juros no cartão de crédito.</li>
-      <li><b>Jazigo Temporário (uso imediato):</b> mesmas condições. O valor do Uso Temporário corresponde a 30% do valor do Uso Perpétuo.</li>
+      <li><b>Jazigo Temporário (uso imediato):</b> mesmas condições. O valor do Uso Temporário corresponde a <b>20%</b> do valor do Uso Perpétuo.</li>
       <li><b>Boleto até 72x (com juros):</b> o jazigo poderá ser utilizado somente após a quitação integral.</li>
     </ol>
   </div>
@@ -1387,7 +1404,9 @@ const state = {
   produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false, descOn:false,
   valor:0, entrada:0, prazo:60
 };
-const MAXP = {perpetuo:{boleto:72,cartao:21}, reserva:{boleto:60,cartao:21}};
+const MAXP = {perpetuo:{boleto:72,cartao:21}, reserva:{boleto:60,cartao:21}, temporario:{boleto:21,cartao:21}};
+// Rótulo do produto — usado no passo 2, no resumo, na carta e no texto de WhatsApp.
+const PRODUTO_NOME = {perpetuo:'Perpétuo', reserva:'Reserva', temporario:'Temporário'};
 
 // ---- currency input helpers (digita centavos) ----
 function bindMoney(el, key){
@@ -1415,7 +1434,14 @@ function seg(id, attr, key, cb){
     cb && cb(v); render();
   });
 }
-seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); });
+seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); syncProduto(); });
+
+// Reflete o produto escolhido no passo 2 ("Valor do jazigo <Produto>") e na nota do Temporário.
+function syncProduto(){
+  const lbl = $('#valorProdLabel'); if(lbl) lbl.textContent = PRODUTO_NOME[state.produto] || 'Perpétuo';
+  const nt = $('#notaTemporario'); if(nt) nt.hidden = state.produto!=='temporario';
+}
+syncProduto();
 seg('#segForma','forma','forma', v=>{
   $('#blocoPrazo').hidden = v!=='prazo';
   $('#blocoAvista').hidden = v!=='avista';
@@ -1544,7 +1570,7 @@ function render(){
     <div class="row"><span class="k">Valor de tabela</span><span class="v strike">${brl(r.tabela)}</span></div>
     <div class="row"><span class="k">Desconto ${descLabelText(r.di)} (${(r.di.total*100).toFixed(0)}%)</span><span class="v pos">− ${brl(r.desconto)}</span></div>
     <div class="row"><span class="k">Valor com desconto</span><span class="v">${brl(r.comDesc)}</span></div>` : `
-    <div class="row"><span class="k">Valor de tabela</span><span class="v">${brl(r.tabela)}</span></div>`;
+    <div class="row"><span class="k">${valorLabel()}</span><span class="v">${brl(r.tabela)}</span></div>`;
 
   if(r.forma==='avista'){
     const meioLbl = r.meioAV==='pix' ? 'Pix' : 'cartão';
@@ -1644,11 +1670,11 @@ function propostaTexto(){
   L.push(produtoLabel());
   L.push('');
   if(r.desconto>0.5){
-    L.push('Valor de tabela: '+brl(r.tabela));
+    L.push(valorLabel()+' (tabela): '+brl(r.tabela));
     L.push('Desconto '+descLabelText(r.di)+' ('+(r.di.total*100).toFixed(0)+'%): − '+brl(r.desconto));
     L.push('Valor com desconto: '+brl(r.comDesc));
     if(r.di.extraOn) L.push('(+3% adicional — sujeito à autorização do coordenador)');
-  } else { L.push('Valor: '+brl(r.tabela)); }
+  } else { L.push(valorLabel()+': '+brl(r.tabela)); }
   L.push('');
   if(r.forma==='avista'){
     L.push('*À vista — '+(r.meioAV==='pix'?'Pix':'cartão')+' (sem juros)*');
@@ -1660,11 +1686,22 @@ function propostaTexto(){
     L.push('Total a prazo: '+brl(r.total));
   }
   L.push('');
+  if(state.produto==='temporario'){
+    L.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
+  } else if(r.forma==='prazo' && r.meio==='boleto' && !r.semJuros){
+    L.push('No boleto parcelado, o jazigo é liberado para uso após a quitação integral.');
+  }
   L.push('Simulação sujeita a confirmação. Parque da Saudade.');
   return L.join('\n');
 }
 
-function produtoLabel(){ return state.produto==='reserva' ? 'Jazigo — Reserva' : 'Jazigo Perpétuo'; }
+function produtoLabel(){
+  if(state.produto==='reserva')    return 'Jazigo — Reserva';
+  if(state.produto==='temporario') return 'Jazigo Temporário';
+  return 'Jazigo Perpétuo';
+}
+// "Valor do jazigo Perpétuo / Reserva / Temporário" — mesmo rótulo do passo 2.
+function valorLabel(){ return 'Valor do jazigo ' + (PRODUTO_NOME[state.produto] || 'Perpétuo'); }
 
 // Carta proposta: monta um documento formal e aciona a impressão (Salvar como PDF).
 // Reaproveita os mesmos números do resumo (calc/brl). Sempre com revisão humana antes do envio.
@@ -1672,11 +1709,11 @@ function cartaPropostaHTML(r){
   const hoje = new Date().toLocaleDateString('pt-BR');
   const rows=[];
   if(r.desconto>0.5){
-    rows.push(['Valor de tabela', brl(r.tabela)]);
+    rows.push([valorLabel()+' (tabela)', brl(r.tabela)]);
     rows.push(['Desconto '+descLabelText(r.di)+' ('+(r.di.total*100).toFixed(0)+'%)', '− '+brl(r.desconto)]);
     rows.push(['Valor com desconto', brl(r.comDesc)]);
   } else {
-    rows.push(['Valor do jazigo', brl(r.tabela)]);
+    rows.push([valorLabel(), brl(r.tabela)]);
   }
   let condTitulo, cond=[];
   if(r.forma==='avista'){
@@ -1695,6 +1732,7 @@ function cartaPropostaHTML(r){
       ? 'No cartão de crédito, o jazigo fica quitado no ato — uso imediato liberado, caso a família precise.'
       : 'No boleto, o uso do jazigo é liberado após a quitação integral do parcelamento.');
   }
+  if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
   if(r.di && r.di.extraOn) notas.push('O adicional de 3% está sujeito à autorização do coordenador.');
   notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
   notas.push('Proposta sujeita a confirmação e à disponibilidade de jazigos. Valores em reais (R$).');
