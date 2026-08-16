@@ -1,7 +1,9 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 14/08/2026 17:10 — só bump de cache (nota da Quadra Mista some
+Alterações: Rev. 16/08/2026 — página /recibo/ (Emissor de Recibos da secretaria)
+entra no ar; SW passa a ignorar /recibo/, como já faz com /gestao/.
+Rev. 14/08/2026 17:10 — só bump de cache (nota da Quadra Mista some
 em Reserva e Temporário; Quadra Mista é só do Perpétuo).
 Rev. 14/08/2026 15:30 — só bump de cache (simulador ganha o produto
 Temporário, teto de 21x, Uso Temporário a 20% do Perpétuo; correção dos links
@@ -27,7 +29,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260814-1710';
+const CACHE = 'pocket-nps-260816-1205';
 
 const CORE = [
 './',
@@ -60,9 +62,9 @@ const url = new URL(req.url);
 // Deixa passar direto o que não é do próprio site (ex.: JSONP do Web App
 // do Apps Script para o check-in) — o SW não intercepta cross-origin.
 if (url.origin !== self.location.origin) return;
-// Área da gestão (/gestao/): fora do app do time — o SW não intercepta
-// nem guarda nada dela no cache do Pocket.
-if (url.pathname.includes('/gestao/')) return;
+// Área da gestão (/gestao/) e o emissor de recibos (/recibo/): fora do app
+// do time — o SW não intercepta nem guarda nada delas no cache do Pocket.
+if (url.pathname.includes('/gestao/') || url.pathname.includes('/recibo/')) return;
 
 // Navegações (abrir/atualizar o app): rede primeiro (pega a versão nova
 // quando online), com a cópia em cache como reserva offline.
