@@ -4,6 +4,16 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 17/08/2026 12:57 (Ricardo) — "ENTRADA" VIRA "ENTRADA ADICIONAL": só camada de
+       apresentação, nenhuma fórmula tocada. O campo era confundido com a "Entrada" do
+       Facilita, onde "Entrada" é apenas o rótulo da 1ª das N parcelas, paga no ato — o
+       vendedor digitava o valor da parcela num campo que significa dinheiro a MAIS, e a
+       simulação divergia do CRM. Mudanças: (1) rótulo "Entrada adicional (opcional)" no
+       formulário, no resumo, na carta proposta e no WhatsApp; (2) microcopy fixa sob o
+       campo, sempre visível, explicando que a 1ª parcela já é paga no ato e que para
+       reproduzir o Facilita o campo fica em 0; (3) cronograma explícito (cronoLinhas/
+       cronoNote) no resumo, na carta e no WhatsApp, com a entrada adicional e a 1ª
+       parcela em linhas separadas quando as duas existem.
      Rev. 14/08/2026 17:10 (Ricardo) — QUADRA MISTA SÓ NO PERPÉTUO: a nota dos 50%
        ("Se o financiamento for na Quadra Mista...") some do passo 2 quando o produto
        é Reserva ou Temporário, e a mesma nota deixa de sair na carta proposta nesses
@@ -611,7 +621,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 14/08/2026</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 17/08/2026</div>
     </footer>
   </main>
 </section>
@@ -692,11 +702,14 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
       </div>
 
       <div class="field">
-        <label>Entrada / sinal <span class="opt">— opcional</span></label>
+        <label>Entrada adicional <span class="opt">(opcional)</span></label>
         <div class="money">
           <span class="cur">R$</span>
           <input type="tel" inputmode="numeric" id="entrada" placeholder="0,00" autocomplete="off">
         </div>
+        <p class="fieldnote"><b>A 1ª parcela já é paga no ato.</b> Só preencha aqui se o cliente pagar um valor
+          <b>extra</b>, além dela. Para reproduzir o cálculo do Facilita, deixe este campo em <b>0</b> e escolha o
+          número total de parcelas (a 1ª é a “Entrada” do Facilita).</p>
       </div>
 
       <div class="field">
@@ -1600,12 +1613,12 @@ function render(){
       : (r.semJuros ? 'boleto · sem juros' : 'boleto · 1% a.m. (1ª no ato)');
     box.innerHTML = `
       <div class="res-hero">
-        <div><div class="l">${r.nparc}× no ${meioLbl}${r.entrada>0?' + entrada':''}</div><div class="parcela">${brl(r.parcela)}<small>/mês</small></div></div>
+        <div><div class="l">${r.nparc}× no ${meioLbl}${r.entrada>0?' + entrada adicional':''}</div><div class="parcela">${brl(r.parcela)}<small>/mês</small></div></div>
         <div class="nx">${r.nparc}<br>parcelas</div>
       </div>
       <div class="rows">
         ${descRow}
-        ${r.entrada>0?`<div class="row"><span class="k">Entrada / sinal</span><span class="v">${brl(r.entrada)}</span></div>
+        ${r.entrada>0?`<div class="row"><span class="k">Entrada adicional</span><span class="v">${brl(r.entrada)}</span></div>
         <div class="row"><span class="k">Saldo a parcelar</span><span class="v">${brl(r.saldo)}</span></div>`:''}
         <div class="row"><span class="k">${r.nparc}× de</span><span class="v">${brl(r.parcela)}</span></div>
         ${r.semJuros
@@ -1613,11 +1626,42 @@ function render(){
           : `<div class="row"><span class="k">Juros (1% a.m.)</span><span class="v">${brl(r.juros)}</span></div>`}
         <div class="row tot"><span class="k">Total a prazo</span><span class="v">${brl(r.total)}</span></div>
       </div>
+      ${cronoNote(r)}
       ${useNote(r)}
       ${vpBlock(r)}
       ${actions()}`;
   }
   bindActions();
+}
+
+// Cronograma de pagamento, em texto — a MESMA frase no resumo, na carta e no WhatsApp.
+// Existe porque "Entrada" no Facilita é só o rótulo da 1ª das N parcelas (paga no ato), e o
+// vendedor vinha digitando o valor dessa parcela no campo "Entrada adicional" daqui, que é
+// dinheiro a MAIS. Aqui as duas coisas aparecem em linhas separadas, nomeadas.
+// Só o boleto 22–72x tem a 1ª parcela no ato (Price antecipado, `semJuros===false`);
+// nos demais o app não assume pagamento no ato — a frase informa apenas a cadência.
+// `valores`: no resumo as duas linhas repetem os números — é ali que o vendedor confere que
+// entrada adicional e 1ª parcela são pagamentos distintos. Na carta e no WhatsApp os valores
+// já estão tabulados acima, então sai só a data, em uma linha.
+function cronoLinhas(r, valores){
+  if(!r || r.forma!=='prazo' || !r.nparc) return [];
+  const L=[];
+  const temEnt = r.entrada>0;
+  if(valores && temEnt) L.push('Entrada adicional: '+brl(r.entrada)+' (hoje)');
+  if(!r.semJuros){
+    if(temEnt) L.push((valores ? '1ª parcela: '+brl(r.parcela)+' (hoje)' : '1ª parcela hoje')
+                      +' · demais '+(r.nparc-1)+'x a cada 30 dias');
+    else L.push('1ª parcela no ato · demais a cada 30 dias');
+  } else {
+    if(valores && temEnt) L.push(r.nparc+'x de '+brl(r.parcela)+' · parcelas mensais, a cada 30 dias');
+    else L.push('Parcelas mensais, a cada 30 dias');
+  }
+  return L;
+}
+function cronoNote(r){
+  const L=cronoLinhas(r, true);
+  if(!L.length) return '';
+  return `<div class="usenote"><span class="i">◦</span><span>${L.join('<br>')}</span></div>`;
 }
 
 function useNote(r){
@@ -1687,8 +1731,9 @@ function propostaTexto(){
     L.push('Total: '+brl(r.total));
   } else {
     L.push('*A prazo — '+(r.meio==='cartao'?'cartão':'boleto')+'*');
-    if(r.entrada>0){ L.push('Entrada: '+brl(r.entrada)); L.push('Saldo a parcelar: '+brl(r.saldo)); }
+    if(r.entrada>0){ L.push('Entrada adicional: '+brl(r.entrada)+' (hoje)'); L.push('Saldo a parcelar: '+brl(r.saldo)); }
     L.push(r.nparc+'x de '+brl(r.parcela)+(r.semJuros?'  (sem juros)':'  (1% a.m., 1ª no ato)'));
+    cronoLinhas(r, false).forEach(l=>L.push(l));
     L.push('Total a prazo: '+brl(r.total));
   }
   L.push('');
@@ -1727,13 +1772,15 @@ function cartaPropostaHTML(r){
     cond.push(['Total à vista', brl(r.total)]);
   } else {
     condTitulo = 'A prazo — '+(r.meio==='cartao'?'cartão de crédito (sem juros)':(r.semJuros?'boleto (sem juros)':'boleto (1% a.m.)'));
-    if(r.entrada>0){ cond.push(['Entrada / sinal', brl(r.entrada)]); cond.push(['Saldo a parcelar', brl(r.saldo)]); }
+    if(r.entrada>0){ cond.push(['Entrada adicional (hoje)', brl(r.entrada)]); cond.push(['Saldo a parcelar', brl(r.saldo)]); }
     cond.push([r.nparc+'× de', brl(r.parcela)]);
     if(!r.semJuros) cond.push(['Juros (1% a.m. · 1ª parcela no ato)', brl(r.juros)]);
     cond.push(['Total a prazo', brl(r.total)]);
   }
   const notas=[];
   if(r.forma==='prazo'){
+    const cr = cronoLinhas(r, false);
+    if(cr.length) notas.push('Cronograma: '+cr.join(' · '));
     notas.push(r.meio==='cartao'
       ? 'No cartão de crédito, o jazigo fica quitado no ato — uso imediato liberado, caso a família precise.'
       : 'No boleto, o uso do jazigo é liberado após a quitação integral do parcelamento.');
