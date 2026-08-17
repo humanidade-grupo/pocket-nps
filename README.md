@@ -26,6 +26,12 @@ Ao vivo: **https://humanidade-grupo.github.io/pocket-nps/**
 As duas partes são o **mesmo app**; ficam em pastas separadas só porque têm
 destinos de deploy diferentes (Pages para a web, Google/Apps Script para o backend).
 
+> **O backend do Cofre não mora mais aqui.** A pasta `gas-hub/` saiu em 17/08/2026
+> para o repositório privado **`humanidade-grupo/cofre`**, com o histórico junto.
+> O Cofre não é parte deste app: é a camada que o Pocket e o Painel Comercial leem.
+> Não confunda com `gas/` acima, que é outro projeto Apps Script (o da Escala) e
+> continua neste repositório.
+
 ## Deploy da PWA (docs/)
 
 1. Editar os arquivos em `docs/`.
