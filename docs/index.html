@@ -4,6 +4,20 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 17/08/2026 14:20 (Ricardo) — GUARDA-CORPO DA ENTRADA ADICIONAL: o aviso passivo da
+       rev. anterior não bastava (ninguém lê hint com cliente na frente). Agora há confirmação
+       ativa, com três decisões deliberadas:
+       (1) O gatilho é o ERRO, não o preenchimento: só interrompe quando o valor digitado fica
+           a ±8% da parcela que aquele prazo daria com o campo zerado. Sinal legítimo (R$ 3.000)
+           passa liso. Modal que dispara sempre vira reflexo de tocar "ok" e deixa de proteger.
+       (2) O botão principal CORRIGE (zera o campo), não confirma entendimento. E corrigir NÃO
+           envia: os números mudaram, o vendedor tem que ver o resumo antes de mandar.
+       (3) A parcela de referência sai da própria calc() com a entrada zerada (calcSemEntrada),
+           nunca de fórmula duplicada — senão as duas divergem no primeiro ajuste de régua.
+       Dispara no blur do campo (o 'input' roda a cada dígito) e nos três botões de envio, que
+       é onde o dano existe de fato. Fechar sem escolher não conta como confirmação.
+       O gloss "a 1ª parcela é o que o Facilita chama de Entrada" é SÓ do resumo (tela interna).
+       Nunca vai para o WhatsApp nem para a carta — o cliente não fala do nosso CRM.
      Rev. 17/08/2026 12:57 (Ricardo) — "ENTRADA" VIRA "ENTRADA ADICIONAL": só camada de
        apresentação, nenhuma fórmula tocada. O campo era confundido com a "Entrada" do
        Facilita, onde "Entrada" é apenas o rótulo da 1ª das N parcelas, paga no ato — o
@@ -275,11 +289,47 @@ details.vp .vpbody .row{border-color:rgba(236,236,228,.09)}
 .usenote{display:flex; gap:9px; align-items:flex-start; margin-top:13px; font-size:12px; color:var(--muted-on-dark); line-height:1.45}
 .usenote .i{flex:0 0 auto; margin-top:0; color:var(--bege); font-weight:700}
 .usenote b{color:var(--off-white)}
+.usenote .fac{color:var(--bege); font-style:italic}
+body.no-scroll{overflow:hidden}
 .empty{color:var(--muted-on-dark); text-align:center; font-size:13.5px; padding:14px 10px}
 footer{max-width:520px; margin:22px auto 0; padding:0 20px; color:var(--muted); font-size:11px; line-height:1.5; text-align:center}
 footer .sens{color:var(--verde-2); font-weight:600; margin-bottom:6px}
 .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); background:var(--marrom); color:#fff; padding:12px 20px; border-radius:30px; font-size:13px; font-weight:600; opacity:0; transition:.25s; z-index:50; box-shadow:var(--shadow)}
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+/* ---------- Confirmação da entrada adicional ----------
+   Só aparece quando o valor digitado é quase a parcela — o erro do Facilita.
+   Superfície clara (é interrupção de formulário, não do resumo escuro). */
+.mask{position:fixed; inset:0; background:rgba(53,31,9,.55); z-index:60; display:none;
+  align-items:flex-end; justify-content:center; padding:0; -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px)}
+.mask.show{display:flex}
+.modal{background:var(--card); color:var(--marrom); width:100%; max-width:520px; max-height:92vh; overflow-y:auto;
+  border-radius:var(--radius) var(--radius) 0 0; padding:20px 16px calc(env(safe-area-inset-bottom) + 18px);
+  box-shadow:0 -8px 32px rgba(66,39,12,.22); animation:mup .22s ease-out}
+@keyframes mup{from{transform:translateY(14px); opacity:.6} to{transform:translateY(0); opacity:1}}
+@media (prefers-reduced-motion:reduce){ .modal{animation:none} }
+.modal .mtag{font-size:11px; letter-spacing:1.4px; text-transform:uppercase; color:var(--warn); font-weight:700}
+.modal h3{font-family:"PF Marlet Display",serif; font-size:21px; margin:6px 0 0; line-height:1.2; font-weight:400}
+.modal .mlead{font-size:13px; color:var(--marrom); line-height:1.5; margin:9px 0 0}
+.modal .mlead b{color:var(--marrom-2)}
+.cmp{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:15px}
+.cmp .col{border:1px solid var(--border); border-radius:var(--radius-sm); padding:11px 10px; background:#fff}
+.cmp .col.good{border-color:var(--ok); box-shadow:inset 0 0 0 1px rgba(78,122,62,.22)}
+.cmp .col .ct{font-size:10.5px; letter-spacing:.6px; text-transform:uppercase; font-weight:700; color:var(--muted); line-height:1.3; min-height:26px}
+.cmp .col.good .ct{color:var(--ok)}
+.cmp .col .cv{font-size:16px; font-weight:700; margin-top:7px; font-variant-numeric:tabular-nums; line-height:1.2}
+.cmp .col .cd{font-size:11px; color:var(--muted); line-height:1.45; margin-top:5px}
+.cmp .col .cx{font-size:11.5px; margin-top:8px; padding-top:7px; border-top:1px solid var(--border);
+  color:var(--muted); font-variant-numeric:tabular-nums}
+.cmp .col .cx b{color:var(--marrom)}
+.modal .macts{display:flex; flex-direction:column; gap:9px; margin-top:16px}
+.modal .macts button{width:100%; border:0; border-radius:12px; padding:14px 12px; font-family:inherit;
+  font-weight:700; font-size:14px; cursor:pointer; line-height:1.3}
+.modal .m-fix{background:var(--dourado); color:#fff}
+.modal .m-fix:active{background:var(--cta-hover)}
+.modal .m-keep{background:transparent; color:var(--muted); border:1.5px solid var(--border)!important; font-weight:600}
+.modal .mfoot{font-size:11px; color:var(--muted); line-height:1.5; margin:13px 2px 0}
+@media (max-width:360px){ .cmp{grid-template-columns:1fr} .cmp .col .ct{min-height:0} }
 
 /* ---------- Views (router) ---------- */
 .view{display:none}
@@ -432,8 +482,11 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
 
 @media print{
   header .deco,.seg,.chips,input[type=range],.actions,footer .inst,details.vp summary{display:none}
+  .mask{display:none!important}
   body{background:#fff} #resumo{background:#fff!important; color:#000; border:1px solid #999}
   #resumo .lbl,.row .k,.res-hero .l{color:#333} .row .v,.res-hero .parcela,.row.tot .v,.row.tot .k{color:#000}
+  /* notas do resumo são texto claro (card escuro) — no papel branco precisam escurecer */
+  .usenote,.usenote .i,.usenote b,.usenote .fac{color:#333}
 }
 
 /* ---------- Carta proposta (impressão → Salvar como PDF) ---------- */
@@ -621,7 +674,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 17/08/2026</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 17/08/2026 · 14:20</div>
     </footer>
   </main>
 </section>
@@ -1128,6 +1181,11 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 
 <div class="toast" id="toast"></div>
 
+<!-- Confirmação da entrada adicional — conteúdo montado por abrirConfirmaEntrada() -->
+<div class="mask" id="maskEnt" role="dialog" aria-modal="true" aria-labelledby="entConfTit" hidden>
+  <div class="modal" id="modalEnt"></div>
+</div>
+
 
 <!-- ==================== FAQ — QUADRA MISTA ==================== -->
 <section class="view" id="view-faq">
@@ -1439,6 +1497,14 @@ function bindMoney(el, key){
 bindMoney($('#valor'),'valor');
 bindMoney($('#entrada'),'entrada');
 
+// No 'blur', nunca no 'input': o campo roda render() a cada dígito, e um modal a cada
+// tecla ("8", "85", "852") seria intolerável. Aqui o vendedor já terminou de digitar.
+$('#entrada').addEventListener('blur', ()=>{ checaEntrada(); });
+$('#maskEnt').addEventListener('click', e=>{ if(e.target===$('#maskEnt')) fecharConfirmaEntrada(); });
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && $('#maskEnt').classList.contains('show')) fecharConfirmaEntrada();
+});
+
 function setMoney(el,key,val){ state[key]=val; el.value = val? val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):''; }
 
 // ---- segmented groups ----
@@ -1661,7 +1727,115 @@ function cronoLinhas(r, valores){
 function cronoNote(r){
   const L=cronoLinhas(r, true);
   if(!L.length) return '';
-  return `<div class="usenote"><span class="i">◦</span><span>${L.join('<br>')}</span></div>`;
+  // Este gloss é SÓ do resumo (tela interna do vendedor): nomeia a "Entrada" do Facilita
+  // para matar a colisão de vocabulário na raiz. Não entra no WhatsApp nem na carta — o
+  // cliente não tem nada a ver com o nome dos campos do nosso CRM.
+  const gloss = !r.semJuros
+    ? `<br><span class="fac">a 1ª parcela é o que o Facilita chama de “Entrada”</span>` : '';
+  return `<div class="usenote"><span class="i">◦</span><span>${L.join('<br>')}${gloss}</span></div>`;
+}
+
+/* ---------- Guarda-corpo da entrada adicional ----------
+   O vendedor digitava no campo "Entrada adicional" o valor da PARCELA (é o que o Facilita
+   chama de "Entrada"), e a simulação divergia do CRM. O aviso passivo sob o campo não
+   resolvia: ninguém lê hint com cliente na frente.
+
+   Duas decisões de desenho, deliberadas:
+   (1) O gatilho é o ERRO, não o preenchimento. Só interrompe quando o valor digitado é
+       quase a parcela que aquele prazo daria com o campo zerado (±8%). Entrada adicional
+       legítima (um sinal de R$ 3.000) passa sem incomodar ninguém. Modal que dispara
+       sempre vira reflexo de tocar "ok" — e aí não protege mais nada.
+   (2) O botão principal CORRIGE, não confirma entendimento. "Entendi" não desfaz o erro;
+       o vendedor continuaria tendo que descobrir sozinho o que fazer. */
+const TOL_ENT = 0.08;
+let entConfOk = 0;   // valor que o vendedor já declarou ser extra de verdade (0 = nenhum)
+let entFocoAnt = null;
+
+// Roda a própria calc() com a entrada zerada — de propósito, para a parcela de referência
+// nunca divergir da régua oficial. Não pode haver fórmula duplicada aqui.
+function calcSemEntrada(){
+  const ent = state.entrada;
+  state.entrada = 0;
+  const r = calc();
+  state.entrada = ent;
+  return r;
+}
+// Devolve o cenário "como o Facilita calcula" quando há suspeita; null quando está tudo bem.
+function entradaSuspeita(){
+  if(state.forma !== 'prazo' || !(state.entrada > 0)) return null;
+  if(entConfOk === state.entrada) return null;          // já disse que é extra mesmo
+  const r0 = calcSemEntrada();
+  if(!r0 || !r0.parcela) return null;
+  return (Math.abs(state.entrada - r0.parcela) / r0.parcela <= TOL_ENT) ? r0 : null;
+}
+
+function fecharConfirmaEntrada(){
+  const m = $('#maskEnt');
+  m.classList.remove('show'); m.hidden = true;
+  document.body.classList.remove('no-scroll');
+  if(entFocoAnt){ try{ entFocoAnt.focus({preventScroll:true}); }catch(e){} entFocoAnt=null; }
+}
+
+// `depois`: ação de envio que ficou pendente (copiar/compartilhar/carta). Só roda se o
+// vendedor mantiver o valor. Se ele corrigir, NÃO enviamos: os números mudaram e ele tem
+// que ver o resumo novo antes de mandar qualquer coisa para o cliente.
+function abrirConfirmaEntrada(r0, depois){
+  const r1 = calc();
+  const mask = $('#maskEnt'), box = $('#modalEnt');
+  const cronoR0 = (cronoLinhas(r0, false)[0] || '').replace(/^1ª/, '1ª');
+  box.innerHTML = `
+    <div class="mtag">Confira antes de seguir</div>
+    <h3 id="entConfTit">Isso parece o valor de uma parcela</h3>
+    <p class="mlead">Você digitou <b>${brl(state.entrada)}</b> em <b>Entrada adicional</b> — e esse é
+      praticamente o valor de uma parcela de ${r0.nparc}x. No Facilita, “Entrada” é só o nome da
+      <b>1ª das ${r0.nparc} parcelas</b>. Aqui, é dinheiro <b>a mais</b>.</p>
+    <div class="cmp">
+      <div class="col good">
+        <div class="ct">Como o Facilita calcula</div>
+        <div class="cv">${r0.nparc}x de ${brl(r0.parcela)}</div>
+        <div class="cd">${cronoR0}</div>
+        <div class="cx">Total <b>${brl(r0.total)}</b></div>
+      </div>
+      <div class="col">
+        <div class="ct">Como está agora</div>
+        <div class="cv">${brl(state.entrada)} hoje</div>
+        <div class="cd">+ ${r1.nparc}x de ${brl(r1.parcela)}</div>
+        <div class="cx">Total <b>${brl(r1.total)}</b></div>
+      </div>
+    </div>
+    <div class="macts">
+      <button class="m-fix" id="entFix">Era a 1ª parcela — usar ${r0.nparc}x de ${brl(r0.parcela)}</button>
+      <button class="m-keep" id="entKeep">Não, é valor extra mesmo</button>
+    </div>
+    <p class="mfoot">Para reproduzir o Facilita, o campo fica em <b>0</b> e o prazo é o número
+      <b>total</b> de parcelas — a 1ª já é paga no ato.</p>`;
+
+  entFocoAnt = document.activeElement;
+  mask.hidden = false; mask.classList.add('show');
+  document.body.classList.add('no-scroll');
+  $('#entFix').focus({preventScroll:true});
+
+  $('#entFix').onclick = ()=>{
+    setMoney($('#entrada'), 'entrada', 0);
+    entConfOk = 0;
+    render();
+    fecharConfirmaEntrada();
+    toast('Corrigido — confira o resumo');
+  };
+  $('#entKeep').onclick = ()=>{
+    entConfOk = state.entrada;                 // não pergunta mais para ESTE valor
+    fecharConfirmaEntrada();
+    if(depois) depois();
+  };
+}
+
+// Portão único usado pelo blur do campo e pelos três botões de envio.
+// Devolve true quando pode seguir; false quando abriu o modal e a ação ficou pendente.
+function checaEntrada(depois){
+  const r0 = entradaSuspeita();
+  if(!r0) return true;
+  abrirConfirmaEntrada(r0, depois);
+  return false;
 }
 
 function useNote(r){
@@ -1818,13 +1992,17 @@ function emitirCarta(){
 
 function bindActions(){
   const c=$('#btnCopiar'), s=$('#btnShare'), p=$('#btnCarta');
-  if(p && !p.disabled) p.onclick=emitirCarta;
-  if(c) c.onclick=async()=>{ try{ await navigator.clipboard.writeText(propostaTexto()); toast('Proposta copiada'); }catch(e){ toast('Copie manualmente'); } };
-  if(s) s.onclick=async()=>{
+  // O dano só existe quando o número errado chega no cliente — então a mesma checagem
+  // roda no envio, mesmo que o vendedor tenha fechado o modal sem escolher.
+  const copiar = async()=>{ try{ await navigator.clipboard.writeText(propostaTexto()); toast('Proposta copiada'); }catch(e){ toast('Copie manualmente'); } };
+  const compartilhar = async()=>{
     const text=propostaTexto();
     if(navigator.share){ try{ await navigator.share({title:'Proposta Parque da Saudade', text}); }catch(e){} }
     else { try{ await navigator.clipboard.writeText(text); toast('Proposta copiada'); }catch(e){ toast('Compartilhamento indisponível'); } }
   };
+  if(p && !p.disabled) p.onclick=()=>{ if(checaEntrada(emitirCarta)) emitirCarta(); };
+  if(c) c.onclick=()=>{ if(checaEntrada(copiar)) copiar(); };
+  if(s) s.onclick=()=>{ if(checaEntrada(compartilhar)) compartilhar(); };
 }
 let tt;
 function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),1800); }
