@@ -1,7 +1,11 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 16/08/2026 — página /recibo/ (Emissor de Recibos da secretaria)
+Alterações: Rev. 16/08/2026 21:05 — o Emissor de Recibos sai do Pocket e vira
+utilitário avulso (humanidade-grupo/ferramentas). /recibo/ agora é só um
+redirect. A regra que ignora /recibo/ continua valendo: é ela que impede o
+redirect de ficar preso no cache do aparelho.
+Rev. 16/08/2026 — página /recibo/ (Emissor de Recibos da secretaria)
 entra no ar; SW passa a ignorar /recibo/, como já faz com /gestao/.
 Rev. 14/08/2026 17:10 — só bump de cache (nota da Quadra Mista some
 em Reserva e Temporário; Quadra Mista é só do Perpétuo).
@@ -29,7 +33,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260816-1205';
+const CACHE = 'pocket-nps-260816-2105';
 
 const CORE = [
 './',
