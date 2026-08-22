@@ -4,6 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 22/08/2026 11:57 (Ricardo) — A ALÇADA DO COORDENADOR NÃO EXISTE: o +3% da faixa
+       24–25k é um desconto adicional do próprio vendedor, não um pedido de aprovação.
+       **Nenhuma conta mudou** — `bandExtra()` e `descInfo()` nunca consultaram coordenador
+       algum, e o adicional segue sendo escolha do vendedor pela caixinha. Mudou o texto,
+       em onze pontos. Dois deles iam para o CLIENTE, e por isso sumiram em vez de virar
+       outra frase: a linha do WhatsApp e a nota da carta anunciavam o desconto como
+       "sujeito à autorização do coordenador" — uma condição suspensiva que ninguém podia
+       cumprir nem dispensar, escrita na proposta que o cliente leva. O percentual já
+       aparece na linha do desconto; a nota só servia para anunciar a aprovação pendente.
      Rev. 22/08/2026 09:49 (Ricardo) — PRICE CONDICIONAL À ENTRADA: o divisor 1,01 (Price
        antecipada) era aplicado SEMPRE na faixa 22–72x, inclusive havendo sinal. O divisor
        significa "existe um pagamento hoje", e esse pagamento é um só: ou é a 1ª parcela
@@ -116,7 +125,7 @@
      Alterações desta versão (Simulador): regras alinhadas à Tabela de Preços —
      sem juros até 21x (cartão/boleto); 22–72x a 1% a.m. com 1ª parcela no ato (Price
      antecipado). Desconto por alçada automático: Pix à vista 3%, cartão à vista 2%,
-     parcelado até 21x 1%; +3% na faixa 24–25k com autorização do coordenador.
+     parcelado até 21x 1%; +3% adicional na faixa 24–25k.
      Produto "Reserva": boleto até 60x (antes desabilitado). Asterisco na Quadra Mista (informar 50% do valor).
      Publicação: PWA em GitHub Pages (pasta site/) — manifest, sw.js, ícones PNG.
      ============================================ -->
@@ -689,7 +698,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 22/08/2026 · 09:49</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 22/08/2026 · 11:57</div>
     </footer>
   </main>
 </section>
@@ -814,7 +823,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <div class="field" id="coordField" hidden>
       <label class="switchrow">
         <input type="checkbox" id="coordChk">
-        <span>Desconto adicional <b>3%</b> — faixa 24–25k <span class="opt">(autorização do coordenador)</span></span>
+        <span>Desconto adicional <b>3%</b> — faixa 24–25k <span class="opt">(opcional)</span></span>
       </label>
     </div>
 
@@ -830,7 +839,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
         <div class="rrow"><span class="rk">À vista no Pix</span><span class="rv">3%</span></div>
         <div class="rrow"><span class="rk">À vista no cartão de crédito</span><span class="rv">2%</span></div>
         <div class="rrow"><span class="rk">Parcelado até 21x (cartão ou boleto)</span><span class="rv">1%</span></div>
-        <div class="rrow"><span class="rk">Jazigo na faixa 24–25k · com coordenador</span><span class="rv">+3%</span></div>
+        <div class="rrow"><span class="rk">Jazigo na faixa 24–25k · desconto adicional</span><span class="rv">+3%</span></div>
       </div>
       <div class="rgrp juros">
         <h4>Juros do parcelamento</h4>
@@ -849,7 +858,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
-    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: Pix −3% ou cartão −2%. Descontos são tetos de alçada; +3% na faixa 24–25k com autorização do coordenador. Quadra Mista: informar 50% do valor. Jazigo Temporário: 20% do Perpétuo, uso imediato, até 21x sem juros.</div>
+    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: Pix −3% ou cartão −2%. Descontos são tetos e são opcionais; há +3% adicional na faixa 24–25k. Quadra Mista: informar 50% do valor. Jazigo Temporário: 20% do Perpétuo, uso imediato, até 21x sem juros.</div>
     <div class="inst" style="margin-top:8px">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
   </footer>
 </main>
@@ -1578,9 +1587,13 @@ const cent = x => Math.round(x*100)/100;
 function vpAnnuity(parc,n,r){ if(n<=0) return 0; if(r===0) return parc*n; return parc*(1-Math.pow(1+r,-n))/r; }
 const RATE = 0.01;
 
-// faixa 24–25k (valor informado): habilita o +3% do coordenador
+// faixa 24–25k (valor informado): habilita o desconto adicional de 3%.
+// NÃO existe alçada de coordenador aqui — confirmado por Ricardo em 22/08/2026. O adicional
+// é escolha do vendedor, como os demais descontos, e não depende de aprovação de ninguém.
+// Os identificadores `state.coord` / `#coordChk` / `#coordField` mantiveram o nome velho
+// de propósito: renomeá-los mexeria em HTML, CSS e JS num deploy que é só de texto.
 function bandExtra(){ return state.valor>=24000 && state.valor<26000; }
-// desconto aplicado (teto automático por meio) + adicional do coordenador
+// desconto aplicado (teto automático por meio) + o adicional da faixa 24–25k
 // teto de desconto do meio escolhido (alçada máxima) — NÃO aplicado por padrão
 function descTetoMeio(){
   if(state.forma==='avista') return (state.meioAV==='pix') ? 0.03 : 0.02;
@@ -1596,7 +1609,7 @@ function descInfo(){
 function descLabelText(d){
   const p=[];
   if(d.base>0) p.push(state.forma==='avista' ? (state.meioAV==='pix'?'Pix 3%':'cartão à vista 2%') : 'parcelado 1%');
-  if(d.extraOn) p.push('adicional coordenador');
+  if(d.extraOn) p.push('adicional 3%');   // sem citar a faixa: este rótulo vai ao cliente
   return p.join(' + ');
 }
 
@@ -1644,7 +1657,9 @@ function alcada(){
   const d=descInfo();
   if(d.total<=0){ el.className='alcada self'; t.textContent='Sem desconto — valor cheio.'; return; }
   const lbl=descLabelText(d);
-  if(d.extraOn){ el.className='alcada coord'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — requer autorização do coordenador.`; }
+  // Segue em âmbar, mas o âmbar deixou de significar "peça aprovação": significa "você está
+  // no máximo da faixa". Não há autorização a pedir — o adicional é do próprio vendedor.
+  if(d.extraOn){ el.className='alcada coord'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — no máximo da faixa 24–25k.`; }
   else { el.className='alcada self'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — dentro da alçada do vendedor.`; }
 }
 
@@ -1698,7 +1713,7 @@ function render(){
         ${descRow}
         <div class="row tot"><span class="k">Total à vista</span><span class="v">${brl(r.total)}</span></div>
       </div>
-      <div class="avnote">${avn}${r.di.extraOn?' <b>+3% do coordenador aplicado.</b>':''}</div>
+      <div class="avnote">${avn}${r.di.extraOn?' <b>+3% adicional da faixa 24–25k aplicado.</b>':''}</div>
       ${vpBlock(r)}
       ${actions()}`;
   } else {
@@ -1943,7 +1958,6 @@ function propostaTexto(){
     L.push(valorLabel()+' (tabela): '+brl(r.tabela));
     L.push('Desconto '+descLabelText(r.di)+' ('+(r.di.total*100).toFixed(0)+'%): − '+brl(r.desconto));
     L.push('Valor com desconto: '+brl(r.comDesc));
-    if(r.di.extraOn) L.push('(+3% adicional — sujeito à autorização do coordenador)');
   } else { L.push(valorLabel()+': '+brl(r.tabela)); }
   L.push('');
   if(r.forma==='avista'){
@@ -2007,7 +2021,6 @@ function cartaPropostaHTML(r){
       : 'No boleto, o uso do jazigo é liberado após a quitação integral do parcelamento.');
   }
   if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
-  if(r.di && r.di.extraOn) notas.push('O adicional de 3% está sujeito à autorização do coordenador.');
   if(state.produto==='perpetuo') notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
   notas.push('Proposta sujeita a confirmação e à disponibilidade de jazigos. Valores em reais (R$).');
 
