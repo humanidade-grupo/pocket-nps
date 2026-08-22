@@ -1557,6 +1557,10 @@ buildChips();
 
 // ---- finance math ----
 function pmt(r,n,pv){ if(n<=0) return 0; if(r===0) return pv/n; return pv*r/(1-Math.pow(1+r,-n)); }
+// Arredondamento a centavos. Ponto ÚNICO: a parcela sai do calc() já arredondada, e o total
+// do fluxo é montado a partir dela. Tela, WhatsApp, carta e o modal do guarda-corpo leem
+// todos o mesmo r.parcela/r.total — não há segundo arredondamento que possa divergir.
+const cent = x => Math.round(x*100)/100;
 function vpAnnuity(parc,n,r){ if(n<=0) return 0; if(r===0) return parc*n; return parc*(1-Math.pow(1+r,-n))/r; }
 const RATE = 0.01;
 
@@ -1607,14 +1611,17 @@ function calc(){
          parcela (sem sinal), ou é o sinal (com sinal). Aplicar o divisor havendo sinal
          desconta a antecipação duas vezes e a proposta sai mais barata que o contrato do
          Facilita. Divergência encontrada em 22/08/2026. */
-      parcela = temEnt ? pmt(RATE,n,saldo)            // postecipada: o sinal é o pagamento de hoje, 1ª parcela em 30 dias
-                       : pmt(RATE,n,saldo)/(1+RATE);  // antecipada: a 1ª parcela é o pagamento de hoje
-      totalParc = parcela*n;
+      // Arredondada AQUI, antes do total: a proposta exibe R$ 327,64 e o cliente soma
+      // 71 × 327,64. Se o total nascesse da parcela cheia (327,6426…) daria nove centavos
+      // a menos que a conta que o cliente faz na mão, no papel que recebeu.
+      parcela = cent(temEnt ? pmt(RATE,n,saldo)           // postecipada: o sinal é o pagamento de hoje, 1ª parcela em 30 dias
+                            : pmt(RATE,n,saldo)/(1+RATE)); // antecipada: a 1ª parcela é o pagamento de hoje
+      totalParc = cent(parcela*n);
       juros = totalParc - saldo;
       vp = comDesc;                                // parcelas antecipadas a 1% preservam o VP = principal
     }
     return {forma:'prazo', meio:state.meio, tabela:v, comDesc, desconto:v-comDesc, di:d, entrada:ent, saldo,
-            nparc:n, parcela, totalParc, total:ent+totalParc, juros, vp, semJuros};
+            nparc:n, parcela, totalParc, total:cent(ent+totalParc), juros, vp, semJuros};
   }
 }
 
