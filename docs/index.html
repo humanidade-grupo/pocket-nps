@@ -1591,6 +1591,7 @@ function calc(){
     return {forma:'avista', meioAV:state.meioAV, tabela:v, comDesc, desconto:v-comDesc, di:d, total:comDesc, vp:comDesc};
   } else {
     const ent = Math.min(state.entrada, comDesc);
+    const temEnt = ent > 0;                        // já normalizado por bindMoney(): vazio/"0"/"0,00" → 0
     const saldo = Math.max(comDesc-ent,0);
     const n = state.prazo;
     const semJuros = n<=21;                        // até 21x: sem juros
@@ -1601,8 +1602,13 @@ function calc(){
       juros = 0;
       vp = ent + vpAnnuity(parcela, n, RATE);      // parcelas diluídas no tempo
     } else {
-      // 22–72x: 1% a.m., 1ª parcela no ato (Price antecipado) — parcelas iguais
-      parcela = pmt(RATE,n,saldo)/(1+RATE);
+      /* 22–72x, 1% a.m. — Price antecipada OU postecipada, conforme haja sinal.
+         O divisor 1,01 traduz "há um pagamento hoje". Esse pagamento é UM SÓ: ou é a 1ª
+         parcela (sem sinal), ou é o sinal (com sinal). Aplicar o divisor havendo sinal
+         desconta a antecipação duas vezes e a proposta sai mais barata que o contrato do
+         Facilita. Divergência encontrada em 22/08/2026. */
+      parcela = temEnt ? pmt(RATE,n,saldo)            // postecipada: o sinal é o pagamento de hoje, 1ª parcela em 30 dias
+                       : pmt(RATE,n,saldo)/(1+RATE);  // antecipada: a 1ª parcela é o pagamento de hoje
       totalParc = parcela*n;
       juros = totalParc - saldo;
       vp = comDesc;                                // parcelas antecipadas a 1% preservam o VP = principal
