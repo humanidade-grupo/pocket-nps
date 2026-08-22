@@ -760,9 +760,8 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
           <span class="cur">R$</span>
           <input type="tel" inputmode="numeric" id="entrada" placeholder="0,00" autocomplete="off">
         </div>
-        <p class="fieldnote"><b>A 1ª parcela já é paga no ato.</b> Só preencha aqui se o cliente pagar um valor
-          <b>extra</b>, além dela. Para reproduzir o cálculo do Facilita, deixe este campo em <b>0</b> e escolha o
-          número total de parcelas (a 1ª é a “Entrada” do Facilita).</p>
+        <p class="fieldnote"><b>Sinal pago hoje, se houver.</b> Com sinal, a 1ª parcela vence em <b>30 dias</b>.
+          Sem sinal, a 1ª parcela é paga <b>no ato</b>.</p>
       </div>
 
       <div class="field">
@@ -1804,7 +1803,7 @@ function abrirConfirmaEntrada(r0, depois){
       <b>1ª das ${r0.nparc} parcelas</b>. Aqui, é dinheiro <b>a mais</b>.</p>
     <div class="cmp">
       <div class="col good">
-        <div class="ct">Como o Facilita calcula</div>
+        <div class="ct">Sem entrada adicional</div>
         <div class="cv">${r0.nparc}x de ${brl(r0.parcela)}</div>
         <div class="cd">${cronoR0}</div>
         <div class="cx">Total <b>${brl(r0.total)}</b></div>
@@ -1820,8 +1819,8 @@ function abrirConfirmaEntrada(r0, depois){
       <button class="m-fix" id="entFix">Era a 1ª parcela — usar ${r0.nparc}x de ${brl(r0.parcela)}</button>
       <button class="m-keep" id="entKeep">Não, é valor extra mesmo</button>
     </div>
-    <p class="mfoot">Para reproduzir o Facilita, o campo fica em <b>0</b> e o prazo é o número
-      <b>total</b> de parcelas — a 1ª já é paga no ato.</p>`;
+    <p class="mfoot">Se não há sinal, o campo fica em <b>0</b> e o prazo é o número <b>total</b> de
+      parcelas — a 1ª já é paga no ato. Havendo sinal, ele entra aqui e a 1ª parcela vence em 30 dias.</p>`;
 
   entFocoAnt = document.activeElement;
   mask.hidden = false; mask.classList.add('show');
