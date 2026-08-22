@@ -1,7 +1,10 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 17/08/2026 14:20 — só bump de cache (guarda-corpo da entrada
+Alterações: Rev. 22/08/2026 09:49 — só bump de cache (Price 22–72x passa a ser
+condicional à entrada: com sinal, postecipada; sem sinal, antecipada. Total do fluxo
+sai da parcela já arredondada e a proposta passa a informar os vencimentos).
+Rev. 17/08/2026 14:20 — só bump de cache (guarda-corpo da entrada
 adicional: modal de confirmação quando o valor digitado é quase a parcela).
 Rev. 17/08/2026 12:57 — só bump de cache (campo "Entrada" do simulador
 passa a se chamar "Entrada adicional", com microcopy e cronograma explícito).
@@ -37,7 +40,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260817-1420';
+const CACHE = 'pocket-nps-260822-0949';
 
 const CORE = [
 './',

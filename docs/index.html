@@ -4,6 +4,21 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 22/08/2026 09:49 (Ricardo) — PRICE CONDICIONAL À ENTRADA: o divisor 1,01 (Price
+       antecipada) era aplicado SEMPRE na faixa 22–72x, inclusive havendo sinal. O divisor
+       significa "existe um pagamento hoje", e esse pagamento é um só: ou é a 1ª parcela
+       (sem sinal), ou é o sinal (com sinal). Com sinal, descontava a antecipação duas vezes
+       e a proposta saía mais barata que o contrato do Facilita — R$ 324,40 contra R$ 327,64
+       num caso de R$ 17.599 com sinal de R$ 1.000 em 71x (R$ 230,04 no total do fluxo).
+       Quatro mudanças: (1) sem entrada segue antecipada, com entrada passa a postecipada;
+       (2) o total do fluxo passa a sair da parcela JÁ ARREDONDADA, num ponto único (cent()),
+       para bater com a multiplicação que o cliente faz na mão sobre o papel que recebeu;
+       (3) a microcopy do campo deixa de mandar zerá-lo para reproduzir o Facilita — aquilo
+       era contorno do bug — e passa a explicar o efeito no vencimento; (4) o texto enviado
+       ao cliente passa a DIZER as datas (sinal hoje · 1ª parcela em DD/MM), em vez de
+       anunciar dois pagamentos "hoje" sem dizer o desembolso do dia.
+       Faixa 1–21x (sem juros) inalterada, texto e números. As tabelas de preços impressas
+       são geradas com entrada 0, ficam no ramo antecipado e NÃO mudam.
      Rev. 17/08/2026 14:20 (Ricardo) — GUARDA-CORPO DA ENTRADA ADICIONAL: o aviso passivo da
        rev. anterior não bastava (ninguém lê hint com cliente na frente). Agora há confirmação
        ativa, com três decisões deliberadas:
@@ -674,7 +689,7 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 17/08/2026 · 14:20</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 22/08/2026 · 09:49</div>
     </footer>
   </main>
 </section>
