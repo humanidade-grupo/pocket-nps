@@ -10,6 +10,11 @@
        "·" no lugar de "—". O desconto passa a sair na mensagem — decisão do Ricardo:
        "🏷️ Tabela: R$ X (-3%)", logo abaixo do valor e só quando houver; a linha 💲
        segue sendo o valor efetivo. Nenhum valor mudou.
+       A 1ª PARCELA NO ATO passou a depender da FORMA, não da faixa: até 21x sem
+       entrada, boleto sai com "Entrada: R$ X (1ª de N, no ato)" e vencimento "2ª
+       em DD/MM"; cartão de crédito segue sem a linha (nada é pago hoje) e "1ª em
+       DD/MM". O calc() não mudou — na faixa sem juros a parcela é saldo/n nos dois
+       casos; mudou só o que a mensagem afirma.
      Rev. 23/08/2026 22:32 (Ricardo) — O SIMULADOR VIRA A ÚNICA PORTA DO ANÚNCIO. A
        tela #anuncio nascera como destino independente, com o vendedor redigitando
        valor, parcela e prazo — dados que o app tinha acabado de calcular. Agora o
@@ -3256,11 +3261,13 @@ function cartConcluir(texto){
       anSt.qtde = p.nparc;
       anSt.entrada = p.entrada;         // já normalizada pelo calc() (Math.min com o valor)
       anSt.parcela = p.parcela;         // a JÁ arredondada — ponto único, retorno do calc()
-      // Natureza DEDUZIDA — a mesma leitura que render() e cronoLinhas() fazem do
-      // resultado do calc(): entrada>0 é sinal (Price postecipada, 1ª em 30 dias);
-      // entrada 0 no ramo 22–72x é a 1ª das parcelas no ato (antecipada); até 21x
-      // sem entrada não há nem sinal nem pagamento no ato.
-      anSt.nat = p.entrada>0 ? 'sinal' : (!p.semJuros ? 'primeira' : '');
+      // Natureza DEDUZIDA da entrada normalizada do calc() e da FORMA: entrada>0
+      // é sinal (1ª em 30 dias). Sem entrada, quem decide é a forma, não a faixa
+      // (regra do negócio, 23/08): no BOLETO o cliente paga a 1ª no ato — em
+      // 22–72x o calc() já a conta assim (Price antecipada) e em 1–21x a parcela
+      // é a mesma com ou sem ato (sem juros, saldo/n); no CARTÃO de crédito nada
+      // é pago hoje. Nenhum valor muda com isto — só o que a mensagem afirma.
+      anSt.nat = p.entrada>0 ? 'sinal' : (anSt.forma==='Boleto' ? 'primeira' : '');
     }else{
       anSt.qtde = 1;
       anSt.entrada = 0;
@@ -3280,7 +3287,7 @@ function cartConcluir(texto){
       row('Parcelas', anSt.qtde+'× de '+brl(anSt.parcela));
       if(anSt.nat==='sinal') row('Entrada', 'sinal de '+brl(anSt.entrada)+' pago hoje');
       else if(anSt.nat==='primeira') row('Entrada', brl(anSt.parcela)+' — a 1ª das parcelas, no ato');
-      else row('Entrada', 'sem entrada');
+      else row('Entrada', 'sem entrada — nada pago no ato');
     }else{
       row('Forma', anEsc(anSt.forma)+' à vista');
       row('Valor pago à vista', brl(anSt.parcela));
@@ -3398,8 +3405,8 @@ function cartConcluir(texto){
         L.push('🔢 *Parcelas:* '+anSt.qtde+'x '+brl(anSt.parcela));
         L.push('📅 *Venc.:* dia '+anDiaTxt()+' · 1ª em '+anVenc());
       }else{
-        // Até 21x sem entrada: não há sinal nem "1ª no ato" — a linha da entrada
-        // não sai, porque qualquer uma das duas frases seria mentira.
+        // Cartão de crédito sem entrada: nada é pago no ato — a linha da entrada
+        // não sai e a 1ª parcela vence só no mês seguinte.
         L.push('💳 *Forma:* '+anSt.forma);
         L.push('🔢 *Parcelas:* '+anSt.qtde+'x '+brl(anSt.parcela));
         L.push('📅 *Venc.:* dia '+anDiaTxt()+' · 1ª em '+anVenc());
