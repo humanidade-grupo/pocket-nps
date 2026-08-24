@@ -19,6 +19,13 @@
        seria errada); AVISO exige "Entendi, é isso mesmo" (entrada ≅ parcela dita
        sinal, jazigo já anunciado no aparelho, valor fora de 3–60 mil, origem de
        ponto físico com atendimento em outro lugar).
+       Mensagem em três variantes (sinal · 1ª das parcelas · à vista), com prévia ao
+       vivo; na variante "1ª das parcelas" o total SOMA a entrada (informou 59 + a
+       entrada, a linha diz 60 — não se confia no total digitado). Envio por wa.me
+       com o texto pronto (sem navigator.share, que mete a folha do sistema no
+       meio) e cópia com confirmação de 2s; a tela não limpa sozinha — "Novo
+       anúncio" limpa tudo menos o vendedor. Últimos 20 jazigos anunciados ficam
+       no aparelho e alimentam o aviso de repetição.
      Rev. 22/08/2026 11:57 (Ricardo) — A ALÇADA DO COORDENADOR NÃO EXISTE: o +3% da faixa
        24–25k é um desconto adicional do próprio vendedor, não um pedido de aprovação.
        **Nenhuma conta mudou** — `bandExtra()` e `descInfo()` nunca consultaram coordenador
@@ -1658,7 +1665,14 @@ input.an-plain{padding-left:14px; font-size:16px}
 
   <div class="an-checks" id="anChecks"></div>
 
+  <section class="card">
+    <div class="lbl">Prévia — é isto que vai para o grupo</div>
+    <pre class="an-prev" id="anPrev"></pre>
+  </section>
+
   <button class="an-btn zap" id="anEnviar" type="button" disabled>Enviar pelo WhatsApp</button>
+  <button class="an-btn sec" id="anCopiar" type="button" disabled>Copiar mensagem</button>
+  <button class="an-btn sec" id="anNovo" type="button" hidden>Novo anúncio</button>
 
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
@@ -3335,6 +3349,112 @@ function cartConcluir(texto){
     return !faltas.length && !erros.length && (!avisos.length || anAck===sig);
   }
 
+  // ---- mensagem ----
+  function anDDMM(dt){ return ('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2); }
+  // Vencimento: o dia escolhido, aplicado ao mês seguinte ao de hoje. O campo só
+  // aceita 1–28, então o dia sempre existe; o clamp para o último dia do mês
+  // fica de guarda caso a faixa mude um dia.
+  function anVenc(){
+    const h = new Date();
+    const y = h.getFullYear(), m = h.getMonth()+1;
+    const ult = new Date(y, m+1, 0).getDate();
+    return anDDMM(new Date(y, m, Math.min(anSt.dia||1, ult)));
+  }
+  function anMsg(){
+    const L = [];
+    L.push('📢 *ANÚNCIO DE VENDA*','');
+    L.push('*Quadra:* '+(anSt.quadra||'—'));
+    L.push('*Jazigo nº:* '+(anSt.jazigo||'—'));
+    L.push('*Produto:* '+(anSt.produto||'—'),'');
+    L.push('*Cliente:* '+(anSt.cliente.trim()||'—'),'');
+    L.push('💲 *Valor do jazigo:* '+brl(anSt.valor));
+    if(anParcelado()){
+      if(anSt.nat==='primeira'){
+        // O total INCLUI a entrada: o vendedor informa as parcelas ALÉM dela
+        // (informou 59 + a entrada, a linha diz 60). Não confiar no que ele
+        // digitou como total — somar é daqui.
+        const tot = anSt.qtde+1;
+        L.push('💰 *Entrada:* '+brl(anSt.entrada)+' — é a 1ª das '+tot+' parcelas, paga no ato');
+        L.push('💳 *Forma:* '+anSt.forma);
+        L.push('🔢 *Qtde parcelas:* '+tot+' (a 1ª no ato)');
+        L.push('📅 *Vencimento:* dia '+(anSt.dia||'—')+' — 2ª parcela em '+anVenc());
+      }else if(anSt.nat==='sinal'){
+        L.push('💰 *Sinal:* '+brl(anSt.entrada)+' pago hoje');
+        L.push('💳 *Forma:* '+anSt.forma);
+        L.push('🔢 *Qtde parcelas:* '+anSt.qtde);
+        L.push('📅 *Vencimento:* dia '+(anSt.dia||'—')+' — 1ª parcela em '+anVenc());
+      }else{
+        // prévia antes da escolha da natureza — o envio fica travado até escolher
+        L.push('💰 *Entrada:* '+brl(anSt.entrada)+' — sinal ou 1ª parcela? (escolha acima)');
+        L.push('💳 *Forma:* '+anSt.forma);
+        L.push('🔢 *Qtde parcelas:* '+anSt.qtde);
+        L.push('📅 *Vencimento:* dia '+(anSt.dia||'—'));
+      }
+      L.push('💵 *Valor da parcela:* '+brl(anSt.parcela));
+    }else{
+      L.push('💳 *Forma:* '+(anSt.forma||'—')+' à vista');
+      L.push('💵 *Valor pago:* '+brl(anSt.parcela));
+    }
+    L.push('');
+    const sub = AN_ORIGEM_SUB[anSt.origem];
+    L.push('🚸 *Origem do lead:* '+(anSt.origem? anSt.origem+(sub? ' — '+(anSt.origemSub.trim()||'—') : '') : '—'));
+    L.push('🚪 *Chegou por:* '+(anSt.chegou==='Outro'? 'Outro — '+(anSt.chegouSub.trim()||'—') : (anSt.chegou||'—')));
+    L.push('📝 *Detalhe da captura:* '+(anSt.detalhe.trim()||'—'),'');
+    L.push('👤 '+(anSt.vendedor||'—')+' · '+new Date().toLocaleDateString('pt-BR'));
+    return L.join('\n');
+  }
+
+  // ---- envio ----
+  // Últimos 20 anúncios deste aparelho — alimentam o aviso de jazigo repetido.
+  function anRegistrar(){
+    try{
+      const arr = anUltimos().filter(u=> !(u.q===anSt.quadra && u.j===anSt.jazigo));
+      arr.unshift({q:anSt.quadra, j:anSt.jazigo, d:escHojeISO()});   // data LOCAL — toISOString viraria amanhã depois das 21h (UTC-3)
+      localStorage.setItem('anuncio_ultimos', JSON.stringify(arr.slice(0,20)));
+    }catch(e){}
+  }
+  function anAposEnvio(){
+    anRegistrar();
+    $an('anNovo').hidden = false;
+    // O registro recém-gravado faria o aviso de repetição travar o REENVIO do
+    // próprio anúncio; confirma de ofício o conjunto atual de avisos — qualquer
+    // mudança nos campos derruba a confirmação de novo.
+    const r = anValida(); anAck = r.avisos.join('§');
+    anRender();
+  }
+
+  $an('anEnviar').addEventListener('click', ()=>{
+    if($an('anEnviar').disabled) return;
+    // wa.me, não navigator.share: a folha do sistema no meio acrescenta um toque.
+    // O vendedor escolhe o grupo no próprio WhatsApp.
+    window.open('https://wa.me/?text='+encodeURIComponent(anMsg()), '_blank');
+    anAposEnvio();
+  });
+  let anCopiaT;
+  $an('anCopiar').addEventListener('click', async ()=>{
+    if($an('anCopiar').disabled) return;
+    try{
+      await navigator.clipboard.writeText(anMsg());
+      const b = $an('anCopiar'); b.textContent = 'Copiado ✓';
+      clearTimeout(anCopiaT); anCopiaT = setTimeout(()=>{ b.textContent = 'Copiar mensagem'; }, 2000);
+      anAposEnvio();
+    }catch(e){ toast('Não deu para copiar — tente de novo'); }
+  });
+  // A tela NÃO limpa sozinha depois do envio (pode ser preciso reenviar).
+  // "Novo anúncio" limpa tudo, menos o vendedor selecionado.
+  $an('anNovo').addEventListener('click', ()=>{
+    ['anJazigo','anCliente','anValor','anQtde','anEntrada','anDia','anParcela','anOrigemSub','anChegouSub','anDetalhe'].forEach(id=>{ $an(id).value=''; });
+    ['anSegQuadra','anSegProduto','anSegForma','anSegNat'].forEach(id=>{
+      [...$an(id).querySelectorAll('button')].forEach(b=> b.setAttribute('aria-pressed','false'));
+    });
+    ['anOrigem','anChegou'].forEach(id=>{ $an(id).selectedIndex = 0; $an(id).classList.add('vazio'); });
+    const vend = anSt.vendedor;
+    Object.keys(anSt).forEach(k=>{ anSt[k] = (typeof anSt[k]==='number')? 0 : ''; });
+    anSt.vendedor = vend;
+    anAck = ''; $an('anNovo').hidden = true;
+    window.scrollTo(0,0); anRender();
+  });
+
   function anRender(){
     const teto = (anSt.forma && anSt.produto)? AN_TETO[anSt.forma][anSt.produto] : 0;
     $an('anTetoHint').textContent = teto? (anEhPix()? '(Pix é à vista — 1x)' : '(até '+teto+'x)') : '';
@@ -3356,7 +3476,10 @@ function cartConcluir(texto){
     $an('anDetExtra').hidden = min!==40;
 
     const r = anValida();
-    $an('anEnviar').disabled = !anChecks(r.erros, r.faltas, r.avisos);
+    const ok = anChecks(r.erros, r.faltas, r.avisos);
+    $an('anEnviar').disabled = !ok;
+    $an('anCopiar').disabled = !ok;
+    $an('anPrev').textContent = anMsg();
   }
   anRender();
 })();
