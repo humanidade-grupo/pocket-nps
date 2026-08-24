@@ -15,6 +15,12 @@
        21x sem entrada não há nem um nem outro (a linha da entrada não sai). A parcela
        é a JÁ arredondada, do ponto único do calc(). Abrir #anuncio sem proposta no
        estado mostra aviso com botão para o Simulador — nunca formulário vazio.
+       Vencimento fechado em 05/15/25 (regra do Parque): o dia livre 1–28 virou três
+       botões, e o clamp de dia inexistente no mês morreu junto (05/15/25 existem
+       em todo mês). Guardrails E2, E3, E4, A1 e A3 retirados: conferiam valores
+       digitados, e nenhum deles é mais digitado. Ficam E1 (obrigatórios), A2
+       (jazigo repetido no aparelho) e A4 (origem de ponto físico com atendimento
+       em outro lugar). Código que não pode disparar não é rede de segurança.
      Rev. 23/08/2026 22:05 (Ricardo) — TELA NOVA: ANÚNCIO DE VENDA (#anuncio). A cantada
        da venda no grupo era digitada à mão a partir de um modelo colado, com a origem
        do lead em texto livre. Formulário fechado com 16 campos: jazigo, cliente,
@@ -1608,8 +1614,12 @@ input.an-plain{padding-left:14px; font-size:16px}
     <section class="card" id="anFDia">
       <div class="step"><span class="n">3</span><h2>O vencimento</h2></div>
       <div class="field" style="margin-top:0">
-        <label>Dia do vencimento <span class="opt">(1 a 28)</span></label>
-        <input type="tel" inputmode="numeric" id="anDia" class="an-plain" placeholder="ex.: 15" autocomplete="off" maxlength="2">
+        <label>Dia do vencimento</label>
+        <div class="seg" id="anSegDia" role="group" aria-label="Dia do vencimento">
+          <button data-d="5" aria-pressed="false">05</button>
+          <button data-d="15" aria-pressed="false">15</button>
+          <button data-d="25" aria-pressed="false">25</button>
+        </div>
       </div>
     </section>
 
@@ -3160,12 +3170,8 @@ function cartConcluir(texto){
   const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
   const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco'};
   const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Shopping Jardim Norte','Ligação para a recepção','WhatsApp (SATI)','Contato direto com o vendedor','Outro'];
-  // Tetos de prazo por forma × produto (só o guardrail E2 ainda os confere).
-  const AN_TETO = {'Boleto':{'Perpétuo':72,'Reserva':60,'Temporário':21},'Cartão':{'Perpétuo':21,'Reserva':21,'Temporário':21},'Pix':{'Perpétuo':1,'Reserva':1,'Temporário':1}};
-
   const $an = id => document.getElementById(id);
   const anEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const anNum = v => (isFinite(v)?v:0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 
   // Os campos de número (valor, qtde, entrada, parcela, produto, forma, natureza)
   // NÃO são mais digitados: chegam do retrato da proposta em anCarregarProposta().
@@ -3218,7 +3224,8 @@ function cartConcluir(texto){
     });
   }
   anInt($an('anJazigo'),'jazigo');
-  anInt($an('anDia'),'dia');
+  // O vencimento do Parque fecha em três datas — não é dia livre.
+  anSeg('anSegDia','d','dia', ()=>{ anSt.dia = parseInt(anSt.dia,10); });
 
   function anTexto(id, key){ $an(id).addEventListener('input', ()=>{ anSt[key]=$an(id).value; anRender(); }); }
   anTexto('anCliente','cliente');
@@ -3227,7 +3234,6 @@ function cartConcluir(texto){
   anTexto('anDetalhe','detalhe');
 
   // ---- condicionais ----
-  const anEhPix = ()=> anSt.forma==='Pix';
   const anParcelado = ()=> !!anPropostaAtual && anPropostaAtual.forma==='prazo';
   const anAVista = ()=> !!anPropostaAtual && anPropostaAtual.forma==='avista';
   // Detalhe da captura: 40 caracteres nos três casos em que o "não sei" se
@@ -3297,7 +3303,6 @@ function cartConcluir(texto){
   function anValida(){
     const faltas=[], erros=[], avisos=[];
     const parc = anParcelado();
-    const teto = (anSt.forma && anSt.produto)? AN_TETO[anSt.forma][anSt.produto] : 0;
 
     // E1 — obrigatórios e faixas (só o que o vendedor ainda digita)
     if(!anSt.quadra) faltas.push('quadra');
@@ -3306,10 +3311,7 @@ function cartConcluir(texto){
     const nome = anSt.cliente.trim();
     if(!nome) faltas.push('cliente');
     else if(nome.length<5 || nome.split(/\s+/).length<2) erros.push('Nome e sobrenome do cliente.');
-    if(parc){
-      if(!anSt.dia) faltas.push('dia do vencimento');
-      else if(anSt.dia<1 || anSt.dia>28) erros.push('Dia do vencimento: de 1 a 28.');
-    }
+    if(parc && !anSt.dia) faltas.push('dia do vencimento');
     if(!anSt.origem) faltas.push('origem do lead');
     const sub = AN_ORIGEM_SUB[anSt.origem];
     if(sub){
@@ -3325,36 +3327,11 @@ function cartConcluir(texto){
     if(!det) faltas.push('detalhe da captura');
     else if(det.length<min) erros.push('Detalhe da captura: mínimo de '+min+' caracteres neste caso ('+det.length+' até aqui).');
     if(!anSt.vendedor) faltas.push('vendedor');
-
-    // E2 — teto de prazo (com os números vindo do Simulador, não deveria disparar)
-    if(anSt.qtde && teto && anSt.qtde>teto)
-      erros.push(anEhPix()? 'Pix é à vista — 1x.' : anSt.produto+' no '+anSt.forma.toLowerCase()+' vai até '+teto+'x.');
-    if(parc){
-      // E3/E4 — aritmética por faixa. Até 21x não há juros e a soma tem que
-      // FECHAR com o valor (tolerância de R$ 1,00); de 22x em diante há juros de
-      // 1% a.m. e a soma tem que PASSAR do valor — a igualdade ali seria errada.
-      if(anSt.valor>0 && anSt.parcela>0 && !(teto && anSt.qtde>teto)){
-        const soma = anSt.entrada + anSt.qtde*anSt.parcela;
-        if(anSt.qtde<=21){
-          const dif = soma - anSt.valor;
-          if(Math.abs(dif)>1)
-            erros.push('Não fecha: '+anNum(anSt.entrada)+' + '+anSt.qtde+' × '+anNum(anSt.parcela)+' = '+anNum(soma)+', e o valor do jazigo é '+anNum(anSt.valor)+'. Diferença de R$ '+anNum(Math.abs(dif))+'.');
-        } else if(soma<=anSt.valor){
-          erros.push('De 22x em diante há juros de 1% a.m. e a soma tem que passar do valor do jazigo. Aqui: '+anNum(anSt.entrada)+' + '+anSt.qtde+' × '+anNum(anSt.parcela)+' = '+anNum(soma)+', contra '+anNum(anSt.valor)+' do jazigo. Confira a parcela e a quantidade.');
-        }
-      }
-      // A1 — entrada praticamente igual à parcela, declarada como sinal
-      if(anSt.nat==='sinal' && anSt.parcela>0 && Math.abs(anSt.entrada-anSt.parcela)<5)
-        avisos.push('A entrada é praticamente igual à parcela. No Facilita isso normalmente quer dizer que ela é a 1ª das parcelas, não um sinal a mais. Confirme antes de anunciar.');
-    }
     // A2 — jazigo já anunciado neste aparelho (últimos 20)
     if(anSt.quadra && anSt.jazigo){
       const ja = anUltimos().find(u=> u.q===anSt.quadra && u.j===anSt.jazigo);
       if(ja) avisos.push(anSt.quadra+'-'+anSt.jazigo+' já foi anunciado neste aparelho em '+ja.d.slice(8,10)+'/'+ja.d.slice(5,7)+'.');
     }
-    // A3 — valor fora da faixa usual
-    if(anSt.valor>0 && (anSt.valor<3000 || anSt.valor>60000))
-      avisos.push('Valor do jazigo fora da faixa usual (R$ 3.000,00 a R$ 60.000,00). Confira o valor antes de anunciar.');
     // A4 — origem de ponto físico com atendimento em outro lugar. É aviso e não
     // erro: a combinação existe (visitou hoje, fechou por telefone amanhã), só é
     // rara o bastante para merecer uma conferida.
@@ -3382,15 +3359,13 @@ function cartConcluir(texto){
 
   // ---- mensagem ----
   function anDDMM(dt){ return ('0'+dt.getDate()).slice(-2)+'/'+('0'+(dt.getMonth()+1)).slice(-2); }
-  // Vencimento: o dia escolhido, aplicado ao mês seguinte ao de hoje. O campo só
-  // aceita 1–28, então o dia sempre existe; o clamp para o último dia do mês
-  // fica de guarda caso a faixa mude um dia.
+  // Vencimento: o dia escolhido (05, 15 ou 25 — existem em todo mês), aplicado
+  // ao mês seguinte ao de hoje.
   function anVenc(){
     const h = new Date();
-    const y = h.getFullYear(), m = h.getMonth()+1;
-    const ult = new Date(y, m+1, 0).getDate();
-    return anDDMM(new Date(y, m, Math.min(anSt.dia||1, ult)));
+    return anDDMM(new Date(h.getFullYear(), h.getMonth()+1, anSt.dia||1));
   }
+  const anDiaTxt = ()=> anSt.dia? ('0'+anSt.dia).slice(-2) : '—';
   function anMsg(){
     const L = [];
     L.push('📢 *ANÚNCIO DE VENDA*','');
@@ -3407,18 +3382,18 @@ function cartConcluir(texto){
         L.push('💰 *Entrada:* '+brl(anSt.parcela)+' — é a 1ª das '+anSt.qtde+' parcelas, paga no ato');
         L.push('💳 *Forma:* '+anSt.forma);
         L.push('🔢 *Qtde parcelas:* '+anSt.qtde+' (a 1ª no ato)');
-        L.push('📅 *Vencimento:* dia '+(anSt.dia||'—')+' — 2ª parcela em '+anVenc());
+        L.push('📅 *Vencimento:* dia '+anDiaTxt()+' — 2ª parcela em '+anVenc());
       }else if(anSt.nat==='sinal'){
         L.push('💰 *Sinal:* '+brl(anSt.entrada)+' pago hoje');
         L.push('💳 *Forma:* '+anSt.forma);
         L.push('🔢 *Qtde parcelas:* '+anSt.qtde);
-        L.push('📅 *Vencimento:* dia '+(anSt.dia||'—')+' — 1ª parcela em '+anVenc());
+        L.push('📅 *Vencimento:* dia '+anDiaTxt()+' — 1ª parcela em '+anVenc());
       }else{
         // Até 21x sem entrada: não há sinal nem "1ª no ato" — a linha da entrada
         // não sai, porque qualquer uma das duas frases seria mentira.
         L.push('💳 *Forma:* '+anSt.forma);
         L.push('🔢 *Qtde parcelas:* '+anSt.qtde);
-        L.push('📅 *Vencimento:* dia '+(anSt.dia||'—')+' — 1ª parcela em '+anVenc());
+        L.push('📅 *Vencimento:* dia '+anDiaTxt()+' — 1ª parcela em '+anVenc());
       }
       L.push('💵 *Valor da parcela:* '+brl(anSt.parcela));
     }else{
@@ -3474,8 +3449,8 @@ function cartConcluir(texto){
   // "Novo anúncio" limpa tudo menos o vendedor e volta ao Simulador: anúncio
   // novo é venda nova, e venda nova começa por uma proposta nova.
   $an('anNovo').addEventListener('click', ()=>{
-    ['anJazigo','anCliente','anDia','anOrigemSub','anChegouSub','anDetalhe'].forEach(id=>{ $an(id).value=''; });
-    [...$an('anSegQuadra').querySelectorAll('button')].forEach(b=> b.setAttribute('aria-pressed','false'));
+    ['anJazigo','anCliente','anOrigemSub','anChegouSub','anDetalhe'].forEach(id=>{ $an(id).value=''; });
+    ['anSegQuadra','anSegDia'].forEach(id=>{ [...$an(id).querySelectorAll('button')].forEach(x=> x.setAttribute('aria-pressed','false')); });
     ['anOrigem','anChegou'].forEach(id=>{ $an(id).selectedIndex = 0; $an(id).classList.add('vazio'); });
     const vend = anSt.vendedor;
     Object.keys(anSt).forEach(k=>{ anSt[k] = (typeof anSt[k]==='number')? 0 : ''; });
