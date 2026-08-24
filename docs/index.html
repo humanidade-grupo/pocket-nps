@@ -4,6 +4,12 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 23/08/2026 23:12 (Ricardo) — MENSAGEM DO ANÚNCIO ENCURTADA para caber no
+       celular: rótulos curtos (Valor · Origem · Chegou · Detalhe · Venc.), as linhas
+       de quantidade e valor da parcela fundidas em "55x R$ 359,40", vencimento com
+       "·" no lugar de "—". O desconto passa a sair na mensagem — decisão do Ricardo:
+       "🏷️ Tabela: R$ X (-3%)", logo abaixo do valor e só quando houver; a linha 💲
+       segue sendo o valor efetivo. Nenhum valor mudou.
      Rev. 23/08/2026 22:32 (Ricardo) — O SIMULADOR VIRA A ÚNICA PORTA DO ANÚNCIO. A
        tela #anuncio nascera como destino independente, com o vendedor redigitando
        valor, parcela e prazo — dados que o app tinha acabado de calcular. Agora o
@@ -3373,38 +3379,40 @@ function cartConcluir(texto){
     L.push('*Jazigo nº:* '+(anSt.jazigo||'—'));
     L.push('*Produto:* '+(anSt.produto||'—'),'');
     L.push('*Cliente:* '+(anSt.cliente.trim()||'—'),'');
-    L.push('💲 *Valor do jazigo:* '+brl(anSt.valor));
+    L.push('💲 *Valor:* '+brl(anSt.valor));
+    // Desconto na mensagem (decisão do Ricardo, 23/08): só quando houver.
+    // A linha 💲 segue sendo o valor efetivo (comDesc); a tabela vai ao lado.
+    if(anPropostaAtual && anPropostaAtual.desconto>0.5)
+      L.push('🏷️ *Tabela:* '+brl(anPropostaAtual.tabela)+' (-'+(anPropostaAtual.di.total*100).toFixed(0)+'%)');
     if(anParcelado()){
       if(anSt.nat==='primeira'){
-        // 22–72x sem sinal: a "entrada" É a 1ª das nparc parcelas (o valor é o da
-        // parcela). O total NÃO soma nada — o calc() já conta a 1ª no ato dentro
-        // das nparc; transformar em "entrada + n−1" seria refazer a conta dele.
-        L.push('💰 *Entrada:* '+brl(anSt.parcela)+' — é a 1ª das '+anSt.qtde+' parcelas, paga no ato');
+        // Sem sinal: a "entrada" É a 1ª das nparc parcelas (o valor é o da
+        // parcela). O total NÃO soma nada — o calc() já conta a 1ª dentro das nparc.
+        L.push('💰 *Entrada:* '+brl(anSt.parcela)+' (1ª de '+anSt.qtde+', no ato)');
         L.push('💳 *Forma:* '+anSt.forma);
-        L.push('🔢 *Qtde parcelas:* '+anSt.qtde+' (a 1ª no ato)');
-        L.push('📅 *Vencimento:* dia '+anDiaTxt()+' — 2ª parcela em '+anVenc());
+        L.push('🔢 *Parcelas:* '+anSt.qtde+'x '+brl(anSt.parcela));
+        L.push('📅 *Venc.:* dia '+anDiaTxt()+' · 2ª em '+anVenc());
       }else if(anSt.nat==='sinal'){
-        L.push('💰 *Sinal:* '+brl(anSt.entrada)+' pago hoje');
+        L.push('💰 *Sinal:* '+brl(anSt.entrada)+' hoje');
         L.push('💳 *Forma:* '+anSt.forma);
-        L.push('🔢 *Qtde parcelas:* '+anSt.qtde);
-        L.push('📅 *Vencimento:* dia '+anDiaTxt()+' — 1ª parcela em '+anVenc());
+        L.push('🔢 *Parcelas:* '+anSt.qtde+'x '+brl(anSt.parcela));
+        L.push('📅 *Venc.:* dia '+anDiaTxt()+' · 1ª em '+anVenc());
       }else{
         // Até 21x sem entrada: não há sinal nem "1ª no ato" — a linha da entrada
         // não sai, porque qualquer uma das duas frases seria mentira.
         L.push('💳 *Forma:* '+anSt.forma);
-        L.push('🔢 *Qtde parcelas:* '+anSt.qtde);
-        L.push('📅 *Vencimento:* dia '+anDiaTxt()+' — 1ª parcela em '+anVenc());
+        L.push('🔢 *Parcelas:* '+anSt.qtde+'x '+brl(anSt.parcela));
+        L.push('📅 *Venc.:* dia '+anDiaTxt()+' · 1ª em '+anVenc());
       }
-      L.push('💵 *Valor da parcela:* '+brl(anSt.parcela));
     }else{
       L.push('💳 *Forma:* '+(anSt.forma||'—')+' à vista');
-      L.push('💵 *Valor pago:* '+brl(anSt.parcela));
+      L.push('💵 *Pago:* '+brl(anSt.parcela));
     }
     L.push('');
     const sub = AN_ORIGEM_SUB[anSt.origem];
-    L.push('🚸 *Origem do lead:* '+(anSt.origem? anSt.origem+(sub? ' — '+(anSt.origemSub.trim()||'—') : '') : '—'));
-    L.push('🚪 *Chegou por:* '+(anSt.chegou==='Outro'? 'Outro — '+(anSt.chegouSub.trim()||'—') : (anSt.chegou||'—')));
-    L.push('📝 *Detalhe da captura:* '+(anSt.detalhe.trim()||'—'),'');
+    L.push('🚸 *Origem:* '+(anSt.origem? anSt.origem+(sub? ' — '+(anSt.origemSub.trim()||'—') : '') : '—'));
+    L.push('🚪 *Chegou:* '+(anSt.chegou==='Outro'? 'Outro — '+(anSt.chegouSub.trim()||'—') : (anSt.chegou||'—')));
+    L.push('📝 *Detalhe:* '+(anSt.detalhe.trim()||'—'),'');
     L.push('👤 '+(anSt.vendedor||'—')+' · '+new Date().toLocaleDateString('pt-BR'));
     return L.join('\n');
   }
