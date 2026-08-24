@@ -4,6 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 23/08/2026 22:05 (Ricardo) — TELA NOVA: ANÚNCIO DE VENDA (#anuncio). A cantada
+       da venda no grupo era digitada à mão a partir de um modelo colado, com a origem
+       do lead em texto livre. Formulário fechado com 16 campos: jazigo, cliente,
+       pagamento (tetos de prazo por produto × forma; Pix é à vista), a escolha
+       explícita entre SINAL e 1ª das parcelas, e a captura da origem em DOIS campos —
+       Origem do lead (o que trouxe o cliente; 14 opções idênticas às do CRM Facilita,
+       caractere a caractere) e Chegou por (por onde ele falou; 6 opções). São duas
+       colunas distintas no Cofre (origem · entrada) e não podem ser fundidas.
+       Vendedor lembrado por aparelho (localStorage); lista reusada da Escala.
      Rev. 22/08/2026 11:57 (Ricardo) — A ALÇADA DO COORDENADOR NÃO EXISTE: o +3% da faixa
        24–25k é um desconto adicional do próprio vendedor, não um pedido de aprovação.
        **Nenhuma conta mudou** — `bandExtra()` e `descInfo()` nunca consultaram coordenador
@@ -618,6 +627,29 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 .cart-kpi{background:#fff; border:1px solid var(--border); border-radius:12px; padding:13px 6px}
 .cart-kpi b{display:block; font-family:"PF Marlet Display",serif; font-size:22px; line-height:1}
 .cart-kpi span{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; font-weight:700}
+
+/* ---------- Anúncio de Venda ---------- */
+/* hidden precisa vencer qualquer display de classe dentro da tela */
+#view-anuncio [hidden]{display:none!important}
+.an-sel{width:100%; border:1.5px solid var(--border-strong); background:#fff; border-radius:12px; padding:13px 14px; font-family:inherit; font-size:15px; font-weight:600; color:var(--marrom); outline:none}
+.an-sel:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.16)}
+.an-sel.vazio{color:var(--muted); font-weight:500}
+input.an-plain{padding-left:14px; font-size:16px}
+.an-ta{width:100%; font-family:inherit; font-size:15px; line-height:1.5; color:var(--marrom); background:#fff; border:1.5px solid var(--border-strong); border-radius:12px; padding:12px 13px; min-height:96px; resize:vertical; outline:none}
+.an-ta:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.16)}
+.an-radio{display:grid; gap:8px}
+.an-radio button{border:1.5px solid var(--border-strong); background:#fff; color:var(--marrom); font-family:inherit; font-size:13.5px; font-weight:600; line-height:1.4; padding:12px 13px; border-radius:12px; cursor:pointer; text-align:left}
+.an-radio button[aria-pressed="true"]{border-color:var(--dourado); background:rgba(204,144,11,.10); box-shadow:0 0 0 1px var(--dourado) inset}
+.an-checks{margin-top:14px; display:grid; gap:8px}
+.an-check{border-radius:var(--radius-sm); padding:11px 13px; font-size:13px; line-height:1.45; font-weight:600}
+.an-check.err{background:rgba(154,59,42,.10); border:1px solid rgba(154,59,42,.30); color:var(--danger)}
+.an-check.warn{background:rgba(181,127,10,.13); border:1px solid rgba(181,127,10,.32); color:var(--cta-hover)}
+.an-btn{width:100%; border:0; border-radius:12px; padding:15px; font-family:inherit; font-weight:700; font-size:16px; cursor:pointer; background:var(--dourado); color:#fff; margin-top:10px}
+.an-btn:active{background:var(--cta-hover)}
+.an-btn[disabled]{opacity:.5; cursor:not-allowed}
+.an-btn.sec{background:transparent; color:var(--marrom); border:1.5px solid var(--border-strong)}
+.an-btn.zap{background:#25D366}
+.an-prev{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px; line-height:1.5; color:var(--marrom); background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 13px; margin:10px 0 0; white-space:pre-wrap; word-break:break-word}
 </style>
 </head>
 <body>
@@ -671,6 +703,13 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
       <button class="tool" data-go="carteira">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v14.5"/><path d="M4 6.5V18a2 2 0 0 0 2 2h13"/><line x1="8" y1="9" x2="15" y2="9"/><line x1="8" y1="13" x2="12.5" y2="13"/></svg></span>
         <span class="tx"><span class="t">Carteira do Dia</span><span class="d">Sua lista de contatos do dia, um por vez, pelo seu WhatsApp.</span></span>
+        <span class="badge">Novo</span>
+        <span class="arw">&rsaquo;</span>
+      </button>
+
+      <button class="tool" data-go="anuncio">
+        <span class="ic" style="font-size:24px">📢</span>
+        <span class="tx"><span class="t">Anúncio de Venda</span><span class="d">A venda fechada, anunciada no grupo sem digitar nada à mão.</span></span>
         <span class="badge">Novo</span>
         <span class="arw">&rsaquo;</span>
       </button>
@@ -1469,6 +1508,153 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
     <div class="inst">O app não envia mensagem sozinho. Quem fala é você, do seu número.</div>
+  </footer>
+</main>
+</section>
+
+<!-- ==================== ANÚNCIO DE VENDA ==================== -->
+<section class="view" id="view-anuncio">
+<header>
+  <div class="deco"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="841.2131" height="910.218" viewBox="0 0 841.2131 910.218">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M539.3936 84.74298H1380.6067V994.961H539.3936Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M0 1080H1920V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,450.565,8)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0 39.455-2.633C61.893-4.131 83.315-5.447 105.486-10.131 111.29-11.357 166.219-41.418 157.827-61.496L146.269-89.144C131.02-125.624 102.772-162.096 129.505-198.98 136.188-208.201 141.169-221.389 151.2-227.426 165.82-236.224 185.306-239.266 202.379-239.124 227.095-238.918 249.814-240.622 273.885-244.55 311.902-250.754 301.477-273.252 327.468-281.478 346.204-287.407 363.741-291.099 382.648-298.884 350.667-299.915 332.522-290.925 300.013-303.691 257.192-320.506 220.098-328.385 182.035-354.84 177.871-360.255 178.284-369.867 177.167-376.312 169.849-418.538 190.961-439.82 222.392-462.144 237.094-472.586 251.073-483.241 264.88-494.492 273.333-501.38 274.309-510.595 273.047-520.843 270.195-544.003 265.849-565.771 260.744-588.691 254.373-617.292 223.033-658.015 205.757-682.235L148.385-762.668C114.531-810.131 46.061-872.147-7.337-893.475-9.198-894.218-13.887-894.002-13.65-893.067-13.415-892.139-12.861-889.431-12.266-888.562L18.183-844.164C39.188-813.535 67.443-720.838 80.434-681.673L92.654-644.832C96.349-633.693 101.356-623.503 106.007-612.557 109.763-603.717 107.718-592.309 118.558-586.37 114.525-576.881 111.718-568.263 107.249-559.243 95.11-534.739 64.168-510.128 45.543-488.538 33.208-474.239 15.298-438.638 8.667-420.308 7.029-415.779 1.862-410.643-4.443-412.774-26.31-420.163-50.823-420.37-72.801-429.176L-408.043-595.624C-419.411-601.268-429.321-605.469-442.565-607.204-432.425-595.965-421.025-586.917-407.767-580.269L-300.965-526.711C-295.829-524.135-289.703-520.776-285.378-517.485L-225.259-471.73C-251.787-478.146-274.937-483.541-298.41-492.729L-382.242-525.545C-392.651-529.619-402.372-533.223-415.031-532.096-399.52-518.871-382.099-511.863-363.619-504.17L-180.964-428.141C-156.325-417.885-134.406-404.577-111.419-391.26-79.046-372.504-50.426-349.557-25.492-322.018-13.253-308.5-24.651-276.461-24.868-268.069L-25.665-237.32C-26.092-220.837-23.532-202.922-18.587-187.216L.804-125.621-4.837-99.897C-15.247-101.327-19.566-94.486-26.155-91.343L-52.34-78.85C-66.665-72.016-81.418-67.622-96.66-63.116-109.996-59.174-122.582-53.707-136.214-50.758-154.613-46.778-173.118-44.396-191.986-43.043-207.544-41.927-221.81-45.471-239.071-42.484-185.262-15.717-127.614-5.808-69.832 0H0Z"/>
+</g>
+</g>
+</svg>
+</div>
+  <div class="hwrap">
+    <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
+    <div class="brandrow" style="margin-top:12px">
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    </div>
+    <span class="apptag">Pocket NPS · Anúncio</span>
+    <h1>Anúncio de Venda</h1>
+    <p class="lead">Formulário fechado: preencha, confira a prévia e envie no grupo pelo seu WhatsApp.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <div class="step"><span class="n">1</span><h2>O jazigo</h2></div>
+    <div class="field" style="margin-top:0">
+      <label>Quadra</label>
+      <div class="seg" id="anSegQuadra" role="group" aria-label="Quadra">
+        <button data-q="M-19" aria-pressed="false">M-19</button>
+        <button data-q="M-20" aria-pressed="false">M-20</button>
+        <button data-q="M-21" aria-pressed="false">M-21</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Jazigo nº</label>
+      <input type="tel" inputmode="numeric" id="anJazigo" class="an-plain" placeholder="ex.: 373" autocomplete="off" maxlength="4">
+    </div>
+    <div class="field">
+      <label>Produto</label>
+      <div class="seg" id="anSegProduto" role="group" aria-label="Produto">
+        <button data-p="Perpétuo" aria-pressed="false">Perpétuo</button>
+        <button data-p="Reserva" aria-pressed="false">Reserva</button>
+        <button data-p="Temporário" aria-pressed="false">Temporário</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="step"><span class="n">2</span><h2>O cliente</h2></div>
+    <div class="field" style="margin-top:0">
+      <label>Cliente</label>
+      <input type="text" id="anCliente" class="an-plain" placeholder="Nome e sobrenome" autocomplete="off">
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="step"><span class="n">3</span><h2>O pagamento</h2></div>
+    <div class="field" style="margin-top:0">
+      <label>Valor do jazigo</label>
+      <div class="money"><span class="cur">R$</span><input type="tel" inputmode="numeric" id="anValor" placeholder="0,00" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <label>Forma de pagamento</label>
+      <div class="seg" id="anSegForma" role="group" aria-label="Forma de pagamento">
+        <button data-f="Boleto" aria-pressed="false">Boleto</button>
+        <button data-f="Cartão" aria-pressed="false">Cartão</button>
+        <button data-f="Pix" aria-pressed="false">Pix<span class="s">à vista</span></button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Qtde de parcelas <span class="opt" id="anTetoHint"></span></label>
+      <input type="tel" inputmode="numeric" id="anQtde" class="an-plain" placeholder="ex.: 60" autocomplete="off" maxlength="2">
+    </div>
+    <div class="field" id="anFNat" hidden>
+      <label>Natureza da entrada</label>
+      <div class="an-radio" id="anSegNat" role="group" aria-label="Natureza da entrada">
+        <button data-n="sinal" aria-pressed="false">A entrada é um <b>SINAL</b>, valor a mais além das parcelas</button>
+        <button data-n="primeira" aria-pressed="false">A entrada é a <b>1ª das parcelas</b>, paga no ato</button>
+      </div>
+    </div>
+    <div class="field" id="anFEntrada" hidden>
+      <label>Valor da entrada</label>
+      <div class="money"><span class="cur">R$</span><input type="tel" inputmode="numeric" id="anEntrada" placeholder="0,00" autocomplete="off"></div>
+    </div>
+    <div class="field" id="anFDia" hidden>
+      <label>Dia do vencimento <span class="opt">(1 a 28)</span></label>
+      <input type="tel" inputmode="numeric" id="anDia" class="an-plain" placeholder="ex.: 15" autocomplete="off" maxlength="2">
+    </div>
+    <div class="field" id="anFParcela" hidden>
+      <label id="anParcelaLbl">Valor da parcela</label>
+      <div class="money"><span class="cur">R$</span><input type="tel" inputmode="numeric" id="anParcela" placeholder="0,00" autocomplete="off"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="step"><span class="n">4</span><h2>A origem</h2></div>
+    <div class="field" style="margin-top:0">
+      <label>Origem do lead</label>
+      <select id="anOrigem" class="an-sel vazio"></select>
+      <p class="fieldnote">Escolha o que fez o cliente procurar a gente — não por onde ele falou com você.</p>
+    </div>
+    <div class="field" id="anFOrigemSub" hidden>
+      <label id="anOrigemSubLbl">Qual</label>
+      <input type="text" id="anOrigemSub" class="an-plain" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Chegou por</label>
+      <select id="anChegou" class="an-sel vazio"></select>
+      <p class="fieldnote">Por onde o cliente falou com você pela primeira vez.</p>
+    </div>
+    <div class="field" id="anFChegouSub" hidden>
+      <label>Especificar</label>
+      <input type="text" id="anChegouSub" class="an-plain" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Detalhe da captura do lead <span class="opt" id="anDetMin">(mínimo 30 caracteres)</span></label>
+      <textarea id="anDetalhe" class="an-ta"></textarea>
+      <p class="fieldnote">Conte como o cliente chegou até você. É esse texto que explica a origem depois.</p>
+      <p class="fieldnote" id="anDetExtra" hidden>Se o cliente ligou ou preencheu formulário, registre onde ele pegou o número ou o que ele viu antes.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="step"><span class="n">5</span><h2>Vendedor</h2></div>
+    <div class="field" style="margin-top:0">
+      <select id="anVendedor" class="an-sel vazio"></select>
+    </div>
+  </section>
+
+  <button class="an-btn zap" id="anEnviar" type="button" disabled>Enviar pelo WhatsApp</button>
+
+  <footer>
+    <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
+    <div class="inst">O app não envia mensagem sozinho. Quem anuncia é você, do seu número, no grupo que escolher.</div>
   </footer>
 </main>
 </section>
@@ -2930,6 +3116,144 @@ function cartConcluir(texto){
   cartPintarFila();
 })();
 
+// ==================== ANÚNCIO DE VENDA ====================
+// Substitui a cantada digitada à mão no grupo do WhatsApp: formulário fechado,
+// prévia e envio pelo wa.me — o vendedor escolhe o grupo, porque não existe
+// deep link público que mire um grupo específico.
+// Origem do lead ("o que trouxe o cliente") e Chegou por ("por onde ele falou")
+// são DOIS campos e viram DUAS colunas no Cofre (origem · entrada) — não fundir.
+// Os 14 rótulos de origem espelham o CRM Facilita CARACTERE A CARACTERE: o
+// cruzamento anúncio × CRM compara texto com texto, e qualquer diferença quebra
+// a conferência sem gerar erro nenhum. Não "melhorar" os rótulos.
+(function(){
+  // Sem "Não informado" de propósito: quem não sabe usa "Outro" e escreve o que houve.
+  const AN_ORIGENS = ['Google / Landing Page','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Shopping Jardim Norte','Velório no Parque','Visita ao Parque','Indicação','Já é cliente','Outro'];
+  const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
+  const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco'};
+  const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Shopping Jardim Norte','Ligação para a recepção','WhatsApp (SATI)','Contato direto com o vendedor','Outro'];
+  // Tetos de prazo por forma × produto. Pix é à vista (1x).
+  const AN_TETO = {'Boleto':{'Perpétuo':72,'Reserva':60,'Temporário':21},'Cartão':{'Perpétuo':21,'Reserva':21,'Temporário':21},'Pix':{'Perpétuo':1,'Reserva':1,'Temporário':1}};
+
+  const $an = id => document.getElementById(id);
+  const anEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const anNum = v => (isFinite(v)?v:0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const anSt = {quadra:'', jazigo:0, produto:'', cliente:'', valor:0, forma:'', qtde:0,
+                nat:'', entrada:0, dia:0, parcela:0, origem:'', origemSub:'',
+                chegou:'', chegouSub:'', detalhe:'', vendedor:''};
+
+  // ---- selects (opções via JS, para os rótulos morarem num lugar só) ----
+  function anPovoar(sel, opcoes, rotuloVazio){
+    let h = '<option value="" disabled selected hidden>'+rotuloVazio+'</option>';
+    opcoes.forEach(o=>{ h += '<option>'+anEsc(o)+'</option>'; });
+    sel.innerHTML = h;
+  }
+  anPovoar($an('anOrigem'), AN_ORIGENS, 'Escolha a origem…');
+  anPovoar($an('anChegou'), AN_CHEGOU, 'Escolha…');
+  // Vendedores: a mesma lista da Escala (ESCALA_AGOSTO_2026.vendedores).
+  anPovoar($an('anVendedor'), ESCALA_AGOSTO_2026.vendedores, 'Quem vendeu?');
+
+  function anSel(sel, key, cb){
+    sel.addEventListener('change', ()=>{
+      anSt[key] = sel.value; sel.classList.toggle('vazio', !sel.value);
+      cb && cb(); anRender();
+    });
+  }
+  anSel($an('anOrigem'), 'origem');
+  anSel($an('anChegou'), 'chegou');
+  anSel($an('anVendedor'), 'vendedor', ()=>{ try{ localStorage.setItem('anuncio_vendedor', anSt.vendedor); }catch(e){} });
+  try{
+    const v = localStorage.getItem('anuncio_vendedor');
+    if(v && ESCALA_AGOSTO_2026.vendedores.indexOf(v)>=0){
+      $an('anVendedor').value = v; anSt.vendedor = v; $an('anVendedor').classList.remove('vazio');
+    }
+  }catch(e){}
+
+  // ---- botões exclusivos. Diferente do seg() do Simulador: nascem sem valor
+  // pré-selecionado e gravam no estado desta tela, não no de lá. ----
+  function anSeg(id, attr, key, cb){
+    $an(id).addEventListener('click', e=>{
+      const b = e.target.closest('button'); if(!b) return;
+      [...b.parentNode.children].forEach(x=>x.setAttribute('aria-pressed', x===b));
+      anSt[key] = b.dataset[attr]; cb && cb(); anRender();
+    });
+  }
+  anSeg('anSegQuadra','q','quadra');               // grava sempre normalizado: "M-19"
+  anSeg('anSegProduto','p','produto');
+  anSeg('anSegForma','f','forma', ()=>{
+    if(anSt.forma==='Pix'){ anSt.qtde = 1; $an('anQtde').value = '1'; }   // Pix é à vista
+  });
+  anSeg('anSegNat','n','nat');
+
+  // ---- inputs. Mesmo padrão do bindMoney do Simulador (digita centavos);
+  // não dá para reusar o bindMoney direto porque ele grava no state do
+  // Simulador e chama o render() de lá. ----
+  function anMoney(el, key){
+    el.addEventListener('input', ()=>{
+      const d = el.value.replace(/\D/g,'');
+      if(!d){ el.value=''; anSt[key]=0; anRender(); return; }
+      const n = parseInt(d,10)/100;
+      el.value = n.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+      anSt[key] = n; anRender();
+    });
+  }
+  anMoney($an('anValor'),'valor');
+  anMoney($an('anEntrada'),'entrada');
+  anMoney($an('anParcela'),'parcela');
+
+  function anInt(el, key){
+    el.addEventListener('input', ()=>{
+      el.value = el.value.replace(/\D/g,'');
+      const v = parseInt(el.value,10);
+      anSt[key] = isFinite(v)? v : 0; anRender();
+    });
+  }
+  anInt($an('anJazigo'),'jazigo');
+  anInt($an('anQtde'),'qtde');
+  anInt($an('anDia'),'dia');
+
+  function anTexto(id, key){ $an(id).addEventListener('input', ()=>{ anSt[key]=$an(id).value; anRender(); }); }
+  anTexto('anCliente','cliente');
+  anTexto('anOrigemSub','origemSub');
+  anTexto('anChegouSub','chegouSub');
+  anTexto('anDetalhe','detalhe');
+
+  // ---- condicionais ----
+  const anEhPix = ()=> anSt.forma==='Pix';
+  // Campos 8–11 só existem no parcelado; com Pix ficam escondidos mesmo com a
+  // qtde digitada errada (quem acusa é o guardrail, não o sumiço do campo).
+  const anParcelado = ()=> !anEhPix() && anSt.qtde>=2;
+  const anAVista = ()=> !!anSt.forma && (anEhPix() || anSt.qtde===1);
+  // Detalhe da captura: 40 caracteres nos três casos em que o "não sei" se
+  // acumula agora que a lista não tem opção de escape; 30 no resto.
+  const anMin = ()=> (anSt.origem==='Google / Landing Page' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção')? 40 : 30;
+
+  function anRender(){
+    const teto = (anSt.forma && anSt.produto)? AN_TETO[anSt.forma][anSt.produto] : 0;
+    $an('anTetoHint').textContent = teto? (anEhPix()? '(Pix é à vista — 1x)' : '(até '+teto+'x)') : '';
+
+    const parc = anParcelado();
+    $an('anFNat').hidden = !parc;
+    $an('anFEntrada').hidden = !parc;
+    $an('anFDia').hidden = !parc;
+    $an('anFParcela').hidden = !(parc || anAVista());
+    $an('anParcelaLbl').textContent = parc? 'Valor da parcela' : 'Valor pago';
+
+    const sub = AN_ORIGEM_SUB[anSt.origem];
+    $an('anFOrigemSub').hidden = !sub;
+    if(sub){ $an('anOrigemSubLbl').textContent = sub; $an('anOrigemSub').placeholder = AN_SUB_PH[anSt.origem]||''; }
+    $an('anFChegouSub').hidden = anSt.chegou!=='Outro';
+
+    const min = anMin();
+    $an('anDetMin').textContent = '(mínimo '+min+' caracteres — '+anSt.detalhe.trim().length+' até aqui)';
+    $an('anDetExtra').hidden = min!==40;
+
+    // O envio continua desabilitado: os guardrails (erros e avisos) entram na próxima revisão.
+    $an('anEnviar').disabled = true;
+  }
+  anRender();
+})();
+
 // ==================== ROTA INICIAL POR HASH ====================
 // Roda no FIM do script de propósito. Quando isto ficava lá em cima, junto do
 // router, abrir o app em #carteira (ou #escala) chamava go() antes de as
@@ -2941,7 +3265,7 @@ function cartConcluir(texto){
 // Se mudar de lugar, tem que continuar depois da última declaração do arquivo.
 (function rotaInicial(){
   var rotas = { '#sim':'sim', '#escala':'escala', '#tabelas':'tabelas', '#faq':'faq',
-                '#carteira':'carteira', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
+                '#carteira':'carteira', '#anuncio':'anuncio', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
   var destino = rotas[location.hash];
   if(!destino) return;
   try{
