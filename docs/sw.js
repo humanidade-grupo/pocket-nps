@@ -1,7 +1,11 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 23/08/2026 22:36 — só bump de cache (o Simulador vira a
+Alterações: Rev. 23/08/2026 23:15 — só bump de cache (mensagem do anúncio
+encurtada p/ celular com desconto na mensagem; 1ª no ato passa a depender da
+forma; tela separa origem de porta, SATI vira WhatsApp do Parque e o detalhe
+fica opcional fora de Google/LP, Outro e Ligação).
+Rev. 23/08/2026 22:36 — só bump de cache (o Simulador vira a
 única porta do anúncio: retrato do calc(), resumo somente leitura, vencimento
 fechado em 05/15/25 e guardrails mortos retirados).
 Rev. 23/08/2026 22:10 — só bump de cache (tela nova Anúncio de
@@ -48,7 +52,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260823-2236';
+const CACHE = 'pocket-nps-260823-2315';
 
 const CORE = [
 './',
