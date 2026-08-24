@@ -1,7 +1,9 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 22/08/2026 11:57 — só bump de cache (a alçada do coordenador
+Alterações: Rev. 23/08/2026 22:10 — só bump de cache (tela nova Anúncio de
+Venda: formulário fechado, guardrails e mensagem pronta enviada pelo wa.me).
+Rev. 22/08/2026 11:57 — só bump de cache (a alçada do coordenador
 não existe: o +3% da faixa 24–25k é desconto adicional do vendedor. Só texto,
 nenhuma conta tocada; as duas notas que iam ao cliente foram removidas).
 Rev. 22/08/2026 09:49 — só bump de cache (Price 22–72x passa a ser
@@ -43,7 +45,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260822-1157';
+const CACHE = 'pocket-nps-260823-2210';
 
 const CORE = [
 './',
