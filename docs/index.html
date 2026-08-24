@@ -4,6 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 24/08/2026 00:20 (Ricardo) — O ANÚNCIO PASSA A SER REGISTRADO NO COFRE
+       (aba Anuncios_Venda, ação registrar_anuncio): POST no mesmo /exec da Carteira,
+       sem header customizado (preflight quebraria no GAS), token da sessão da
+       Carteira lido do localStorage — o vendedor NÃO vai no payload, o servidor o
+       resolve pelo token. O registro nunca bloqueia o anúncio: o WhatsApp abre
+       primeiro e a falha é silenciosa. Fila offline em anuncio_fila (id UUID do
+       cliente, estável entre tentativas: reenvio não duplica), reenviada na
+       abertura do app e na volta da conexão. Sem token o app funciona inteiro e a
+       fila espera — não se pede PIN na tela do anúncio.
      Rev. 23/08/2026 23:12 (Ricardo) — MENSAGEM DO ANÚNCIO ENCURTADA para caber no
        celular: rótulos curtos (Valor · Origem · Chegou · Detalhe · Venc.), as linhas
        de quantidade e valor da parcela fundidas em "55x R$ 359,40", vencimento com
@@ -3458,7 +3467,89 @@ function cartConcluir(texto){
       localStorage.setItem('anuncio_ultimos', JSON.stringify(arr.slice(0,20)));
     }catch(e){}
   }
+  // ---- registro no Cofre (aba Anuncios_Venda), com fila offline ----
+  // O anúncio NUNCA espera este registro: o WhatsApp abre primeiro, sempre, e
+  // falha aqui é silenciosa — perder um registro é irrelevante; travar uma
+  // venda não é. Sem token da Carteira o app funciona inteiro e a fila espera
+  // (não se pede PIN nesta tela). Mesmo padrão da fila de desfechos da Carteira.
+  const AN_K_FILA = 'anuncio_fila';
+  const AN_VERSAO_MSG = 'v3';   // 3ª geração do formato da mensagem (24/08)
+  let anFila = [], anSubindo = false;
+  let anIdAtual = null, anMsgDoId = '';
+
+  function anUuid(){
+    try{ if(crypto && crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
+    return 'an-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+  }
+  // O id nasce no cliente e NÃO muda entre tentativas do mesmo anúncio — é o
+  // que faz a idempotência do servidor funcionar (reenvio da fila não duplica
+  // linha). Mudou o conteúdo da mensagem, é outro anúncio e o id renova.
+  function anIdParaEnvio(){
+    const m = anMsg();
+    if(!anIdAtual || m !== anMsgDoId){ anIdAtual = anUuid(); anMsgDoId = m; }
+    return anIdAtual;
+  }
+  function anTokenCarteira(){
+    try{ const s = JSON.parse(localStorage.getItem('carteira_sessao')||'null'); return (s && s.token) || null; }catch(e){ return null; }
+  }
+  // O vendedor NÃO vai no payload: o servidor o resolve pelo token da sessão.
+  function anPayload(){
+    const p = anPropostaAtual || {};
+    const temDesc = p.desconto>0.5;
+    return {
+      id: anIdParaEnvio(),
+      ts_cliente: new Date().toISOString(),
+      quadra: anSt.quadra, jazigo: anSt.jazigo, produto: anSt.produto,
+      cliente: anSt.cliente.trim(),
+      valor_jazigo: anSt.valor,
+      valor_tabela: temDesc? p.tabela : '',
+      desconto_pct: temDesc? +(p.di.total*100).toFixed(2) : '',
+      forma: anSt.forma,
+      n_parcelas: anSt.qtde,
+      natureza_entrada: anSt.nat,
+      valor_entrada: anSt.nat==='primeira'? anSt.parcela : anSt.entrada,
+      dia_vencimento: anSt.dia||'',
+      valor_parcela: anSt.parcela,
+      origem: anSt.origem,                       // string EXATA — o Cofre grava como está
+      origem_detalhe: anSt.origemSub.trim(),
+      entrada: anSt.chegou,                      // por onde chegou — coluna própria no Cofre
+      entrada_detalhe: anSt.chegou==='Outro'? anSt.chegouSub.trim() : '',
+      detalhe_captura: anSt.detalhe.trim(),
+      avisos_confirmados: anValida().avisos,     // onde a régua e a operação discordaram
+      versao_msg: AN_VERSAO_MSG
+    };
+  }
+  function anGravarFila(){ try{ localStorage.setItem(AN_K_FILA, JSON.stringify(anFila)); }catch(e){} }
+  function anEnfileirar(payload){
+    if(!anFila.some(x=> x.id===payload.id)){ anFila.push(payload); anGravarFila(); }
+    anSubirFila();
+  }
+  async function anSubirFila(){
+    if(anSubindo || !anFila.length || !CARTEIRA_API) return;
+    const token = anTokenCarteira();
+    if(!token) return;                            // sem sessão da Carteira: a fila espera
+    anSubindo = true;
+    try{
+      for(const item of anFila.slice()){
+        // sem Content-Type de propósito: header customizado dispara preflight,
+        // o GAS não responde OPTIONS e a chamada quebra (mesma regra da Carteira)
+        const r = await fetch(CARTEIRA_API, { method:'POST', body: JSON.stringify({ acao:'registrar_anuncio', token: token, anuncio: item }) });
+        const j = await r.json();
+        if(j && j.ok){ anFila = anFila.filter(x=> x.id!==item.id); anGravarFila(); }
+        else break;                               // token vencido ou erro do servidor: fica para a próxima
+      }
+    }catch(e){ /* sem rede: os itens ficam e sobem na volta da conexão */ }
+    anSubindo = false;
+  }
+  try{ const v = localStorage.getItem(AN_K_FILA); anFila = v? (JSON.parse(v)||[]) : []; }catch(e){ anFila = []; }
+  window.addEventListener('online', anSubirFila);
+  if(anFila.length) anSubirFila();               // sobrou fila da sessão anterior
   function anAposEnvio(){
+    // Registro no Cofre — o WhatsApp/cópia já aconteceu; daqui em diante é
+    // melhor esforço, assíncrono e mudo. O payload nasce ANTES do
+    // anRegistrar(): senão o aviso de jazigo repetido gerado por ESTE mesmo
+    // envio entraria em avisos_confirmados sem nunca ter sido confirmado.
+    try{ anEnfileirar(anPayload()); }catch(e){}
     anRegistrar();
     $an('anNovo').hidden = false;
     // O registro recém-gravado faria o aviso de repetição travar o REENVIO do
