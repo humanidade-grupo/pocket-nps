@@ -15,6 +15,13 @@
        em DD/MM"; cartão de crédito segue sem a linha (nada é pago hoje) e "1ª em
        DD/MM". O calc() não mudou — na faixa sem juros a parcela é saldo/n nos dois
        casos; mudou só o que a mensagem afirma.
+       A TELA SEPAROU as duas perguntas: "O que trouxe o cliente" (Origem, 14 opções
+       intocadas) e "Por onde ele falou com você" (Chegou) viraram blocos próprios,
+       cada um com sua linha de apoio — juntas sob "A origem", a porta parecia
+       origem. "WhatsApp (SATI)" virou "WhatsApp do Parque" (SATI é plataforma,
+       vocabulário interno; este campo não espelha o CRM). O detalhe da captura
+       ficou opcional, exceto Google/LP, Outro e Ligação para a recepção — mínimo
+       de 40 nesses três; na mensagem a linha 📝 sai só quando houver texto.
      Rev. 23/08/2026 22:32 (Ricardo) — O SIMULADOR VIRA A ÚNICA PORTA DO ANÚNCIO. A
        tela #anuncio nascera como destino independente, com o vendedor redigitando
        valor, parcela e prazo — dados que o app tinha acabado de calcular. Agora o
@@ -1634,28 +1641,39 @@ input.an-plain{padding-left:14px; font-size:16px}
       </div>
     </section>
 
+    <!-- Origem e porta são PERGUNTAS DIFERENTES e vivem em blocos diferentes:
+         juntas sob um título "origem", o vendedor lia "por onde ele falou com
+         você" como se fosse a mesma coisa. São duas colunas no Cofre. -->
     <section class="card">
-      <div class="step"><span class="n">4</span><h2>A origem</h2></div>
+      <div class="step"><span class="n">4</span><h2>O que trouxe o cliente</h2></div>
       <div class="field" style="margin-top:0">
-        <label>Origem do lead</label>
+        <label>Origem</label>
         <select id="anOrigem" class="an-sel vazio"></select>
-        <p class="fieldnote">Escolha o que fez o cliente procurar a gente — não por onde ele falou com você.</p>
+        <p class="fieldnote">O que fez ele procurar a gente.</p>
       </div>
       <div class="field" id="anFOrigemSub" hidden>
         <label id="anOrigemSubLbl">Qual</label>
         <input type="text" id="anOrigemSub" class="an-plain" autocomplete="off">
       </div>
-      <div class="field">
-        <label>Chegou por</label>
+    </section>
+
+    <section class="card">
+      <div class="step"><span class="n">5</span><h2>Por onde ele falou com você</h2></div>
+      <div class="field" style="margin-top:0">
+        <label>Chegou</label>
         <select id="anChegou" class="an-sel vazio"></select>
-        <p class="fieldnote">Por onde o cliente falou com você pela primeira vez.</p>
+        <p class="fieldnote">O caminho por onde o contato chegou — não o que o trouxe.</p>
       </div>
       <div class="field" id="anFChegouSub" hidden>
         <label>Especificar</label>
         <input type="text" id="anChegouSub" class="an-plain" autocomplete="off">
       </div>
-      <div class="field">
-        <label>Detalhe da captura do lead <span class="opt" id="anDetMin">(mínimo 30 caracteres)</span></label>
+    </section>
+
+    <section class="card">
+      <div class="step"><span class="n">6</span><h2>O detalhe</h2></div>
+      <div class="field" style="margin-top:0">
+        <label>Detalhe da captura <span class="opt" id="anDetMin">(opcional)</span></label>
         <textarea id="anDetalhe" class="an-ta"></textarea>
         <p class="fieldnote">Conte como o cliente chegou até você. É esse texto que explica a origem depois.</p>
         <p class="fieldnote" id="anDetExtra" hidden>Se o cliente ligou ou preencheu formulário, registre onde ele pegou o número ou o que ele viu antes.</p>
@@ -1663,7 +1681,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     </section>
 
     <section class="card">
-      <div class="step"><span class="n">5</span><h2>Vendedor</h2></div>
+      <div class="step"><span class="n">7</span><h2>Vendedor</h2></div>
       <div class="field" style="margin-top:0">
         <select id="anVendedor" class="an-sel vazio"></select>
       </div>
@@ -3180,7 +3198,10 @@ function cartConcluir(texto){
   const AN_ORIGENS = ['Google / Landing Page','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Shopping Jardim Norte','Velório no Parque','Visita ao Parque','Indicação','Já é cliente','Outro'];
   const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
   const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco'};
-  const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Shopping Jardim Norte','Ligação para a recepção','WhatsApp (SATI)','Contato direto com o vendedor','Outro'];
+  // "WhatsApp do Parque" e não "WhatsApp (SATI)": SATI é nome de plataforma,
+  // vocabulário interno que o vendedor não conhece. Este campo não espelha o
+  // CRM (a porta não existe no Facilita), então renomear aqui é seguro.
+  const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Shopping Jardim Norte','Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor','Outro'];
   const $an = id => document.getElementById(id);
   const anEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -3247,9 +3268,10 @@ function cartConcluir(texto){
   // ---- condicionais ----
   const anParcelado = ()=> !!anPropostaAtual && anPropostaAtual.forma==='prazo';
   const anAVista = ()=> !!anPropostaAtual && anPropostaAtual.forma==='avista';
-  // Detalhe da captura: 40 caracteres nos três casos em que o "não sei" se
-  // acumula agora que a lista não tem opção de escape; 30 no resto.
-  const anMin = ()=> (anSt.origem==='Google / Landing Page' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção')? 40 : 30;
+  // Detalhe da captura: OBRIGATÓRIO (mínimo 40) só nos três casos em que a
+  // origem escolhida é a menos confiável e o texto livre é o que permite
+  // recuperá-la depois; opcional em todo o resto.
+  const anDetObrig = ()=> anSt.origem==='Google / Landing Page' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção';
 
   // ---- carga da proposta (retrato do calc(), tirado no clique de Anunciar) ----
   function anCarregarProposta(){
@@ -3336,9 +3358,11 @@ function cartConcluir(texto){
       if(!anSt.chegouSub.trim()) faltas.push('especificar (chegou por)');
       else if(anSt.chegouSub.trim().length<3) erros.push('Chegou por — especificar: mínimo de 3 caracteres.');
     }
-    const min = anMin(), det = anSt.detalhe.trim();
-    if(!det) faltas.push('detalhe da captura');
-    else if(det.length<min) erros.push('Detalhe da captura: mínimo de '+min+' caracteres neste caso ('+det.length+' até aqui).');
+    const det = anSt.detalhe.trim();
+    if(anDetObrig()){
+      if(!det) faltas.push('detalhe da captura');
+      else if(det.length<40) erros.push('Detalhe da captura: mínimo de 40 caracteres neste caso ('+det.length+' até aqui).');
+    }
     if(!anSt.vendedor) faltas.push('vendedor');
     // A2 — jazigo já anunciado neste aparelho (últimos 20)
     if(anSt.quadra && anSt.jazigo){
@@ -3419,7 +3443,8 @@ function cartConcluir(texto){
     const sub = AN_ORIGEM_SUB[anSt.origem];
     L.push('🚸 *Origem:* '+(anSt.origem? anSt.origem+(sub? ' — '+(anSt.origemSub.trim()||'—') : '') : '—'));
     L.push('🚪 *Chegou:* '+(anSt.chegou==='Outro'? 'Outro — '+(anSt.chegouSub.trim()||'—') : (anSt.chegou||'—')));
-    L.push('📝 *Detalhe:* '+(anSt.detalhe.trim()||'—'),'');
+    if(anSt.detalhe.trim()) L.push('📝 *Detalhe:* '+anSt.detalhe.trim());
+    L.push('');
     L.push('👤 '+(anSt.vendedor||'—')+' · '+new Date().toLocaleDateString('pt-BR'));
     return L.join('\n');
   }
@@ -3483,9 +3508,9 @@ function cartConcluir(texto){
     if(sub){ $an('anOrigemSubLbl').textContent = sub; $an('anOrigemSub').placeholder = AN_SUB_PH[anSt.origem]||''; }
     $an('anFChegouSub').hidden = anSt.chegou!=='Outro';
 
-    const min = anMin();
-    $an('anDetMin').textContent = '(mínimo '+min+' caracteres — '+anSt.detalhe.trim().length+' até aqui)';
-    $an('anDetExtra').hidden = min!==40;
+    const obrig = anDetObrig();
+    $an('anDetMin').textContent = obrig? '(mínimo 40 caracteres — '+anSt.detalhe.trim().length+' até aqui)' : '(opcional)';
+    $an('anDetExtra').hidden = !obrig;
 
     const r = anValida();
     const ok = anChecks(r.erros, r.faltas, r.avisos);
