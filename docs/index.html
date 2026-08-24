@@ -4,6 +4,11 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 24/08/2026 14:53 (Ricardo) — ANÚNCIO: a lista de vendedores passa a vir de
+       CARTEIRA_VENDEDORES (a mesma da Config_Carteira do Cofre), não mais da escala
+       do mês — a escala é rodízio de postos e deixava o Jaime de fora, que vende
+       sem entrar no rodízio. O registro no Cofre nunca foi afetado (vendedor vem
+       do token); mudava só a linha 👤 da mensagem e o prefill do aparelho.
      Rev. 24/08/2026 00:20 (Ricardo) — O ANÚNCIO PASSA A SER REGISTRADO NO COFRE
        (aba Anuncios_Venda, ação registrar_anuncio): POST no mesmo /exec da Carteira,
        sem header customizado (preflight quebraria no GAS), token da sessão da
@@ -3228,8 +3233,10 @@ function cartConcluir(texto){
   }
   anPovoar($an('anOrigem'), AN_ORIGENS, 'Escolha a origem…');
   anPovoar($an('anChegou'), AN_CHEGOU, 'Escolha…');
-  // Vendedores: a mesma lista da Escala (ESCALA_AGOSTO_2026.vendedores).
-  anPovoar($an('anVendedor'), ESCALA_AGOSTO_2026.vendedores, 'Quem vendeu?');
+  // Vendedores: a lista da CARTEIRA (espelha a Config_Carteira do Cofre) — quem
+  // pode ter token pode anunciar. A da Escala é o rodízio de postos do mês e
+  // deixava o Jaime de fora, que vende sem entrar no rodízio.
+  anPovoar($an('anVendedor'), CARTEIRA_VENDEDORES, 'Quem vendeu?');
 
   function anSel(sel, key, cb){
     sel.addEventListener('change', ()=>{
@@ -3242,7 +3249,7 @@ function cartConcluir(texto){
   anSel($an('anVendedor'), 'vendedor', ()=>{ try{ localStorage.setItem('anuncio_vendedor', anSt.vendedor); }catch(e){} });
   try{
     const v = localStorage.getItem('anuncio_vendedor');
-    if(v && ESCALA_AGOSTO_2026.vendedores.indexOf(v)>=0){
+    if(v && CARTEIRA_VENDEDORES.indexOf(v)>=0){
       $an('anVendedor').value = v; anSt.vendedor = v; $an('anVendedor').classList.remove('vazio');
     }
   }catch(e){}
