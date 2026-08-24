@@ -1,7 +1,9 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 24/08/2026 00:23 — só bump de cache (o anúncio passa a ser
+Alterações: Rev. 24/08/2026 14:54 — só bump de cache (lista de vendedores
+do anúncio passa a ser a da Carteira; a da escala deixava o Jaime de fora).
+Rev. 24/08/2026 00:23 — só bump de cache (o anúncio passa a ser
 registrado no Cofre, aba Anuncios_Venda, com fila offline; o WhatsApp abre
 primeiro e a falha é silenciosa).
 Rev. 23/08/2026 23:15 — só bump de cache (mensagem do anúncio
@@ -55,7 +57,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260824-0023';
+const CACHE = 'pocket-nps-260824-1454';
 
 const CORE = [
 './',
