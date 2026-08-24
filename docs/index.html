@@ -13,6 +13,12 @@
        caractere a caractere) e Chegou por (por onde ele falou; 6 opções). São duas
        colunas distintas no Cofre (origem · entrada) e não podem ser fundidas.
        Vendedor lembrado por aparelho (localStorage); lista reusada da Escala.
+       Guardrails: ERRO trava o envio (campo ou subcampo vazio, jazigo/dia fora da
+       faixa, teto de prazo estourado, aritmética que não fecha até 21x, soma que
+       não passa do valor de 22x em diante — nessa faixa há 1% a.m. e a igualdade
+       seria errada); AVISO exige "Entendi, é isso mesmo" (entrada ≅ parcela dita
+       sinal, jazigo já anunciado no aparelho, valor fora de 3–60 mil, origem de
+       ponto físico com atendimento em outro lugar).
      Rev. 22/08/2026 11:57 (Ricardo) — A ALÇADA DO COORDENADOR NÃO EXISTE: o +3% da faixa
        24–25k é um desconto adicional do próprio vendedor, não um pedido de aprovação.
        **Nenhuma conta mudou** — `bandExtra()` e `descInfo()` nunca consultaram coordenador
@@ -1650,6 +1656,8 @@ input.an-plain{padding-left:14px; font-size:16px}
     </div>
   </section>
 
+  <div class="an-checks" id="anChecks"></div>
+
   <button class="an-btn zap" id="anEnviar" type="button" disabled>Enviar pelo WhatsApp</button>
 
   <footer>
@@ -3228,6 +3236,105 @@ function cartConcluir(texto){
   // acumula agora que a lista não tem opção de escape; 30 no resto.
   const anMin = ()=> (anSt.origem==='Google / Landing Page' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção')? 40 : 30;
 
+  // ---- guardrails ----
+  // ERRO trava o envio; AVISO não trava, mas exige o toque em "Entendi, é isso
+  // mesmo" — e qualquer mudança no conjunto de avisos derruba a confirmação.
+  let anAck = '';
+
+  function anUltimos(){
+    try{ return JSON.parse(localStorage.getItem('anuncio_ultimos')||'[]'); }catch(e){ return []; }
+  }
+
+  function anValida(){
+    const faltas=[], erros=[], avisos=[];
+    const parc = anParcelado();
+    const teto = (anSt.forma && anSt.produto)? AN_TETO[anSt.forma][anSt.produto] : 0;
+
+    // E1 — obrigatórios e faixas
+    if(!anSt.quadra) faltas.push('quadra');
+    if(!anSt.jazigo) faltas.push('jazigo nº');
+    else if(anSt.jazigo<1 || anSt.jazigo>9999) erros.push('Jazigo nº: de 1 a 9999.');
+    if(!anSt.produto) faltas.push('produto');
+    const nome = anSt.cliente.trim();
+    if(!nome) faltas.push('cliente');
+    else if(nome.length<5 || nome.split(/\s+/).length<2) erros.push('Nome e sobrenome do cliente.');
+    if(!(anSt.valor>0)) faltas.push('valor do jazigo');
+    if(!anSt.forma) faltas.push('forma de pagamento');
+    if(!anSt.qtde) faltas.push('qtde de parcelas');
+    else if(teto && anSt.qtde>teto)
+      erros.push(anEhPix()? 'Pix é à vista — 1x.' : anSt.produto+' no '+anSt.forma.toLowerCase()+' vai até '+teto+'x.');   // E2
+    if(parc){
+      if(!anSt.nat) faltas.push('natureza da entrada');
+      if(!anSt.dia) faltas.push('dia do vencimento');
+      else if(anSt.dia<1 || anSt.dia>28) erros.push('Dia do vencimento: de 1 a 28.');
+      if(!(anSt.parcela>0)) faltas.push('valor da parcela');
+      // E3/E4 — aritmética por faixa. Até 21x não há juros e a soma tem que
+      // FECHAR com o valor (tolerância de R$ 1,00); de 22x em diante há juros de
+      // 1% a.m. e a soma tem que PASSAR do valor — a igualdade ali seria errada.
+      if(anSt.valor>0 && anSt.parcela>0 && !(teto && anSt.qtde>teto)){
+        const soma = anSt.entrada + anSt.qtde*anSt.parcela;
+        if(anSt.qtde<=21){
+          const dif = soma - anSt.valor;
+          if(Math.abs(dif)>1)
+            erros.push('Não fecha: '+anNum(anSt.entrada)+' + '+anSt.qtde+' × '+anNum(anSt.parcela)+' = '+anNum(soma)+', e o valor do jazigo é '+anNum(anSt.valor)+'. Diferença de R$ '+anNum(Math.abs(dif))+'.');
+        } else if(soma<=anSt.valor){
+          erros.push('De 22x em diante há juros de 1% a.m. e a soma tem que passar do valor do jazigo. Aqui: '+anNum(anSt.entrada)+' + '+anSt.qtde+' × '+anNum(anSt.parcela)+' = '+anNum(soma)+', contra '+anNum(anSt.valor)+' do jazigo. Confira a parcela e a quantidade.');
+        }
+      }
+    }
+    if(anAVista() && !(anSt.parcela>0)) faltas.push('valor pago');
+    if(!anSt.origem) faltas.push('origem do lead');
+    const sub = AN_ORIGEM_SUB[anSt.origem];
+    if(sub){
+      if(!anSt.origemSub.trim()) faltas.push(sub.toLowerCase()+' (origem)');
+      else if(anSt.origemSub.trim().length<3) erros.push('Origem — '+sub.toLowerCase()+': mínimo de 3 caracteres.');
+    }
+    if(!anSt.chegou) faltas.push('chegou por');
+    if(anSt.chegou==='Outro'){
+      if(!anSt.chegouSub.trim()) faltas.push('especificar (chegou por)');
+      else if(anSt.chegouSub.trim().length<3) erros.push('Chegou por — especificar: mínimo de 3 caracteres.');
+    }
+    const min = anMin(), det = anSt.detalhe.trim();
+    if(!det) faltas.push('detalhe da captura');
+    else if(det.length<min) erros.push('Detalhe da captura: mínimo de '+min+' caracteres neste caso ('+det.length+' até aqui).');
+    if(!anSt.vendedor) faltas.push('vendedor');
+
+    // A1 — entrada praticamente igual à parcela, declarada como sinal
+    if(parc && anSt.nat==='sinal' && anSt.parcela>0 && Math.abs(anSt.entrada-anSt.parcela)<5)
+      avisos.push('A entrada é praticamente igual à parcela. No Facilita isso normalmente quer dizer que ela é a 1ª das parcelas, não um sinal a mais. Confirme antes de anunciar.');
+    // A2 — jazigo já anunciado neste aparelho (últimos 20)
+    if(anSt.quadra && anSt.jazigo){
+      const ja = anUltimos().find(u=> u.q===anSt.quadra && u.j===anSt.jazigo);
+      if(ja) avisos.push(anSt.quadra+'-'+anSt.jazigo+' já foi anunciado neste aparelho em '+ja.d.slice(8,10)+'/'+ja.d.slice(5,7)+'.');
+    }
+    // A3 — valor fora da faixa usual
+    if(anSt.valor>0 && (anSt.valor<3000 || anSt.valor>60000))
+      avisos.push('Valor do jazigo fora da faixa usual (R$ 3.000,00 a R$ 60.000,00). Confira o valor antes de anunciar.');
+    // A4 — origem de ponto físico com atendimento em outro lugar. É aviso e não
+    // erro: a combinação existe (visitou hoje, fechou por telefone amanhã), só é
+    // rara o bastante para merecer uma conferida.
+    if(anSt.chegou){
+      if((anSt.origem==='Velório no Parque' || anSt.origem==='Visita ao Parque') && anSt.chegou!=='Presencial no Parque')
+        avisos.push('A origem diz que o cliente estava no Parque, mas o atendimento não foi presencial lá. Se ele viu outra coisa antes e depois ligou, a origem é essa outra coisa.');
+      if(anSt.origem==='PDV Shopping Jardim Norte' && anSt.chegou!=='Presencial no PDV Shopping Jardim Norte')
+        avisos.push('A origem diz que o cliente estava no PDV do Shopping, mas o atendimento não foi presencial lá. Se ele viu outra coisa antes e depois ligou, a origem é essa outra coisa.');
+    }
+    return {faltas, erros, avisos};
+  }
+
+  function anChecks(erros, faltas, avisos){
+    const box = $an('anChecks'); let h='';
+    if(faltas.length) h += '<div class="an-check err">Falta preencher: '+anEsc(faltas.join(' · '))+'.</div>';
+    erros.forEach(m=>{ h += '<div class="an-check err">'+anEsc(m)+'</div>'; });
+    avisos.forEach(m=>{ h += '<div class="an-check warn">'+anEsc(m)+'</div>'; });
+    const sig = avisos.join('§');
+    const pendente = avisos.length>0 && anAck!==sig;
+    if(pendente) h += '<button type="button" class="an-btn sec" id="anEntendi">Entendi, é isso mesmo</button>';
+    box.innerHTML = h;
+    if(pendente) $an('anEntendi').onclick = ()=>{ anAck = sig; anRender(); };
+    return !faltas.length && !erros.length && (!avisos.length || anAck===sig);
+  }
+
   function anRender(){
     const teto = (anSt.forma && anSt.produto)? AN_TETO[anSt.forma][anSt.produto] : 0;
     $an('anTetoHint').textContent = teto? (anEhPix()? '(Pix é à vista — 1x)' : '(até '+teto+'x)') : '';
@@ -3248,8 +3355,8 @@ function cartConcluir(texto){
     $an('anDetMin').textContent = '(mínimo '+min+' caracteres — '+anSt.detalhe.trim().length+' até aqui)';
     $an('anDetExtra').hidden = min!==40;
 
-    // O envio continua desabilitado: os guardrails (erros e avisos) entram na próxima revisão.
-    $an('anEnviar').disabled = true;
+    const r = anValida();
+    $an('anEnviar').disabled = !anChecks(r.erros, r.faltas, r.avisos);
   }
   anRender();
 })();
