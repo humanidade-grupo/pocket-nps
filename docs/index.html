@@ -4,6 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/08/2026 00:52 (Ricardo) — ORIGEM ESPELHA O FACILITA (13 opções): "Velório
+       no Parque" SAI (apagada no CRM em 25/08 — a exclusão não reescreve deals
+       antigos, a string gravada fica); "Google / Landing Page" vira "Google / Site"
+       e "PDV Shopping Jardim Norte" vira "PDV Jardim Norte", espelho caractere a
+       caractere do Facilita. No Chegou, "Presencial no PDV Shopping Jardim Norte"
+       vira "Presencial no PDV Jardim Norte". Guardrails e anDetObrig atualizados
+       para os rótulos novos; a regra do Velório morreu junto com a opção. A ordem
+       do Pocket segue agrupada por natureza do gasto (o Facilita ordena por ID —
+       a ordem pode divergir, o texto não).
      Rev. 24/08/2026 14:53 (Ricardo) — ANÚNCIO: a lista de vendedores passa a vir de
        CARTEIRA_VENDEDORES (a mesma da Config_Carteira do Cofre), não mais da escala
        do mês — a escala é rodízio de postos e deixava o Jaime de fora, que vende
@@ -3204,18 +3213,18 @@ function cartConcluir(texto){
 // vencimento, origem e quem vendeu.
 // Origem do lead ("o que trouxe o cliente") e Chegou por ("por onde ele falou")
 // são DOIS campos e viram DUAS colunas no Cofre (origem · entrada) — não fundir.
-// Os 14 rótulos de origem espelham o CRM Facilita CARACTERE A CARACTERE: o
+// Os 13 rótulos de origem espelham o CRM Facilita CARACTERE A CARACTERE: o
 // cruzamento anúncio × CRM compara texto com texto, e qualquer diferença quebra
 // a conferência sem gerar erro nenhum. Não "melhorar" os rótulos.
 (function(){
   // Sem "Não informado" de propósito: quem não sabe usa "Outro" e escreve o que houve.
-  const AN_ORIGENS = ['Google / Landing Page','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Shopping Jardim Norte','Velório no Parque','Visita ao Parque','Indicação','Já é cliente','Outro'];
+  const AN_ORIGENS = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Indicação','Já é cliente','Outro'];
   const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
   const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco'};
   // "WhatsApp do Parque" e não "WhatsApp (SATI)": SATI é nome de plataforma,
   // vocabulário interno que o vendedor não conhece. Este campo não espelha o
   // CRM (a porta não existe no Facilita), então renomear aqui é seguro.
-  const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Shopping Jardim Norte','Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor','Outro'];
+  const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Jardim Norte','Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor','Outro'];
   const $an = id => document.getElementById(id);
   const anEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -3287,7 +3296,7 @@ function cartConcluir(texto){
   // Detalhe da captura: OBRIGATÓRIO (mínimo 40) só nos três casos em que a
   // origem escolhida é a menos confiável e o texto livre é o que permite
   // recuperá-la depois; opcional em todo o resto.
-  const anDetObrig = ()=> anSt.origem==='Google / Landing Page' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção';
+  const anDetObrig = ()=> anSt.origem==='Google / Site' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção';
 
   // ---- carga da proposta (retrato do calc(), tirado no clique de Anunciar) ----
   function anCarregarProposta(){
@@ -3389,9 +3398,9 @@ function cartConcluir(texto){
     // erro: a combinação existe (visitou hoje, fechou por telefone amanhã), só é
     // rara o bastante para merecer uma conferida.
     if(anSt.chegou){
-      if((anSt.origem==='Velório no Parque' || anSt.origem==='Visita ao Parque') && anSt.chegou!=='Presencial no Parque')
+      if(anSt.origem==='Visita ao Parque' && anSt.chegou!=='Presencial no Parque')
         avisos.push('A origem diz que o cliente estava no Parque, mas o atendimento não foi presencial lá. Se ele viu outra coisa antes e depois ligou, a origem é essa outra coisa.');
-      if(anSt.origem==='PDV Shopping Jardim Norte' && anSt.chegou!=='Presencial no PDV Shopping Jardim Norte')
+      if(anSt.origem==='PDV Jardim Norte' && anSt.chegou!=='Presencial no PDV Jardim Norte')
         avisos.push('A origem diz que o cliente estava no PDV do Shopping, mas o atendimento não foi presencial lá. Se ele viu outra coisa antes e depois ligou, a origem é essa outra coisa.');
     }
     return {faltas, erros, avisos};
