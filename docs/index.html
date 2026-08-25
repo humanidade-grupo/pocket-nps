@@ -4,6 +4,17 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/08/2026 00:58 (Ricardo) — O CHEGOU VEM ANTES DA ORIGEM, e a tela ensina:
+       as 4 vendas de 24/08 saíram com origem errada porque a tela pedia uma escolha
+       que o vendedor não consegue fazer sem ter perguntado ao cliente — e não pedia
+       a pergunta. Ordem nova: jazigo · cliente · vencimento · POR ONDE ELE FALOU ·
+       O QUE TROUXE · detalhe · vendedor. Entre os dois, um bloco FIXO (não é modal,
+       não fecha) com a pergunta certa por porta: remoto ("você perguntou como ele
+       chegou até esse número?") × presencial ("veio decidido ou passou e viu?").
+       A lista de origem só é RENDERIZADA depois que o Chegou tem valor — não é
+       disabled cinza: não existe. Cada origem ganhou linha de apoio que aparece
+       depois de selecionada (AN_ORIGEM_APOIO). Sem pré-seleção, sem reordenar
+       por probabilidade, sem opção de escape.
      Rev. 25/08/2026 00:52 (Ricardo) — ORIGEM ESPELHA O FACILITA (13 opções): "Velório
        no Parque" SAI (apagada no CRM em 25/08 — a exclusão não reescreve deals
        antigos, a string gravada fica); "Google / Landing Page" vira "Google / Site"
@@ -723,6 +734,14 @@ input.an-plain{padding-left:14px; font-size:16px}
 .an-btn.sec{background:transparent; color:var(--marrom); border:1.5px solid var(--border-strong)}
 .an-btn.zap{background:#25D366}
 .an-prev{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px; line-height:1.5; color:var(--marrom); background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 13px; margin:10px 0 0; white-space:pre-wrap; word-break:break-word}
+.an-perg{background:rgba(181,127,10,.08); border:1.5px solid rgba(181,127,10,.32)}
+.an-perg p{margin:0; font-size:14px; line-height:1.55; color:var(--marrom)}
+.an-perg p b{display:block; margin-bottom:6px; font-size:15px}
+.an-apoio{font-style:italic}
+.an-conf{margin-top:14px}
+.an-conf p{margin:0 0 6px; font-size:14px; line-height:1.55; color:var(--marrom)}
+.an-conf label{display:flex; align-items:center; gap:10px; margin-top:12px; font-size:15px; font-weight:700; color:var(--marrom); cursor:pointer}
+.an-conf input{width:20px; height:20px; accent-color:var(--dourado)}
 </style>
 </head>
 <body>
@@ -1666,22 +1685,15 @@ input.an-plain{padding-left:14px; font-size:16px}
 
     <!-- Origem e porta são PERGUNTAS DIFERENTES e vivem em blocos diferentes:
          juntas sob um título "origem", o vendedor lia "por onde ele falou com
-         você" como se fosse a mesma coisa. São duas colunas no Cofre. -->
+         você" como se fosse a mesma coisa. São duas colunas no Cofre.
+         O CHEGOU vem ANTES da origem de propósito (25/08): "por onde falou" é
+         fato que o vendedor já sabe; "o que trouxe" exige ter perguntado ao
+         cliente. O fácil primeiro — e a resposta dele condiciona o texto da
+         pergunta que ensina a descobrir o difícil. A lista de origem nem é
+         renderizada antes de o Chegou ter valor: campo que não existe não se
+         chuta. -->
     <section class="card">
-      <div class="step"><span class="n">4</span><h2>O que trouxe o cliente</h2></div>
-      <div class="field" style="margin-top:0">
-        <label>Origem</label>
-        <select id="anOrigem" class="an-sel vazio"></select>
-        <p class="fieldnote">O que fez ele procurar a gente.</p>
-      </div>
-      <div class="field" id="anFOrigemSub" hidden>
-        <label id="anOrigemSubLbl">Qual</label>
-        <input type="text" id="anOrigemSub" class="an-plain" autocomplete="off">
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="step"><span class="n">5</span><h2>Por onde ele falou com você</h2></div>
+      <div class="step"><span class="n">4</span><h2>Por onde ele falou com você</h2></div>
       <div class="field" style="margin-top:0">
         <label>Chegou</label>
         <select id="anChegou" class="an-sel vazio"></select>
@@ -1690,6 +1702,26 @@ input.an-plain{padding-left:14px; font-size:16px}
       <div class="field" id="anFChegouSub" hidden>
         <label>Especificar</label>
         <input type="text" id="anChegouSub" class="an-plain" autocomplete="off">
+      </div>
+    </section>
+
+    <!-- Bloco fixo de pergunta — NÃO é modal, não some, não tem botão de
+         fechar. O texto muda conforme a porta escolhida (remoto × presencial). -->
+    <section class="card an-perg" id="anPergunta" hidden>
+      <p id="anPerguntaTxt"></p>
+    </section>
+
+    <section class="card" id="anCardOrigem" hidden>
+      <div class="step"><span class="n">5</span><h2>O que trouxe o cliente</h2></div>
+      <div class="field" style="margin-top:0">
+        <label>Origem</label>
+        <select id="anOrigem" class="an-sel vazio"></select>
+        <p class="fieldnote">O que fez ele procurar a gente.</p>
+        <p class="fieldnote an-apoio" id="anOrigemApoio" hidden></p>
+      </div>
+      <div class="field" id="anFOrigemSub" hidden>
+        <label id="anOrigemSubLbl">Qual</label>
+        <input type="text" id="anOrigemSub" class="an-plain" autocomplete="off">
       </div>
     </section>
 
@@ -3225,6 +3257,36 @@ function cartConcluir(texto){
   // vocabulário interno que o vendedor não conhece. Este campo não espelha o
   // CRM (a porta não existe no Facilita), então renomear aqui é seguro.
   const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Jardim Norte','Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor','Outro'];
+  // ---- a pergunta que ensina a origem (bloco fixo entre Chegou e Origem) ----
+  // Remoto: o cliente chegou por um número/canal — o número é caminho, não
+  // origem. Presencial: o lugar onde ele apareceu pode não ser o que o trouxe.
+  const AN_CHEGOU_REMOTO = ['Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor'];
+  const AN_CHEGOU_PRESENCIAL = ['Presencial no Parque','Presencial no PDV Jardim Norte'];
+  const AN_PERGUNTA = {
+    remoto: '<b>❓ Você perguntou como ele chegou até esse número?</b>'+
+      'Ele viu num outdoor, num panfleto, num anúncio, ou alguém indicou. '+
+      'O número não é a origem — é só o caminho. '+
+      'Se não perguntou e ainda dá tempo, pergunte agora.',
+    presencial: '<b>❓ Ele veio decidido a procurar a gente, ou passou e viu?</b>'+
+      'Se veio por causa de alguma coisa que viu antes — outdoor, panfleto, '+
+      'anúncio, indicação — a origem é essa coisa, não o lugar onde ele apareceu.'
+  };
+  // Linha de apoio de cada origem — aparece DEPOIS de selecionada, abaixo do campo.
+  const AN_ORIGEM_APOIO = {
+    'Google / Site':'Ele pesquisou e achou a gente, ou clicou num anúncio do Google. O site em si não é origem — é destino.',
+    'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook.',
+    'Meta Ads do vendedor':'Você pagou o impulsionamento do seu bolso. Se o anúncio não é seu, a opção é a de cima.',
+    'Outdoor':'Ele citou ter visto a peça. Diga qual.',
+    'Painel de LED':'Ele citou ter visto a peça. Diga qual.',
+    'Busdoor':'Ele citou ter visto a peça. Diga qual.',
+    'Panfletagem':'Ele recebeu ou viu o panfleto. Diga onde.',
+    'Evento':'Conheceu a gente num evento. Diga qual.',
+    'PDV Jardim Norte':'Passou no shopping e viu o quiosque, sem ter visto nada antes. Se viu um outdoor e por isso foi lá, a origem é o outdoor.',
+    'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
+    'Indicação':'Alguém falou da gente para ele. Diga quem.',
+    'Já é cliente':'Ele ou a família já compraram aqui.',
+    'Outro':"Só quando nada acima descreve. Se 'Outro' virar hábito, o dado morre."
+  };
   const $an = id => document.getElementById(id);
   const anEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -3372,16 +3434,17 @@ function cartConcluir(texto){
     if(!nome) faltas.push('cliente');
     else if(nome.length<5 || nome.split(/\s+/).length<2) erros.push('Nome e sobrenome do cliente.');
     if(parc && !anSt.dia) faltas.push('dia do vencimento');
+    // ordem das faltas = ordem da tela: o Chegou vem antes da origem
+    if(!anSt.chegou) faltas.push('chegou por');
+    if(anSt.chegou==='Outro'){
+      if(!anSt.chegouSub.trim()) faltas.push('especificar (chegou por)');
+      else if(anSt.chegouSub.trim().length<3) erros.push('Chegou por — especificar: mínimo de 3 caracteres.');
+    }
     if(!anSt.origem) faltas.push('origem do lead');
     const sub = AN_ORIGEM_SUB[anSt.origem];
     if(sub){
       if(!anSt.origemSub.trim()) faltas.push(sub.toLowerCase()+' (origem)');
       else if(anSt.origemSub.trim().length<3) erros.push('Origem — '+sub.toLowerCase()+': mínimo de 3 caracteres.');
-    }
-    if(!anSt.chegou) faltas.push('chegou por');
-    if(anSt.chegou==='Outro'){
-      if(!anSt.chegouSub.trim()) faltas.push('especificar (chegou por)');
-      else if(anSt.chegouSub.trim().length<3) erros.push('Chegou por — especificar: mínimo de 3 caracteres.');
     }
     const det = anSt.detalhe.trim();
     if(anDetObrig()){
@@ -3609,6 +3672,20 @@ function cartConcluir(texto){
 
   function anRender(){
     $an('anFDia').hidden = !anParcelado();
+
+    // Origem só EXISTE depois do Chegou (não é disabled: não renderiza).
+    // O bloco de pergunta é fixo — sem fechar, sem sumir — e o texto depende
+    // da porta: remoto pede a pergunta do número, presencial a do "passou e viu".
+    // Chegou = Outro não tem pergunta própria; a lista de origem abre direto.
+    const perg = AN_CHEGOU_REMOTO.indexOf(anSt.chegou)>=0 ? 'remoto'
+               : AN_CHEGOU_PRESENCIAL.indexOf(anSt.chegou)>=0 ? 'presencial' : '';
+    $an('anPergunta').hidden = !perg;
+    if(perg) $an('anPerguntaTxt').innerHTML = AN_PERGUNTA[perg];
+    $an('anCardOrigem').hidden = !anSt.chegou;
+
+    const apoio = AN_ORIGEM_APOIO[anSt.origem];
+    $an('anOrigemApoio').hidden = !apoio;
+    if(apoio) $an('anOrigemApoio').textContent = apoio;
 
     const sub = AN_ORIGEM_SUB[anSt.origem];
     $an('anFOrigemSub').hidden = !sub;
