@@ -4,6 +4,18 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/08/2026 01:05 (Ricardo) — MATRIZ DE COERÊNCIA E O "CONFERE.": as regras
+       origem × chegou saíram do meio do anValida() para AN_MATRIZ, objeto único e
+       comentado no topo do bloco, em três níveis: 🔴 contradição (Visita ao Parque ×
+       PDV e vice-versa) vira ERRO e bloqueia sem "Entendi" — a origem diz um lugar
+       e o atendimento diz outro; 🟡 improvável (Meta Ads × contato direto, Meta Ads
+       do vendedor × WhatsApp do Parque, Google / Site × presencial) trava até o
+       "Entendi, é isso mesmo", que segue indo em avisos_confirmados; 🟢 o resto
+       passa. Acima do envio, a CONFIRMAÇÃO EM VOZ ALTA: frase em português corrente
+       com origem e porta em negrito (fragmentos de preposição escritos à mão em
+       AN_CHEGOU_FRASE — concatenar sai errado) e o checkbox "Confere.", sem o qual
+       o envio não destrava. Mudou origem, chegou ou subcampo, a marca cai. Vai no
+       payload como campo próprio (confere) — não é avisos_confirmados.
      Rev. 25/08/2026 00:58 (Ricardo) — O CHEGOU VEM ANTES DA ORIGEM, e a tela ensina:
        as 4 vendas de 24/08 saíram com origem errada porque a tela pedia uma escolha
        que o vendedor não consegue fazer sem ter perguntado ao cliente — e não pedia
@@ -1749,6 +1761,17 @@ input.an-plain{padding-left:14px; font-size:16px}
       <pre class="an-prev" id="anPrev"></pre>
     </section>
 
+    <!-- Confirmação em voz alta: a frase repete os dois valores em português
+         corrente e o envio só destrava no "Confere.". Mudou origem, chegou ou
+         um subcampo, a marca cai. NÃO é a mesma coisa que avisos_confirmados:
+         este é o de acordo com o que se escolheu; aquele, com o que a régua
+         estranhou. Campos próprios no payload. -->
+    <section class="card an-conf" id="anConf" hidden>
+      <p id="anConfOrigem"></p>
+      <p id="anConfChegou"></p>
+      <label><input type="checkbox" id="anConfChk"> Confere.</label>
+    </section>
+
     <button class="an-btn zap" id="anEnviar" type="button" disabled>Enviar pelo WhatsApp</button>
     <button class="an-btn sec" id="anCopiar" type="button" disabled>Copiar mensagem</button>
     <button class="an-btn sec" id="anNovo" type="button" hidden>Novo anúncio</button>
@@ -3271,6 +3294,39 @@ function cartConcluir(texto){
       'Se veio por causa de alguma coisa que viu antes — outdoor, panfleto, '+
       'anúncio, indicação — a origem é essa coisa, não o lugar onde ele apareceu.'
   };
+  // ---- MATRIZ DE COERÊNCIA origem × chegou ----
+  // Edite AQUI, não no meio da lógica. Cada regra: a origem, as portas com que
+  // ela conflita, o nível e a mensagem.
+  //   nivel 'contradicao' → 🔴 ERRO: bloqueia o envio, sem "Entendi". Tem que
+  //                          mudar um dos dois campos.
+  //   nivel 'improvavel'  → 🟡 AVISO: trava até "Entendi, é isso mesmo" (a
+  //                          confirmação vai em avisos_confirmados no payload).
+  // Combinação que não estiver aqui passa limpa. Os textos de origem e chegou
+  // são os MESMOS das listas acima — regra apontando para opção inexistente
+  // nunca dispara e ninguém percebe.
+  const AN_MATRIZ = [
+    {origem:'Visita ao Parque', chegou:['Presencial no PDV Jardim Norte'], nivel:'contradicao',
+     msg:'Essas duas não podem coexistir: a origem diz um lugar e o atendimento diz outro. Reveja qual dos dois está certo.'},
+    {origem:'PDV Jardim Norte', chegou:['Presencial no Parque'], nivel:'contradicao',
+     msg:'Essas duas não podem coexistir: a origem diz um lugar e o atendimento diz outro. Reveja qual dos dois está certo.'},
+    {origem:'Meta Ads', chegou:['Contato direto com o vendedor'], nivel:'improvavel',
+     msg:'Anúncio da empresa cai no WhatsApp do Parque ou no site. Se ele te chamou no seu número, ou o anúncio era seu, ou alguém te passou o contato.'},
+    {origem:'Meta Ads do vendedor', chegou:['WhatsApp do Parque'], nivel:'improvavel',
+     msg:'Seu impulsionamento aponta para o seu número. Confirme se o anúncio era mesmo seu.'},
+    {origem:'Google / Site', chegou:['Presencial no Parque','Presencial no PDV Jardim Norte'], nivel:'improvavel',
+     msg:'Quem veio da busca costuma chamar antes. Ele chegou direto?'}
+  ];
+  // Frase de confirmação por porta, escrita à mão — preposição por concatenação
+  // sai errada ("pela Contato direto...", "com você direto com você"). A frase
+  // completa é 'Ele falou '+pre+frag+'.', com o frag em negrito.
+  const AN_CHEGOU_FRASE = {
+    'Ligação para a recepção':          {pre:'com você ', frag:'pela ligação para a recepção'},
+    'WhatsApp do Parque':               {pre:'com você ', frag:'pelo WhatsApp do Parque'},
+    'Presencial no Parque':             {pre:'com você ', frag:'pessoalmente no Parque'},
+    'Presencial no PDV Jardim Norte':   {pre:'com você ', frag:'pessoalmente no PDV Jardim Norte'},
+    'Contato direto com o vendedor':    {pre:'', frag:'direto com você'},
+    'Outro':                            {pre:'com você ', frag:'por outro caminho'}
+  };
   // Linha de apoio de cada origem — aparece DEPOIS de selecionada, abaixo do campo.
   const AN_ORIGEM_APOIO = {
     'Google / Site':'Ele pesquisou e achou a gente, ou clicou num anúncio do Google. O site em si não é origem — é destino.',
@@ -3294,7 +3350,7 @@ function cartConcluir(texto){
   // NÃO são mais digitados: chegam do retrato da proposta em anCarregarProposta().
   const anSt = {quadra:'', jazigo:0, produto:'', cliente:'', valor:0, forma:'', qtde:0,
                 nat:'', entrada:0, dia:0, parcela:0, origem:'', origemSub:'',
-                chegou:'', chegouSub:'', detalhe:'', vendedor:''};
+                chegou:'', chegouSub:'', detalhe:'', vendedor:'', confere:false};
 
   // ---- selects (opções via JS, para os rótulos morarem num lugar só) ----
   function anPovoar(sel, opcoes, rotuloVazio){
@@ -3315,8 +3371,12 @@ function cartConcluir(texto){
       cb && cb(); anRender();
     });
   }
-  anSel($an('anOrigem'), 'origem');
-  anSel($an('anChegou'), 'chegou');
+  // Mudou origem, chegou ou um subcampo dos dois: a frase de confirmação já é
+  // outra e o "Confere." anterior não vale mais.
+  function anConfDerruba(){ anSt.confere = false; const c = $an('anConfChk'); if(c) c.checked = false; }
+  anSel($an('anOrigem'), 'origem', anConfDerruba);
+  anSel($an('anChegou'), 'chegou', anConfDerruba);
+  $an('anConfChk').addEventListener('change', e=>{ anSt.confere = e.target.checked; anRender(); });
   anSel($an('anVendedor'), 'vendedor', ()=>{ try{ localStorage.setItem('anuncio_vendedor', anSt.vendedor); }catch(e){} });
   try{
     const v = localStorage.getItem('anuncio_vendedor');
@@ -3346,10 +3406,10 @@ function cartConcluir(texto){
   // O vencimento do Parque fecha em três datas — não é dia livre.
   anSeg('anSegDia','d','dia', ()=>{ anSt.dia = parseInt(anSt.dia,10); });
 
-  function anTexto(id, key){ $an(id).addEventListener('input', ()=>{ anSt[key]=$an(id).value; anRender(); }); }
+  function anTexto(id, key, cb){ $an(id).addEventListener('input', ()=>{ anSt[key]=$an(id).value; cb && cb(); anRender(); }); }
   anTexto('anCliente','cliente');
-  anTexto('anOrigemSub','origemSub');
-  anTexto('anChegouSub','chegouSub');
+  anTexto('anOrigemSub','origemSub', anConfDerruba);
+  anTexto('anChegouSub','chegouSub', anConfDerruba);
   anTexto('anDetalhe','detalhe');
 
   // ---- condicionais ----
@@ -3457,14 +3517,14 @@ function cartConcluir(texto){
       const ja = anUltimos().find(u=> u.q===anSt.quadra && u.j===anSt.jazigo);
       if(ja) avisos.push(anSt.quadra+'-'+anSt.jazigo+' já foi anunciado neste aparelho em '+ja.d.slice(8,10)+'/'+ja.d.slice(5,7)+'.');
     }
-    // A4 — origem de ponto físico com atendimento em outro lugar. É aviso e não
-    // erro: a combinação existe (visitou hoje, fechou por telefone amanhã), só é
-    // rara o bastante para merecer uma conferida.
-    if(anSt.chegou){
-      if(anSt.origem==='Visita ao Parque' && anSt.chegou!=='Presencial no Parque')
-        avisos.push('A origem diz que o cliente estava no Parque, mas o atendimento não foi presencial lá. Se ele viu outra coisa antes e depois ligou, a origem é essa outra coisa.');
-      if(anSt.origem==='PDV Jardim Norte' && anSt.chegou!=='Presencial no PDV Jardim Norte')
-        avisos.push('A origem diz que o cliente estava no PDV do Shopping, mas o atendimento não foi presencial lá. Se ele viu outra coisa antes e depois ligou, a origem é essa outra coisa.');
+    // A4 — matriz de coerência origem × chegou. As regras moram em AN_MATRIZ,
+    // no topo do bloco: contradição vira ERRO (trava sem "Entendi"), improvável
+    // vira AVISO (trava até o "Entendi, é isso mesmo"). O resto passa.
+    if(anSt.origem && anSt.chegou){
+      AN_MATRIZ.forEach(r=>{
+        if(r.origem===anSt.origem && r.chegou.indexOf(anSt.chegou)>=0)
+          (r.nivel==='contradicao' ? erros : avisos).push(r.msg);
+      });
     }
     return {faltas, erros, avisos};
   }
@@ -3595,6 +3655,7 @@ function cartConcluir(texto){
       entrada_detalhe: anSt.chegou==='Outro'? anSt.chegouSub.trim() : '',
       detalhe_captura: anSt.detalhe.trim(),
       avisos_confirmados: anValida().avisos,     // onde a régua e a operação discordaram
+      confere: anSt.confere===true,              // o "Confere." da frase final — NÃO é avisos_confirmados
       versao_msg: AN_VERSAO_MSG
     };
   }
@@ -3665,6 +3726,7 @@ function cartConcluir(texto){
     const vend = anSt.vendedor;
     Object.keys(anSt).forEach(k=>{ anSt[k] = (typeof anSt[k]==='number')? 0 : ''; });
     anSt.vendedor = vend;
+    anSt.confere = false; $an('anConfChk').checked = false;
     anAck = ''; $an('anNovo').hidden = true;
     anPropostaAtual = null;
     go('sim');
@@ -3696,8 +3758,21 @@ function cartConcluir(texto){
     $an('anDetMin').textContent = obrig? '(mínimo 40 caracteres — '+anSt.detalhe.trim().length+' até aqui)' : '(opcional)';
     $an('anDetExtra').hidden = !obrig;
 
+    // Confirmação em voz alta — só existe com os dois valores escolhidos.
+    const temPar = !!(anSt.origem && anSt.chegou);
+    $an('anConf').hidden = !temPar;
+    if(temPar){
+      const oSub = anSt.origemSub.trim();
+      const origemTxt = anSt.origem + (AN_ORIGEM_SUB[anSt.origem] && oSub ? ' ('+oSub+')' : '');
+      const f = AN_CHEGOU_FRASE[anSt.chegou] || {pre:'com você ', frag:anSt.chegou};
+      let frag = f.frag;
+      if(anSt.chegou==='Outro' && anSt.chegouSub.trim()) frag += ' ('+anSt.chegouSub.trim()+')';
+      $an('anConfOrigem').innerHTML = '🚸 Foi o <b>'+anEsc(origemTxt)+'</b> que trouxe o cliente.';
+      $an('anConfChegou').innerHTML = '🚪 Ele falou '+f.pre+'<b>'+anEsc(frag)+'</b>.';
+    }
+
     const r = anValida();
-    const ok = anChecks(r.erros, r.faltas, r.avisos);
+    const ok = anChecks(r.erros, r.faltas, r.avisos) && anSt.confere===true;
     $an('anEnviar').disabled = !ok;
     $an('anCopiar').disabled = !ok;
     $an('anPrev').textContent = anMsg();
