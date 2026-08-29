@@ -477,7 +477,10 @@ footer .sens{color:var(--verde-2); font-weight:600; margin-bottom:6px}
 .greet{font-size:13.5px; color:var(--muted); margin:18px 2px 4px; padding:0 2px}
 .greet b{color:var(--verde-2)}
 
-/* Barra de estoque da M-19 — uma linha discreta acima das boas-vindas */
+/* Barra de estoque da M-19 — uma linha discreta acima das boas-vindas.
+   A guarda [hidden] é obrigatória: display:flex de autor vence o
+   [hidden]{display:none} do navegador, e sem ela a barra nasceria à mostra. */
+.barra-estoque[hidden]{display:none!important}
 .barra-estoque{display:flex;align-items:center;justify-content:center;gap:14px;
   margin:0 0 10px;padding:6px 10px;font-size:12px;line-height:1;
   white-space:nowrap;overflow:hidden;color:var(--muted);
@@ -855,7 +858,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 29/08/2026 · 09:10</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 29/08/2026 · 09:35</div>
     </footer>
   </main>
 </section>

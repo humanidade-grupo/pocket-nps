@@ -1,7 +1,10 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 29/08/2026 09:10 — só bump de cache (barra de estoque da
+Alterações: Rev. 29/08/2026 09:35 — só bump de cache (guarda [hidden] na
+barra de estoque: o display:flex da classe vencia o hidden do navegador e a
+barra nascia à mostra, com traços, antes de a rota responder).
+Rev. 29/08/2026 09:10 — só bump de cache (barra de estoque da
 M-19 na home, acima das boas-vindas; lê a rota pública do Cofre, que é
 cross-origin e já passa direto pelo SW — linha do url.origin).
 Rev. 24/08/2026 14:54 — só bump de cache (lista de vendedores
@@ -60,7 +63,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260829-0910';
+const CACHE = 'pocket-nps-260829-0935';
 
 const CORE = [
 './',
