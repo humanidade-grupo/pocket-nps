@@ -476,6 +476,20 @@ footer .sens{color:var(--verde-2); font-weight:600; margin-bottom:6px}
 .home-head p.lead{margin:9px 0 0; font-size:13.5px; color:rgba(53,31,9,.78); max-width:40ch}
 .greet{font-size:13.5px; color:var(--muted); margin:18px 2px 4px; padding:0 2px}
 .greet b{color:var(--verde-2)}
+
+/* Barra de estoque da M-19 — uma linha discreta acima das boas-vindas */
+.barra-estoque{display:flex;align-items:center;justify-content:center;gap:14px;
+  margin:0 0 10px;padding:6px 10px;font-size:12px;line-height:1;
+  white-space:nowrap;overflow:hidden;color:var(--muted);
+  border-bottom:1px solid var(--border)}
+.barra-estoque .be-quadra{font-weight:600;letter-spacing:.04em;color:var(--muted)}
+.barra-estoque .be-item{display:inline-flex;align-items:center;gap:5px}
+.barra-estoque .be-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.barra-estoque .be-verde{background:var(--ok)}
+.barra-estoque .be-laranja{background:var(--warn)}
+.barra-estoque .be-vermelho{background:var(--danger)}
+.barra-estoque b{font-weight:600;color:var(--marrom);font-variant-numeric:tabular-nums}
+.barra-estoque.be-cache{opacity:.55}   /* numero do aparelho, ainda nao confirmado pela rede */
 .tools{display:flex; flex-direction:column; gap:12px; margin-top:10px}
 .tool{
   display:flex; align-items:center; gap:14px; width:100%; text-align:left; cursor:pointer;
@@ -788,6 +802,13 @@ input.an-plain{padding-left:14px; font-size:16px}
     </div>
   </div>
   <main class="wrap">
+    <!-- Barra de estoque M-19. Nasce escondida: se a rota nao responder, ela simplesmente nao aparece. -->
+    <div id="barraEstoque" class="barra-estoque" hidden aria-live="polite">
+      <span class="be-quadra">M-19</span>
+      <span class="be-item"><i class="be-dot be-verde"></i><b id="beDisp">–</b></span>
+      <span class="be-item"><i class="be-dot be-laranja"></i><b id="beRes">–</b></span>
+      <span class="be-item"><i class="be-dot be-vermelho"></i><b id="beVend">–</b></span>
+    </div>
     <div class="greet" id="greet">Bem-vindo. Escolha uma ferramenta para começar.</div>
     <div class="tools">
       <button class="tool" data-go="sim">
@@ -834,7 +855,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 25/08/2026 · 01:15</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 29/08/2026 · 09:10</div>
     </footer>
   </main>
 </section>
@@ -2603,6 +2624,39 @@ $('#escToggle').addEventListener('click', e=>{
     const per = h<12?'Bom dia':(h<18?'Boa tarde':'Boa noite');
     document.getElementById('greet').innerHTML = `<b>${per}.</b> Escolha uma ferramenta para começar.`;
   }catch(e){}
+})();
+
+/* Barra de estoque da M-19. Le a rota publica do Cofre (sem token, so contagem).
+   Pinta primeiro o que estiver guardado no aparelho — o app e offline-first e a barra
+   nao pode piscar vazia — e depois substitui pelo numero da rede. */
+(function(){
+  var URL_COFRE = 'https://script.google.com/macros/s/AKfycbydLmUEX3g6FeojFGAcVHfNKoPsr4d9oTBUdi7GtcfsirQL6xHJM0BELVGcCrcqrICY/exec';
+  var CHAVE = 'pocket_estoque_m19';
+  var el = document.getElementById('barraEstoque');
+  if (!el) return;
+
+  function pintar(d, deCache){
+    if (!d || typeof d.disponivel !== 'number') return;
+    document.getElementById('beDisp').textContent = d.disponivel;
+    document.getElementById('beRes').textContent  = d.reservado;
+    document.getElementById('beVend').textContent = d.vendido;
+    el.title = 'Quadra M-19 · ' + d.disponivel + ' disponíveis · ' + d.reservado +
+               ' reservados · ' + d.vendido + ' vendidos' +
+               (d.atualizado_em ? ' · atualizado em ' + d.atualizado_em : '');
+    el.classList.toggle('be-cache', !!deCache);
+    el.hidden = false;
+  }
+
+  try { var g = JSON.parse(localStorage.getItem(CHAVE) || 'null'); if (g) pintar(g, true); } catch(e){}
+
+  fetch(URL_COFRE + '?app=estoque&fn=quadra&q=M-19', { cache: 'no-store' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || d.ok !== true) return;          // rota velha ou erro: fica o que ja estava
+      pintar(d, false);
+      try { localStorage.setItem(CHAVE, JSON.stringify(d)); } catch(e){}
+    })
+    .catch(function(){});                        // sem rede: fica o cache, ou fica escondida
 })();
 
 render();
