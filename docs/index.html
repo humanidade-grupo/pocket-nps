@@ -823,7 +823,7 @@ input.an-plain{padding-left:14px; font-size:16px}
 
       <button class="tool" data-go="escala">
         <span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8.5" y1="4.5" x2="8.5" y2="20.5"/><line x1="14" y1="4.5" x2="14" y2="20.5"/></svg></span>
-        <span class="tx"><span class="t">Escala da Equipe</span><span class="d">Escala de Agosto/2026, dia a dia — o posto de cada vendedor.</span></span>
+        <span class="tx"><span class="t">Escala da Equipe</span><span class="d">Escala de Setembro/2026, dia a dia — o posto de cada vendedor.</span></span>
         <span class="badge">Ativo</span>
         <span class="arw">›</span>
       </button>
@@ -858,7 +858,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 29/08/2026 · 09:35</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 31/08/2026 · 00:32</div>
     </footer>
   </main>
 </section>
@@ -1050,8 +1050,8 @@ input.an-plain{padding-left:14px; font-size:16px}
       
     </div>
     <span class="apptag">Pocket NPS · Escala</span>
-    <h1>Escala — Agosto/2026</h1>
-    <p class="lead">Rodízio contínuo nos 7 dias; a cada 5 dias cada vendedor passa por todos os postos.</p>
+    <h1>Escala — Setembro/2026</h1>
+    <p class="lead">Rodízio contínuo nos 7 dias; a cada 4 dias cada vendedor do rodízio passa por todos os postos.</p>
   </div>
 </header>
 
@@ -1073,7 +1073,7 @@ input.an-plain{padding-left:14px; font-size:16px}
   </div>
   <div class="esc2-datepick">
     <label for="escDate">Ir para o dia:</label>
-    <input type="date" id="escDate" min="2026-08-01" max="2026-08-31" value="2026-08-01">
+    <input type="date" id="escDate" min="2026-08-31" max="2026-09-30" value="2026-08-31">
   </div>
 
   <!-- postos do dia selecionado -->
@@ -1093,8 +1093,8 @@ input.an-plain{padding-left:14px; font-size:16px}
   <div class="legend" id="escLegend"></div>
 
   <footer>
-    <div class="sens">Escala fixa de Agosto/2026 — rodízio de 4 postos entre os 5 vendedores.</div>
-    <div class="inst">Todo dia: 2× Parque 8-18 · 1× JN 12-16 · 1× JN 16-20 · 1× Livre.</div>
+    <div class="sens">Escala fixa de Setembro/2026 — 4 vendedores no rodízio + 1 fixa no Parque.</div>
+    <div class="inst">Todo dia: 1× JN 12-16 · 1× JN 16-20 · 1× Livre · o Parque com 2 (1 nos dias de folga da novata).</div>
   </footer>
 </main>
 </section>
@@ -2435,10 +2435,10 @@ document.querySelectorAll('[data-go]').forEach(b=> b.addEventListener('click', (
 window.addEventListener('popstate', e=> go((e.state&&e.state.view)||'home', false));
 // A rota inicial por hash NÃO mora aqui — ver rotaInicial() no fim do script.
 
-// ==================== ESCALA DA EQUIPE — Agosto/2026 ====================
-// Escala mensal fixa. Rodízio contínuo nos 7 dias; a cada 5 dias cada
-// vendedor passa por todos os postos. Dados estáticos (verbatim).
-const ESCALA_AGOSTO_2026 = {"vendedores":["Ana Luiza","Ana Maria","Guilherme","Wanderson","Felipe"],"escala":{"2026-08-01":{"Ana Luiza":"JN 16-20","Ana Maria":"Livre","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-08-02":{"Ana Luiza":"Livre","Ana Maria":"Parque 8-18","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-08-03":{"Ana Luiza":"Parque 8-18","Ana Maria":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-08-04":{"Ana Luiza":"Parque 8-18","Ana Maria":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-08-05":{"Ana Luiza":"JN 12-16","Ana Maria":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Parque 8-18"},"2026-08-06":{"Ana Luiza":"JN 16-20","Ana Maria":"Livre","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-08-07":{"Ana Luiza":"Livre","Ana Maria":"Parque 8-18","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-08-08":{"Ana Luiza":"Parque 8-18","Ana Maria":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-08-09":{"Ana Luiza":"Parque 8-18","Ana Maria":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-08-10":{"Ana Luiza":"JN 12-16","Ana Maria":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Parque 8-18"},"2026-08-11":{"Ana Luiza":"JN 16-20","Ana Maria":"Livre","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-08-12":{"Ana Luiza":"Livre","Ana Maria":"Parque 8-18","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-08-13":{"Ana Luiza":"Parque 8-18","Ana Maria":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-08-14":{"Ana Luiza":"Parque 8-18","Ana Maria":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-08-15":{"Ana Luiza":"JN 12-16","Ana Maria":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Parque 8-18"},"2026-08-16":{"Ana Luiza":"JN 16-20","Ana Maria":"Livre","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-08-17":{"Ana Luiza":"Livre","Ana Maria":"Parque 8-18","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-08-18":{"Ana Luiza":"Parque 8-18","Ana Maria":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-08-19":{"Ana Luiza":"Parque 8-18","Ana Maria":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-08-20":{"Ana Luiza":"JN 12-16","Ana Maria":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Parque 8-18"},"2026-08-21":{"Ana Luiza":"JN 16-20","Ana Maria":"Livre","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-08-22":{"Ana Luiza":"Livre","Ana Maria":"Parque 8-18","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-08-23":{"Ana Luiza":"Parque 8-18","Ana Maria":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-08-24":{"Ana Luiza":"Parque 8-18","Ana Maria":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-08-25":{"Ana Luiza":"JN 12-16","Ana Maria":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Parque 8-18"},"2026-08-26":{"Ana Luiza":"JN 16-20","Ana Maria":"Livre","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-08-27":{"Ana Luiza":"Livre","Ana Maria":"Parque 8-18","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-08-28":{"Ana Luiza":"Parque 8-18","Ana Maria":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-08-29":{"Ana Luiza":"Parque 8-18","Ana Maria":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-08-30":{"Ana Luiza":"JN 12-16","Ana Maria":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Parque 8-18"},"2026-08-31":{"Ana Luiza":"JN 16-20","Ana Maria":"Livre","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"}}};
+// ==================== ESCALA DA EQUIPE — mês em ESCALA_MES.rotulo ====================
+// Escala mensal fixa. Rodízio contínuo nos 7 dias; cada vendedor do rodízio
+// passa por todos os postos no ciclo. Dados estáticos (verbatim).
+const ESCALA_MES = {"rotulo":"Setembro/2026","vendedores":["Ana Luiza","Guilherme","Wanderson","Felipe","A confirmar"],"escala":{"2026-08-31":{"Ana Luiza":"JN 16-20","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-01":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-02":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-03":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-04":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-05":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-06":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-07":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-08":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-09":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-10":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-11":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-12":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-13":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-14":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-15":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-16":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-17":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-18":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-19":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-20":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-21":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-22":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-23":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-24":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-25":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-26":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-27":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-28":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-29":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-30":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"}}};
 
 // Definição dos 4 postos: cor, abreviação (grade) e texto da legenda.
 const POSTOS = {
@@ -2448,7 +2448,7 @@ const POSTOS = {
   'Livre':      {cor:'#9A968E', abbr:'L',  leg:'Livre'}
 };
 const POSTO_ORDEM = ['Parque 8-18','JN 12-16','JN 16-20','Livre'];
-const ESC_DIAS = Object.keys(ESCALA_AGOSTO_2026.escala).sort(); // '2026-08-01'..'2026-08-31'
+const ESC_DIAS = Object.keys(ESCALA_MES.escala).sort(); // '2026-08-31' (ponte) + '2026-09-01'..'2026-09-30'
 const WD_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 let escSel = ESC_DIAS[0]; // dia selecionado (ISO)
 let escSelTocado = false;  // usuário já navegou manualmente?
@@ -2462,7 +2462,7 @@ function escHojeISO(){
   try{ const d=new Date(); const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
   catch(e){ return ''; }
 }
-function escFmtDia(iso){ const dt=escParseISO(iso); const [,,d]=iso.split('-'); return `${WD_CURTO[dt.getDay()]}, ${d}/08`; }
+function escFmtDia(iso){ const dt=escParseISO(iso); const [,m,d]=iso.split('-'); return `${WD_CURTO[dt.getDay()]}, ${d}/${m}`; }
 function escPosto(nome){ return POSTOS[nome] || {cor:'#999',abbr:'?',leg:nome}; }
 
 // ---- render do dia selecionado ----
@@ -2470,16 +2470,16 @@ function renderEscDia(){
   const hoje = escHojeISO();
   const label = $('#escDayLabel');
   const dt = escParseISO(escSel);
-  const diaNum = escSel.split('-')[2];
-  label.innerHTML = `${diaNum}/08/2026<small>${WD_CURTO[dt.getDay()]}${escSel===hoje?' · hoje':''}</small>`;
+  const [ano,mes,diaNum] = escSel.split('-');
+  label.innerHTML = `${diaNum}/${mes}/${ano}<small>${WD_CURTO[dt.getDay()]}${escSel===hoje?' · hoje':''}</small>`;
   label.classList.toggle('is-today', escSel===hoje);
   // navegação: desabilita nos extremos
   $('#escPrev').disabled = (escSel===ESC_DIAS[0]);
   $('#escNext').disabled = (escSel===ESC_DIAS[ESC_DIAS.length-1]);
   $('#escDate').value = escSel;
   // postos do dia — mantém a ordem oficial dos vendedores
-  const dia = ESCALA_AGOSTO_2026.escala[escSel] || {};
-  $('#escDay').innerHTML = ESCALA_AGOSTO_2026.vendedores.map(v=>{
+  const dia = ESCALA_MES.escala[escSel] || {};
+  $('#escDay').innerHTML = ESCALA_MES.vendedores.map(v=>{
     const p = escPosto(dia[v]);
     return `<div class="esc2-row"><span class="nm">${v}</span>`+
            `<span class="esc2-chip" style="background:${p.cor}">${dia[v]}</span></div>`;
@@ -2508,10 +2508,10 @@ function escGradeHTML(diasISO){
     h+=`<th class="${cls(iso)}">${d}<small>${WD_CURTO[dt.getDay()]}</small></th>`;
   });
   h+='</tr></thead><tbody>';
-  ESCALA_AGOSTO_2026.vendedores.forEach(v=>{
+  ESCALA_MES.vendedores.forEach(v=>{
     h+=`<tr><td class="rowhead">${v}</td>`;
     diasISO.forEach(iso=>{
-      const nome=(ESCALA_AGOSTO_2026.escala[iso]||{})[v];
+      const nome=(ESCALA_MES.escala[iso]||{})[v];
       if(!nome){ h+=`<td class="${cls(iso)}"><div class="mcell empty">·</div></td>`; }
       else{ const p=escPosto(nome); h+=`<td class="${cls(iso)}"><div class="mcell" style="background:${p.cor}" title="${nome}">${p.abbr}</div></td>`; }
     });
@@ -2542,9 +2542,9 @@ function renderEscLegenda(){
 }
 
 function renderEscala(){
-  // se hoje estiver em agosto/2026, seleciona hoje ao abrir; senão, dia 1º
+  // se hoje estiver no mês da escala, seleciona hoje ao abrir; senão, dia 1º
   const hoje = escHojeISO();
-  if(ESCALA_AGOSTO_2026.escala[hoje] && !escSelTocado) escSel = hoje;
+  if(ESCALA_MES.escala[hoje] && !escSelTocado) escSel = hoje;
   escInitEuSel();
   renderEscDia();
   renderEscGrade();
@@ -2556,7 +2556,7 @@ function renderEscala(){
 function escInitEuSel(){
   const sel=$('#euSel'); if(!sel) return;
   if(!_euSelInit){
-    ESCALA_AGOSTO_2026.vendedores.forEach(function(v){ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+    ESCALA_MES.vendedores.forEach(function(v){ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
     sel.addEventListener('change', function(e){ escEu=e.target.value; try{ localStorage.setItem('pocket_escEu', escEu); }catch(err){} renderCheckin(); });
     _euSelInit=true;
   }
@@ -2566,12 +2566,12 @@ function renderCheckin(){
   const box=$('#ciBody'); if(!box) return;
   if(!escEu){ box.innerHTML='<div class="ci-hint">Selecione seu nome para registrar sua presença de hoje.</div>'; return; }
   const hoje=escHojeISO();
-  const dia=ESCALA_AGOSTO_2026.escala[hoje];
-  if(!dia){ box.innerHTML='<div class="ci-hint">Sem escala para hoje (fora de Agosto/2026).</div>'; return; }
-  const dt=escParseISO(hoje), dd=hoje.split('-')[2], diaNome=WD_CURTO[dt.getDay()];
+  const dia=ESCALA_MES.escala[hoje];
+  if(!dia){ box.innerHTML='<div class="ci-hint">Sem escala para hoje (fora de '+ESCALA_MES.rotulo+').</div>'; return; }
+  const dt=escParseISO(hoje), mm=hoje.split('-')[1], dd=hoje.split('-')[2], diaNome=WD_CURTO[dt.getDay()];
   const posto=dia[escEu];
   const conectado=!!ESCALA_API;
-  let h='<div class="ci-titulo">Check-in de hoje · '+diaNome+', '+dd+'/08</div>';
+  let h='<div class="ci-titulo">Check-in de hoje · '+diaNome+', '+dd+'/'+mm+'</div>';
   if(posto==='Livre'){
     h+='<div class="ci-info">Hoje é sua <b>folga</b> (Livre) 🌿</div>';
     if(conectado) h+='<button class="ci-btn ci-sec" data-posto="Livre">Vim trabalhar mesmo assim — registrar</button>';
@@ -2603,7 +2603,7 @@ function fazerCheckin(posto){
 }
 
 function escIrPara(iso){
-  if(!ESCALA_AGOSTO_2026.escala[iso]) return;
+  if(!ESCALA_MES.escala[iso]) return;
   escSel = iso; escSelTocado = true; renderEscDia(); renderEscGrade();
 }
 function escPasso(delta){
