@@ -1665,6 +1665,13 @@ input.an-plain{padding-left:14px; font-size:16px}
 
 <main class="wrap">
 
+  <!-- Fila do Cofre parada. Fica FORA do #anCorpo de propósito: anPropostaAtual
+       só vive em memória, então o app reaberto no dia seguinte nasce no gate —
+       e é exatamente aí que o registro preso da véspera precisa aparecer.
+       Mesmo visual da .cart-fila da Carteira: é a mesma ideia, e o vendedor
+       já conhece o selo de lá. -->
+  <div class="cart-fila" id="anFilaSelo"></div>
+
   <!-- Sem proposta no estado (link direto, app reaberto no meio): aviso, nunca
        formulário vazio — formulário vazio aqui viraria número digitado à mão,
        que é exatamente o que esta tela existe para impedir. -->
@@ -3145,6 +3152,9 @@ async function cartEntrar(){
     inp.value = '';
     cartAvisar('cart-erro-login','');
     cartAoEntrar();
+    // A fila de anúncios vive em outra IIFE e ficava presa até o app ser
+    // reaberto. Quem acabou de digitar o PIN tem o token AGORA.
+    try{ if(window.anuncioSubirFila) window.anuncioSubirFila(); }catch(e){}
   }catch(e){
     cartAvisar('cart-erro-login', e.message === 'sem_url'
       ? 'A carteira ainda não está conectada ao servidor.'
@@ -3522,6 +3532,7 @@ function cartConcluir(texto){
   }
 
   function anAoEntrar(){
+    anPintarFila();
     const tem = !!anPropostaAtual;
     $an('anGate').hidden = tem;
     $an('anCorpo').hidden = !tem;
@@ -3672,6 +3683,9 @@ function cartConcluir(texto){
   const AN_VERSAO_MSG = 'v3';   // 3ª geração do formato da mensagem (24/08)
   let anFila = [], anSubindo = false;
   let anIdAtual = null, anMsgDoId = '';
+  // Motivo da última recusa do servidor — só existe para o selo poder dizer
+  // "sessão expirada" em vez da mensagem genérica. Não altera o fluxo.
+  let anFilaErro = '';
 
   function anUuid(){
     try{ if(crypto && crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
@@ -3719,12 +3733,13 @@ function cartConcluir(texto){
   function anGravarFila(){ try{ localStorage.setItem(AN_K_FILA, JSON.stringify(anFila)); }catch(e){} }
   function anEnfileirar(payload){
     if(!anFila.some(x=> x.id===payload.id)){ anFila.push(payload); anGravarFila(); }
+    anPintarFila();
     anSubirFila();
   }
   async function anSubirFila(){
     if(anSubindo || !anFila.length || !CARTEIRA_API) return;
     const token = anTokenCarteira();
-    if(!token) return;                            // sem sessão da Carteira: a fila espera
+    if(!token){ anPintarFila(); return; }         // sem sessão da Carteira: a fila espera
     anSubindo = true;
     try{
       for(const item of anFila.slice()){
@@ -3732,14 +3747,48 @@ function cartConcluir(texto){
         // o GAS não responde OPTIONS e a chamada quebra (mesma regra da Carteira)
         const r = await fetch(CARTEIRA_API, { method:'POST', body: JSON.stringify({ acao:'registrar_anuncio', token: token, anuncio: item }) });
         const j = await r.json();
-        if(j && j.ok){ anFila = anFila.filter(x=> x.id!==item.id); anGravarFila(); }
-        else break;                               // token vencido ou erro do servidor: fica para a próxima
+        if(j && j.ok){ anFila = anFila.filter(x=> x.id!==item.id); anGravarFila(); anFilaErro = ''; }
+        else { anFilaErro = String((j && (j.erro || j.error || j.msg)) || ''); break; }
+        // o break fica: token vencido ou erro do servidor não melhora martelando
       }
     }catch(e){ /* sem rede: os itens ficam e sobem na volta da conexão */ }
     anSubindo = false;
+    anPintarFila();
   }
+
+  // cartEntrar() mora FORA desta IIFE e não alcançava nada daqui — por isso a
+  // fila só subia ao reabrir o app. Estas duas portas são o mínimo para o
+  // login por PIN redisparar o envio na mesma sessão de página.
+  window.anuncioSubirFila = anSubirFila;
+  window.anuncioFilaPendente = () => anFila.length;
+
+  // Falha de registro era MUDA: o payload dormia em localStorage.anuncio_fila e
+  // nada na tela dizia que existia. O selo é o aviso — e diz o que fazer.
+  const AN_SESSAO_MORTA = ['TOKEN_INVALIDO','VENDEDOR_INATIVO'];
+  function anSessaoMorta(){ return AN_SESSAO_MORTA.indexOf(anFilaErro) >= 0; }
+  function anFilaPedePin(){ return !anTokenCarteira() || anSessaoMorta(); }
+  function anPintarFila(){
+    const el = $an('anFilaSelo');
+    if(!el) return;
+    const n = anFila.length;
+    const quantos = n === 1 ? '1 anúncio' : n + ' anúncios';
+    let txt = '';
+    if(n){
+      if(!anTokenCarteira())            txt = quantos + ' ainda não registrado' + (n===1?'':'s') + ' — entre com o seu PIN na Carteira do Dia.';
+      else if(anSessaoMorta())          txt = quantos + ' aguardando envio — sua sessão expirou, entre de novo com o seu PIN.';
+      else                              txt = quantos + ' aguardando envio — toque para tentar de novo.';
+    }
+    el.textContent = txt;
+    el.className = 'cart-fila' + (n ? ' on' : '');
+  }
+  $an('anFilaSelo').addEventListener('click', ()=>{
+    if(!anFila.length) return;
+    if(anFilaPedePin()) go('carteira');
+    else anSubirFila();
+  });
   try{ const v = localStorage.getItem(AN_K_FILA); anFila = v? (JSON.parse(v)||[]) : []; }catch(e){ anFila = []; }
   window.addEventListener('online', anSubirFila);
+  anPintarFila();
   if(anFila.length) anSubirFila();               // sobrou fila da sessão anterior
   function anAposEnvio(){
     // Registro no Cofre — o WhatsApp/cópia já aconteceu; daqui em diante é
