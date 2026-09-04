@@ -1702,7 +1702,7 @@ input.an-plain{padding-left:14px; font-size:16px}
       </div>
       <div class="field">
         <label>Jazigo nº</label>
-        <input type="tel" inputmode="numeric" id="anJazigo" class="an-plain" placeholder="ex.: 373" autocomplete="off" maxlength="4">
+        <input type="text" inputmode="text" autocapitalize="characters" id="anJazigo" class="an-plain" placeholder="ex.: 373 ou 454A" autocomplete="off" maxlength="5">
       </div>
     </section>
 
@@ -3415,7 +3415,7 @@ function cartConcluir(texto){
 
   // Os campos de número (valor, qtde, entrada, parcela, produto, forma, natureza)
   // NÃO são mais digitados: chegam do retrato da proposta em anCarregarProposta().
-  const anSt = {quadra:'', jazigo:0, produto:'', cliente:'', valor:0, forma:'', qtde:0,
+  const anSt = {quadra:'', jazigo:'', produto:'', cliente:'', valor:0, forma:'', qtde:0,
                 nat:'', entrada:0, dia:0, parcela:0, origem:'', origemSub:'',
                 chegou:'', chegouSub:'', detalhe:'', vendedor:'', confere:false};
 
@@ -3469,7 +3469,19 @@ function cartConcluir(texto){
       anSt[key] = isFinite(v)? v : 0; anRender();
     });
   }
-  anInt($an('anJazigo'),'jazigo');
+  /* Jazigo aceita SUFIXO de uma letra (454A) desde 04/09/2026: poucos jazigos
+     têm, mas o Cofre casa anúncio × CRM por quadra+jazigo e "454" anunciado no
+     lugar de "454A" casou com a venda ERRADA (M-19-454 × 454A, 02–03/09).
+     Guarda-se como TEXTO ("454A"), maiúsculo, sem zero à esquerda — a mesma
+     normalização do `_fcNormJazigo` do Cofre. */
+  $an('anJazigo').addEventListener('input', ()=>{
+    const el = $an('anJazigo');
+    let v = el.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
+    const m = v.match(/^0*(\d{0,4})([A-Z]?)/);
+    v = m ? (m[1] + (m[1] ? m[2] : '')) : '';
+    el.value = v;
+    anSt.jazigo = v; anRender();
+  });
   // O vencimento do Parque fecha em três datas — não é dia livre.
   anSeg('anSegDia','d','dia', ()=>{ anSt.dia = parseInt(anSt.dia,10); });
 
@@ -3557,7 +3569,10 @@ function cartConcluir(texto){
     // E1 — obrigatórios e faixas (só o que o vendedor ainda digita)
     if(!anSt.quadra) faltas.push('quadra');
     if(!anSt.jazigo) faltas.push('jazigo nº');
-    else if(anSt.jazigo<1 || anSt.jazigo>9999) erros.push('Jazigo nº: de 1 a 9999.');
+    else{
+      const nj = parseInt(String(anSt.jazigo),10);
+      if(!/^\d{1,4}[A-Z]?$/.test(String(anSt.jazigo)) || nj<1 || nj>9999) erros.push('Jazigo nº: de 1 a 9999, com uma letra no fim se houver (ex.: 454A).');
+    }
     const nome = anSt.cliente.trim();
     if(!nome) faltas.push('cliente');
     else if(nome.length<5 || nome.split(/\s+/).length<2) erros.push('Nome e sobrenome do cliente.');
@@ -3582,7 +3597,7 @@ function cartConcluir(texto){
     if(!anSt.vendedor) faltas.push('vendedor');
     // A2 — jazigo já anunciado neste aparelho (últimos 20)
     if(anSt.quadra && anSt.jazigo){
-      const ja = anUltimos().find(u=> u.q===anSt.quadra && u.j===anSt.jazigo);
+      const ja = anUltimos().find(u=> u.q===anSt.quadra && String(u.j)===String(anSt.jazigo));   // registros antigos guardam número
       if(ja) avisos.push(anSt.quadra+'-'+anSt.jazigo+' já foi anunciado neste aparelho em '+ja.d.slice(8,10)+'/'+ja.d.slice(5,7)+'.');
     }
     // A4 — matriz de coerência origem × chegou. As regras moram em AN_MATRIZ,
@@ -3669,7 +3684,7 @@ function cartConcluir(texto){
   // Últimos 20 anúncios deste aparelho — alimentam o aviso de jazigo repetido.
   function anRegistrar(){
     try{
-      const arr = anUltimos().filter(u=> !(u.q===anSt.quadra && u.j===anSt.jazigo));
+      const arr = anUltimos().filter(u=> !(u.q===anSt.quadra && String(u.j)===String(anSt.jazigo)));
       arr.unshift({q:anSt.quadra, j:anSt.jazigo, d:escHojeISO()});   // data LOCAL — toISOString viraria amanhã depois das 21h (UTC-3)
       localStorage.setItem('anuncio_ultimos', JSON.stringify(arr.slice(0,20)));
     }catch(e){}
