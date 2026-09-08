@@ -16,6 +16,17 @@
        AN_CHEGOU_FRASE — concatenar sai errado) e o checkbox "Confere.", sem o qual
        o envio não destrava. Mudou origem, chegou ou subcampo, a marca cai. Vai no
        payload como campo próprio (confere) — não é avisos_confirmados.
+     Rev. 08/09/2026 17:20 (Ricardo) — VENCIMENTO 05/15/25 NASCE NO SIMULADOR. Desde
+       08/09 o simulador do Facilita só oferece os dias 05, 15 e 25 para o vencimento
+       da 2ª parcela em diante, em todo jazigo financiado. O passo "A prazo" ganhou o
+       seletor (sugerido: o dia seguinte ao de hoje, como o Facilita faz), o dia viaja
+       no retrato do calc() e chega TRAVADO no Anúncio (os outros dois botões riscados)
+       — o vendedor não escolhe duas vezes. O cronograma (resumo, carta, WhatsApp)
+       passa a dizer datas de verdade: hoje o que é pago no ato; a parcela seguinte
+       no dia escolhido do mês seguinte (venda em 08/09 com dia 15 → 15/10, como o
+       Facilita monta — deal 5402); "demais todo dia NN" em vez de "a cada 30 dias".
+       A leitura de quem paga hoje é a mesma do Anúncio: sinal, ou 1ª no ato no
+       boleto, ou nada no cartão. dataCrono() morreu.
      Rev. 25/08/2026 00:58 (Ricardo) — O CHEGOU VEM ANTES DA ORIGEM, e a tela ensina:
        as 4 vendas de 24/08 saíram com origem errada porque a tela pedia uma escolha
        que o vendedor não consegue fazer sem ter perguntado ao cliente — e não pedia
@@ -958,6 +969,20 @@ input.an-plain{padding-left:14px; font-size:16px}
         <div class="rangeticks"><span>2x</span><span id="tickMax">72x</span></div>
         <div class="prazojuros ok" id="prazoJuros">—</div>
       </div>
+
+      <!-- Vencimento: o Parque fecha em 05/15/25 desde 08/09/2026 (o simulador do
+           Facilita só oferece esses três dias, da 2ª parcela em diante, para todo
+           jazigo financiado). O dia escolhido aqui viaja com a proposta e chega
+           TRAVADO no Anúncio de Venda — o vendedor não escolhe duas vezes. -->
+      <div class="field" id="fDia">
+        <label>Vencimento das parcelas</label>
+        <div class="seg" id="segDia" role="group" aria-label="Dia do vencimento">
+          <button data-dia="5" aria-pressed="false">05</button>
+          <button data-dia="15" aria-pressed="false">15</button>
+          <button data-dia="25" aria-pressed="false">25</button>
+        </div>
+        <p class="fieldnote">Vale da <b>2ª parcela em diante</b> (regra do Parque). Sugerido: o dia seguinte ao de hoje, como o Facilita faz.</p>
+      </div>
     </div>
 
     <!-- A VISTA -->
@@ -1842,8 +1867,19 @@ function escJSONP(params){
 
 const state = {
   produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false, descOn:false,
-  valor:0, entrada:0, prazo:60
+  valor:0, entrada:0, prazo:60, dia:0
 };
+// Dia de vencimento das parcelas (2ª em diante): 05, 15 ou 25. O Facilita
+// pré-seleciona o dia SEGUINTE ao do primeiro pagamento; aqui a sugestão é a
+// mesma, e o vendedor troca no seletor se o cliente pedir outro.
+const DIAS_VENC = [5, 15, 25];
+function diaSugerido(hoje){
+  const d = (hoje || new Date()).getDate();
+  return DIAS_VENC.find(x => x > d) || DIAS_VENC[0];
+}
+function syncDia(){
+  [...document.querySelectorAll('#segDia button')].forEach(b => b.setAttribute('aria-pressed', parseInt(b.dataset.dia,10)===state.dia));
+}
 const MAXP = {perpetuo:{boleto:72,cartao:21}, reserva:{boleto:60,cartao:21}, temporario:{boleto:21,cartao:21}};
 // Rótulo do produto — usado no passo 2, no resumo, na carta e no texto de WhatsApp.
 const PRODUTO_NOME = {perpetuo:'Perpétuo', reserva:'Reserva', temporario:'Temporário'};
@@ -1883,6 +1919,8 @@ function seg(id, attr, key, cb){
   });
 }
 seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); syncProduto(); });
+seg('#segDia','dia','dia', v=>{ state.dia = parseInt(v,10); });
+state.dia = diaSugerido(); syncDia();
 
 // Reflete o produto escolhido no passo 2 ("Valor do jazigo <Produto>") e nas notas do campo.
 function syncProduto(){
@@ -1990,7 +2028,7 @@ function calc(){
       vp = comDesc;                                // parcelas antecipadas a 1% preservam o VP = principal
     }
     return {forma:'prazo', meio:state.meio, tabela:v, comDesc, desconto:v-comDesc, di:d, entrada:ent, saldo,
-            nparc:n, parcela, totalParc, total:cent(ent+totalParc), juros, vp, semJuros};
+            nparc:n, parcela, totalParc, total:cent(ent+totalParc), juros, vp, semJuros, dia:state.dia};
   }
 }
 
@@ -2085,23 +2123,27 @@ function render(){
   bindActions();
 }
 
-// Datas do cronograma. Sem sinal a 1ª parcela vence hoje; com sinal, no mesmo dia do mês
-// seguinte — é assim que o Facilita monta o carnê (sinal em 21/08 → 1ª mensal em 21/09).
-// Dia inexistente no mês seguinte (31/01 → fevereiro) cai no último dia do mês.
-function dataCrono(meses){
-  const h = new Date(), dia = h.getDate();
-  const alvo = new Date(h.getFullYear(), h.getMonth()+meses, 1);
-  const ultimo = new Date(alvo.getFullYear(), alvo.getMonth()+1, 0).getDate();
-  alvo.setDate(Math.min(dia, ultimo));
-  return alvo.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+// Datas do cronograma. O que é pago HOJE (sinal, ou a 1ª parcela no ato) leva a
+// data de hoje; da parcela seguinte em diante vale o DIA ESCOLHIDO (05/15/25),
+// no mês seguinte ao de hoje — é assim que o Facilita monta o carnê desde a
+// trava de 08/09/2026 (venda em 08/09 com dia 15 → 1ª mensal em 15/10, não em
+// 15/09; conferido no deal 5402). 05, 15 e 25 existem em todo mês: não há
+// clamp de dia inexistente.
+function dataHoje(){ return new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}); }
+function dataVenc(dia, meses){
+  const h = new Date();
+  return new Date(h.getFullYear(), h.getMonth()+(meses||1), dia).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
 }
+const diaTxt = d => ('0'+d).slice(-2);
 
 // Cronograma de pagamento, em texto — a MESMA frase no resumo, na carta e no WhatsApp.
 // Existe porque "Entrada" no Facilita é só o rótulo da 1ª das N parcelas (paga no ato), e o
 // vendedor vinha digitando o valor dessa parcela no campo "Entrada adicional" daqui, que é
 // dinheiro a MAIS. Aqui as duas coisas aparecem em linhas separadas, nomeadas.
-// Só o boleto 22–72x tem a 1ª parcela no ato (Price antecipado, `semJuros===false`);
-// nos demais o app não assume pagamento no ato — a frase informa apenas a cadência.
+// A leitura de QUEM paga hoje é a MESMA do Anúncio de Venda (anCarregarProposta):
+// sinal > 0 → o sinal é o pagamento de hoje e a 1ª parcela vence no dia escolhido do
+// mês seguinte; sem sinal, no BOLETO a 1ª parcela é paga no ato e a 2ª vence no dia
+// escolhido; no CARTÃO nada é pago hoje e a 1ª vence no dia escolhido.
 // `valores`: no resumo as duas linhas repetem os números — é ali que o vendedor confere que
 // entrada adicional e 1ª parcela são pagamentos distintos. Na carta e no WhatsApp os valores
 // já estão tabulados acima, então sai só a data, em uma linha.
@@ -2109,20 +2151,16 @@ function cronoLinhas(r, valores){
   if(!r || r.forma!=='prazo' || !r.nparc) return [];
   const L=[];
   const temEnt = r.entrada>0;
-  if(!r.semJuros){
-    // Aqui o texto DIZ as datas. Antes ele anunciava a entrada como paga hoje e, na linha
-    // seguinte, a 1ª parcela também “hoje”: dois pagamentos do mesmo dia sem dizer o
-    // desembolso do dia. Foi essa ambiguidade que escondeu a divergência com o Facilita.
-    const pv = valores ? ' de '+brl(r.parcela) : '';
-    if(temEnt) L.push('Sinal de '+brl(r.entrada)+' hoje ('+dataCrono(0)+') · 1ª parcela'+pv
-                      +' em '+dataCrono(1)+' · demais a cada 30 dias');
-    else L.push('1ª parcela'+pv+' hoje ('+dataCrono(0)+'), no ato · demais '+(r.nparc-1)
-                +' a cada 30 dias');
+  const dia = r.dia || state.dia;
+  const demais = ' · demais todo dia '+diaTxt(dia);
+  const pv = valores ? ' de '+brl(r.parcela) : '';
+  if(temEnt){
+    L.push('Sinal de '+brl(r.entrada)+' hoje ('+dataHoje()+') · 1ª parcela'+pv+' em '+dataVenc(dia)+demais);
+  } else if(r.meio==='cartao'){
+    if(valores) L.push(r.nparc+'x de '+brl(r.parcela)+' no cartão');
+    L.push('Nada pago hoje · 1ª parcela'+pv+' em '+dataVenc(dia)+demais);
   } else {
-    // Faixa 1–21x (sem juros): texto inalterado — o app não assume pagamento no ato.
-    if(valores && temEnt) L.push('Entrada adicional: '+brl(r.entrada)+' (hoje)');
-    if(valores && temEnt) L.push(r.nparc+'x de '+brl(r.parcela)+' · parcelas mensais, a cada 30 dias');
-    else L.push('Parcelas mensais, a cada 30 dias');
+    L.push('1ª parcela'+pv+' hoje ('+dataHoje()+'), no ato · 2ª em '+dataVenc(dia)+demais);
   }
   return L;
 }
@@ -3516,6 +3554,14 @@ function cartConcluir(texto){
       // é a mesma com ou sem ato (sem juros, saldo/n); no CARTÃO de crédito nada
       // é pago hoje. Nenhum valor muda com isto — só o que a mensagem afirma.
       anSt.nat = p.entrada>0 ? 'sinal' : (anSt.forma==='Boleto' ? 'primeira' : '');
+      // O dia do vencimento veio do Simulador e chega TRAVADO: quem escolheu no
+      // simulador não escolhe de novo aqui — era o jeito de o anúncio sair com
+      // um dia e o Facilita com outro. Os outros dois botões ficam riscados.
+      anSt.dia = p.dia || 0;
+      [...$an('anSegDia').querySelectorAll('button')].forEach(b=>{
+        const meu = parseInt(b.dataset.d,10)===anSt.dia;
+        b.setAttribute('aria-pressed', meu); b.disabled = !!anSt.dia && !meu;
+      });
     }else{
       anSt.qtde = 1;
       anSt.entrada = 0;
@@ -3536,6 +3582,7 @@ function cartConcluir(texto){
       if(anSt.nat==='sinal') row('Entrada', 'sinal de '+brl(anSt.entrada)+' pago hoje');
       else if(anSt.nat==='primeira') row('Entrada', brl(anSt.parcela)+' — a 1ª das parcelas, no ato');
       else row('Entrada', 'sem entrada — nada pago no ato');
+      if(anSt.dia) row('Vencimento', 'dia '+('0'+anSt.dia).slice(-2)+' (definido no Simulador)');
     }else{
       row('Forma', anEsc(anSt.forma)+' à vista');
       row('Valor pago à vista', brl(anSt.parcela));
@@ -3842,7 +3889,7 @@ function cartConcluir(texto){
   // novo é venda nova, e venda nova começa por uma proposta nova.
   $an('anNovo').addEventListener('click', ()=>{
     ['anJazigo','anCliente','anOrigemSub','anChegouSub','anDetalhe'].forEach(id=>{ $an(id).value=''; });
-    ['anSegQuadra','anSegDia'].forEach(id=>{ [...$an(id).querySelectorAll('button')].forEach(x=> x.setAttribute('aria-pressed','false')); });
+    ['anSegQuadra','anSegDia'].forEach(id=>{ [...$an(id).querySelectorAll('button')].forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; }); });
     ['anOrigem','anChegou'].forEach(id=>{ $an(id).selectedIndex = 0; $an(id).classList.add('vazio'); });
     const vend = anSt.vendedor;
     Object.keys(anSt).forEach(k=>{ anSt[k] = (typeof anSt[k]==='number')? 0 : ''; });
