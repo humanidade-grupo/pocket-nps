@@ -370,6 +370,15 @@ input:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.1
   font-size:12px; font-weight:600; padding:6px 11px; border-radius:20px; cursor:pointer;
 }
 .chips button:active{background:var(--bege)}
+/* Seletor de jazigo (12/09): as mesmas pílulas, com o preço embaixo do número. Reservado
+   apagado e riscado como o .seg desabilitado; o escolhido no marrom do .seg.gold. */
+.chips button .s{display:block; font-size:10.5px; font-weight:500; opacity:.8; margin-top:1px}
+.chips button:disabled{opacity:.38; cursor:not-allowed; text-decoration:line-through}
+.chips button:disabled .s{text-decoration:none}
+.chips button[aria-pressed="true"]{background:var(--marrom); color:var(--off-white); border-color:var(--marrom)}
+#segQuadra{flex-wrap:wrap}
+#segQuadra button{flex:1 1 30%}
+.input-travado input{background:rgba(66,39,12,.05); color:var(--marrom)}
 
 /* ---------- Prazo slider ---------- */
 .prazohead{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2px}
@@ -504,6 +513,10 @@ footer .sens{color:var(--verde-2); font-weight:600; margin-bottom:6px}
 .barra-estoque .be-vermelho{background:var(--danger)}
 .barra-estoque b{font-weight:600;color:var(--marrom);font-variant-numeric:tabular-nums}
 .barra-estoque.be-cache{opacity:.55}   /* numero do aparelho, ainda nao confirmado pela rede */
+.barra-estoque{flex-wrap:wrap; row-gap:4px}
+.barra-estoque .be-grupo[hidden]{display:none!important}
+.barra-estoque .be-grupo{display:inline-flex; align-items:center; gap:10px}
+.barra-estoque .be-grupo.be-cache{opacity:.55}
 .tools{display:flex; flex-direction:column; gap:12px; margin-top:10px}
 .tool{
   display:flex; align-items:center; gap:14px; width:100%; text-align:left; cursor:pointer;
@@ -816,12 +829,21 @@ input.an-plain{padding-left:14px; font-size:16px}
     </div>
   </div>
   <main class="wrap">
-    <!-- Barra de estoque M-19. Nasce escondida: se a rota nao responder, ela simplesmente nao aparece. -->
+    <!-- Barra de estoque: M-19 e Retomada (12/09). Cada grupo nasce escondido: quadra cuja
+         rota nao respondeu (e sem copia no aparelho) simplesmente nao aparece. -->
     <div id="barraEstoque" class="barra-estoque" hidden aria-live="polite">
-      <span class="be-quadra">M-19</span>
-      <span class="be-item"><i class="be-dot be-verde"></i><b id="beDisp">–</b></span>
-      <span class="be-item"><i class="be-dot be-laranja"></i><b id="beRes">–</b></span>
-      <span class="be-item"><i class="be-dot be-vermelho"></i><b id="beVend">–</b></span>
+      <span class="be-grupo" data-q="M-19" hidden>
+        <span class="be-quadra">M-19</span>
+        <span class="be-item"><i class="be-dot be-verde"></i><b data-c="disp">–</b></span>
+        <span class="be-item"><i class="be-dot be-laranja"></i><b data-c="res">–</b></span>
+        <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
+      </span>
+      <span class="be-grupo" data-q="Retomada" hidden>
+        <span class="be-quadra">Retomada</span>
+        <span class="be-item"><i class="be-dot be-verde"></i><b data-c="disp">–</b></span>
+        <span class="be-item"><i class="be-dot be-laranja"></i><b data-c="res">–</b></span>
+        <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
+      </span>
     </div>
     <div class="greet" id="greet">Bem-vindo. Escolha uma ferramenta para começar.</div>
     <div class="tools">
@@ -920,7 +942,17 @@ input.an-plain{padding-left:14px; font-size:16px}
   <!-- STEP 2: valor -->
   <section class="card">
     <div class="step"><span class="n">2</span><h2>Valor do jazigo <span id="valorProdLabel">Perpétuo</span></h2></div>
-    <div class="field">
+    <!-- Seletor de jazigo (12/09). Quadras e jazigos vêm da rota pública do Cofre
+         (?app=estoque&fn=lista); nada disso está escrito aqui. Sem rota e sem cópia no
+         aparelho, o bloco fica escondido e o valor é digitado, como sempre foi. -->
+    <div class="field" id="jzBox" hidden>
+      <label>Quadra</label>
+      <div class="seg" id="segQuadra" role="group" aria-label="Quadra"></div>
+      <div class="chips" id="chipsJazigo"></div>
+      <p class="fieldnote" id="jzNota"></p>
+    </div>
+    <p class="fieldnote" id="jzFalha" hidden></p>
+    <div class="field" id="valorField">
       <div class="money">
         <span class="cur">R$</span>
         <input type="tel" inputmode="numeric" id="valor" placeholder="0,00" autocomplete="off">
@@ -928,6 +960,8 @@ input.an-plain{padding-left:14px; font-size:16px}
       <div class="chips" id="chipsValor"></div>
       <p class="fieldnote" id="notaTemporario" hidden>* Informe o valor da coluna <b>Uso Temporário</b> da tabela (20% do valor do Perpétuo).</p>
       <p class="fieldnote" id="notaMista">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo.</p>
+      <p class="fieldnote" id="jzValorNota" hidden></p>
+      <div class="chips"><button type="button" id="btnValorModo">Digitar o valor à mão</button></div>
     </div>
   </section>
 
@@ -994,6 +1028,18 @@ input.an-plain{padding-left:14px; font-size:16px}
           <button data-meioav="cartao" aria-pressed="false">Cartão<span class="s">−2%</span></button>
         </div>
       </div>
+    </div>
+
+    <!-- Campanha comercial (12/09). Regra, percentuais, datas e escopo vêm da rota pública
+         ?app=campanha&fn=vigente — nada disso está escrito no JS. Só aparece com campanha
+         ativa, hoje entre o início e o fechamento, e o jazigo escolhido no escopo. -->
+    <div class="field" id="campField" hidden>
+      <label class="switchrow">
+        <input type="checkbox" id="campChk">
+        <span><span id="campNome">Campanha</span> <span class="opt" id="campPct"></span></span>
+      </label>
+      <p class="fieldnote" id="campPrazo"></p>
+      <p class="fieldnote" id="campObs" hidden></p>
     </div>
 
     <!-- Desconto (opcional — padrão: valor cheio) -->
@@ -1158,6 +1204,13 @@ input.an-plain{padding-left:14px; font-size:16px}
 
 <main class="wrap">
   <div class="validade"><span class="dot"></span><span>Divulgação 01/08/2026 &middot; condições válidas até <b>31/08/2026</b></span></div>
+
+  <!-- Carimbo do reajuste (12/09): o texto `observacao` da rota ?app=campanha&fn=vigente,
+       só com campanha ativa. INTERNO — não vai para proposta, WhatsApp nem carta. -->
+  <div class="notecard" id="tabCampObs" hidden>
+    <div class="lbl">Interno &middot; não repassar ao cliente</div>
+    <ol><li id="tabCampObsTxt"></li></ol>
+  </div>
 
   <div class="tools" style="margin-top:14px">
     <a class="tool" href="https://drive.google.com/file/d/1GXTu8Xk28KoNzxifY1v0gLhAIfjYwOsq/view" target="_blank" rel="noopener">
@@ -1510,6 +1563,11 @@ input.an-plain{padding-left:14px; font-size:16px}
     <h2><span class="num">13</span>Dados pessoais (LGPD)</h2>
     <details class="faq"><summary><span class="q">Como meus dados são tratados?</span><span class="chev">›</span></summary><div class="a"><p>Exclusivamente para identificação, autorização, execução e registro do sepultamento, com base legal na LGPD (Lei nº 13.709/2018). É vedado uso para outra finalidade, comercialização ou compartilhamento com terceiros não autorizados (salvo requisição de autoridade). Registros fotográficos servem apenas a controle interno e não podem ser divulgados sem autorização. O titular pode exercer os direitos do art. 18 da LGPD mediante solicitação à Administração. Os registros são mantidos por, no mínimo, <strong>20 anos</strong>.</p></div></details>
   </section>
+  <section class="faq-sec">
+    <h2><span class="num">14</span>Campanha e quadras</h2>
+    <details class="faq"><summary><span class="q">O desconto da campanha soma com o meu desconto?</span><span class="chev">›</span></summary><div class="a"><p><strong>Não.</strong> A campanha substitui o desconto de alçada; os dois não se somam.</p></div></details>
+    <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p></div></details>
+  </section>
   <div class="faq-foot">Material de apoio elaborado a partir do Regulamento Interno v3.0 (julho/2026). Para situações não previstas aqui, consultar a Administração do Parque da Saudade, que resolve os casos omissos com base na legislação aplicável.</div>
 </main>
 </section>
@@ -1723,11 +1781,13 @@ input.an-plain{padding-left:14px; font-size:16px}
           <button data-q="M-19" aria-pressed="false">M-19</button>
           <button data-q="M-20" aria-pressed="false">M-20</button>
           <button data-q="M-21" aria-pressed="false">M-21</button>
+          <button data-q="Retomada" aria-pressed="false">Retomada</button>
         </div>
       </div>
       <div class="field">
         <label>Jazigo nº</label>
-        <input type="text" inputmode="text" autocapitalize="characters" id="anJazigo" class="an-plain" placeholder="ex.: 373 ou 454A" autocomplete="off" maxlength="5">
+        <input type="text" inputmode="text" autocapitalize="characters" id="anJazigo" class="an-plain" placeholder="ex.: 373 ou 454A" autocomplete="off" maxlength="10">
+        <p class="fieldnote" id="anJzNota" hidden>Veio do jazigo escolhido no Simulador. Para trocar, volte e escolha outro.</p>
       </div>
     </section>
 
@@ -1867,7 +1927,10 @@ function escJSONP(params){
 
 const state = {
   produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false, descOn:false,
-  valor:0, entrada:0, prazo:60, dia:0
+  valor:0, entrada:0, prazo:60, dia:0,
+  // seletor de jazigo (12/09): jaz = {quadra, jazigo, valor} escolhido na lista do Cofre;
+  // modoValor '' (ainda sem lista) | 'jazigo' | 'mao'; campOn = interruptor da campanha
+  jaz:null, quadraSel:'', modoValor:'', campOn:true
 };
 // Dia de vencimento das parcelas (2ª em diante): 05, 15 ou 25. O Facilita
 // pré-seleciona o dia SEGUINTE ao do primeiro pagamento; aqui a sugestão é a
@@ -1918,16 +1981,19 @@ function seg(id, attr, key, cb){
     cb && cb(v); render();
   });
 }
-seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); syncProduto(); });
+seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); simAplicarValor(); syncProduto(); });
 seg('#segDia','dia','dia', v=>{ state.dia = parseInt(v,10); });
 state.dia = diaSugerido(); syncDia();
 
 // Reflete o produto escolhido no passo 2 ("Valor do jazigo <Produto>") e nas notas do campo.
 function syncProduto(){
   const lbl = $('#valorProdLabel'); if(lbl) lbl.textContent = PRODUTO_NOME[state.produto] || 'Perpétuo';
-  const nt = $('#notaTemporario'); if(nt) nt.hidden = state.produto!=='temporario';
+  // As duas notas de "informe X% do valor" são do valor DIGITADO: com o jazigo escolhido na
+  // lista, a conta é automática e quem explica é a #jzValorNota.
+  const manual = state.modoValor!=='jazigo';
+  const nt = $('#notaTemporario'); if(nt) nt.hidden = state.produto!=='temporario' || !manual;
   // Quadra Mista existe só no Perpétuo — a nota dos 50% some em Reserva e Temporário.
-  const nm = $('#notaMista'); if(nm) nm.hidden = state.produto!=='perpetuo';
+  const nm = $('#notaMista'); if(nm) nm.hidden = state.produto!=='perpetuo' || !manual;
 }
 syncProduto();
 seg('#segForma','forma','forma', v=>{
@@ -1958,6 +2024,315 @@ function buildChips(){
 }
 buildChips();
 
+// ==================== COFRE — as duas rotas públicas (12/09/2026) ====================
+// ?app=estoque&fn=lista&q=<quadra> (jazigos à venda, com valor) e ?app=campanha&fn=vigente
+// (a regra da campanha). Sem token: o Pocket é público e as duas só devolvem política e
+// estoque, nunca cliente. NADA de preço, percentual, data ou lista de jazigo mora neste
+// arquivo — tudo vem da resposta, e a resposta fica guardada no aparelho para a abertura
+// seguinte desenhar antes da rede.
+const COFRE_EXEC = 'https://script.google.com/macros/s/AKfycbydLmUEX3g6FeojFGAcVHfNKoPsr4d9oTBUdi7GtcfsirQL6xHJM0BELVGcCrcqrICY/exec';
+// O /exec às vezes responde a página "Não foi possível abrir o arquivo" do Google em vez do
+// JSON (medido em 12/09: 1 de 8 na lista, 5 de 8 na contagem). Resposta que não é JSON NUNCA
+// vira lista vazia — tenta de novo duas vezes e, se ainda assim falhar, devolve null e quem
+// chamou fica com a cópia guardada.
+const COFRE_ESPERAS = [900, 2200];
+function cofreLer(qs){
+  const umaVez = ()=>{
+    const ctl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+    const tempo = ctl ? setTimeout(()=>ctl.abort(), 25000) : null;
+    return fetch(COFRE_EXEC+'?'+qs, {cache:'no-store', signal: ctl ? ctl.signal : undefined})
+      .then(r=>r.text())
+      .then(t=>{ try{ const d=JSON.parse(t); return (d && typeof d==='object') ? d : null; }catch(e){ return null; } })
+      .catch(()=>null)
+      .then(d=>{ if(tempo) clearTimeout(tempo); return d; });
+  };
+  return new Promise(resolve=>{
+    let n = 0;
+    const tenta = ()=> umaVez().then(d=>{
+      if(d) return resolve(d);
+      if(n>=COFRE_ESPERAS.length) return resolve(null);
+      setTimeout(tenta, COFRE_ESPERAS[n++]);
+    });
+    tenta();
+  });
+}
+function guardaLer(k){ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } }
+function guardaGravar(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+const semAcento = s => String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').trim().toLowerCase();
+const escH = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// "004" e "4" são o mesmo jazigo; "454A" guarda a letra; o código da retomada (P-08-74) passa
+// inteiro. Mesma normalização do _fcNormJazigo do Cofre.
+function normJazigo(j){
+  const s = String(j==null?'':j).trim().toUpperCase().replace(/\s+/g,'');
+  const m = s.match(/^0*(\d+)([A-Z]?)$/);
+  return m ? m[1]+m[2] : s;
+}
+const ddmm = iso => { const p=String(iso||'').split('-'); return p.length===3 ? p[2]+'/'+p[1] : String(iso||''); };
+function carimboCurto(c){   // "2026-09-12 04:43" → "12/09 04:43"
+  const m = String(c||'').match(/^\d{4}-(\d{2})-(\d{2})\s+(\d{2}:\d{2})/);
+  return m ? m[2]+'/'+m[1]+' '+m[3] : String(c||'');
+}
+
+// ---- campanha ----
+const CAMP_K = 'pocket_campanha';
+let campResp = null;
+// Só aceita a resposta inteira e bem formada. Campanha DESLIGADA ({ok:true, ativa:false}) é
+// resposta válida e substitui a cópia guardada — é assim que o Cofre desliga o Pocket.
+function campAceitar(d){
+  if(!d || d.ok!==true) return null;
+  if(d.ativa!==true) return d;
+  const v = d.vigencia||{}, ds = d.descontos||{};
+  const iso = x => /^\d{4}-\d{2}-\d{2}$/.test(String(x||''));
+  const pct = x => typeof x==='number' && x>=0 && x<1;
+  if(!iso(v.inicio) || !iso(v.fechamento_ate) || !pct(ds.avista) || !pct(ds.ate_21x) || !pct(ds.acima_21x)
+     || !d.escopo || typeof d.escopo!=='object' || !d.nome) return null;
+  return d;
+}
+// "Dentro da vigência" = do início até o FECHAMENTO: o desconto é oferecido no dia e o cliente
+// fecha até a data de fechamento — a própria rota só se desliga depois dela.
+function campAtivaHoje(){
+  const d = campResp; if(!d || d.ativa!==true) return false;
+  const h = escHojeISO();
+  return h>=d.vigencia.inicio && h<=d.vigencia.fechamento_ate;
+}
+function campEscopoDe(quadra){
+  const d = campResp; if(!d || !d.escopo || !quadra) return undefined;
+  const k = Object.keys(d.escopo).find(x=> semAcento(x)===semAcento(quadra));
+  return k===undefined ? undefined : d.escopo[k];
+}
+function campEscopoTem(quadra, jazigo){
+  const e = campEscopoDe(quadra);
+  if(typeof e==='string') return semAcento(e)==='todos';
+  return Array.isArray(e) && e.some(j=> normJazigo(j)===normJazigo(jazigo));
+}
+// O jazigo está numa lista NOMINAL do escopo (os 50 do lote), e não num "todos".
+function campNoLote(quadra, jazigo){
+  const e = campEscopoDe(quadra);
+  return Array.isArray(e) && e.some(j=> normJazigo(j)===normJazigo(jazigo));
+}
+function campPctForma(){
+  const ds = campResp.descontos;
+  if(state.forma==='avista') return ds.avista;
+  return state.prazo<=21 ? ds.ate_21x : ds.acima_21x;
+}
+function campFormaTxt(){ return state.forma==='avista' ? 'à vista' : (state.prazo<=21 ? '2x a 21x' : '22x a 72x'); }
+// O estado da campanha para a simulação de agora.
+//   mostra: o interruptor aparece · aplica: o desconto entra · motivo: por que não entra
+function campSituacao(){
+  if(!state.jaz || !campAtivaHoje() || !campEscopoTem(state.jaz.quadra, state.jaz.jazigo)) return {mostra:false, aplica:false};
+  const nome = campResp.nome;
+  const fora = (campResp.produtos_fora||[]).some(p=> semAcento(p)===semAcento(PRODUTO_NOME[state.produto]));
+  if(fora) return {mostra:true, aplica:false, motivo:(PRODUTO_NOME[state.produto]||'Este produto')+' está fora da '+nome+'.'};
+  const pct = campPctForma();
+  if(!(pct>0)) return {mostra:true, aplica:false, motivo:'Pagamento '+campFormaTxt()+' não tem desconto na '+nome+'.'};
+  return {mostra:true, aplica:!!state.campOn, pct, nome};
+}
+function campPrazoTxt(){
+  const v = campResp.vigencia;
+  const vale = (!v.fim || v.fim===v.inicio) ? 'Vale no dia '+ddmm(v.inicio)+'.' : 'Vale de '+ddmm(v.inicio)+' a '+ddmm(v.fim)+'.';
+  return vale+' Fechamento até '+ddmm(v.fechamento_ate)+'.';
+}
+const pctTxt = p => Math.round(p*1000)/10 + '%';
+
+// ---- estoque: jazigos por quadra ----
+// ORDEM e candidatas. Quem decide se a quadra aparece é a rota: a que responder "quadra
+// desconhecida" (fora da estoque.quadras_publicas da Config) não ganha botão. Não existe rota
+// que liste as quadras; por isso as cinco são perguntadas.
+const QUADRAS_ORDEM = ['M-19','M-20','M-21','Reserva','Retomada'];
+const QUADRA_ROTULO = {'M-21':'M-21 (Mista)'};
+const QUADRA_MISTA = 'M-21';          // paga em 2 etapas: a rota dá o TOTAL, simula-se 50%
+const ETAPA_MISTA = 0.5;
+const TEMP_FRACAO = 0.2;              // Uso Temporário = 20% do Perpétuo (mesma regra do texto da tela)
+const EST_K = q => 'pocket_estoque_lista_'+q;
+const estListas = {};                 // quadra -> {d: resposta, deCache: bool}
+const estFalhou = {};
+let estCarregando = false, estUltimaBusca = 0;
+function estAceitar(d){ return (d && d.ok===true && Array.isArray(d.unidades) && typeof d.quadra==='string') ? d : null; }
+function estCarregarGuardadas(){
+  QUADRAS_ORDEM.forEach(q=>{ const g = estAceitar(guardaLer(EST_K(q))); if(g) estListas[q] = {d:g, deCache:true}; });
+}
+function estBuscar(forcar){
+  if(estCarregando || (!forcar && Date.now()-estUltimaBusca < 60000)) return;
+  estCarregando = true; estUltimaBusca = Date.now();
+  simPintarJazigos();
+  Promise.all(QUADRAS_ORDEM.map(q=> cofreLer('app=estoque&fn=lista&q='+encodeURIComponent(q)).then(d=>{
+    if(d && d.ok===false && /quadra desconhecida/i.test(String(d.error||''))){
+      delete estListas[q]; estFalhou[q] = false;
+      try{ localStorage.removeItem(EST_K(q)); }catch(e){}
+      return;
+    }
+    const ok = estAceitar(d);
+    if(ok){
+      estListas[q] = {d:ok, deCache:false}; guardaGravar(EST_K(q), ok); estFalhou[q] = false;
+      // desenha a quadra que chegou sem esperar as outras: uma quadra presa em nova
+      // tentativa não pode esconder as que já responderam
+      if(!state.jaz || state.jaz.quadra!==q) simPintarJazigos(), syncProduto(), render();
+    }
+    else {                             // HTML do Google, erro ou sem rede: fica a cópia, se houver
+      estFalhou[q] = true;
+      if(estListas[q]) estListas[q].deCache = true;
+    }
+  }))).then(()=>{
+    estCarregando = false;
+    simReconciliarJazigo();
+    simPintarJazigos(); syncProduto(); render();
+  });
+}
+const simModoJazigo = ()=> state.modoValor==='jazigo' && QUADRAS_ORDEM.some(q=> estListas[q]);
+const ehMista = q => q===QUADRA_MISTA;
+const ehReserva = q => semAcento(q)==='reserva';
+// Os 50 do lote: "a base do Temporário fica congelada no preço de hoje" (observação da
+// campanha). 20% do preço NOVO sairia 5% acima — o app não inventa esse número; pede o da tabela.
+function simTemporarioCongelado(){
+  return state.produto==='temporario' && !!state.jaz && !!campResp && campResp.ativa===true
+         && campNoLote(state.jaz.quadra, state.jaz.jazigo);
+}
+function simValorDoJazigo(){
+  const j = state.jaz; if(!j) return 0;
+  let v = j.valor;
+  if(ehMista(j.quadra)) v *= ETAPA_MISTA;
+  if(state.produto==='temporario') v *= TEMP_FRACAO;
+  return Math.round(v*100)/100;
+}
+let congChave = '';
+function simAplicarValor(){
+  if(!simModoJazigo() || !state.jaz) return;
+  if(simTemporarioCongelado()){
+    const k = state.jaz.quadra+'|'+state.jaz.jazigo;
+    if(congChave!==k){ congChave = k; setMoney($('#valor'),'valor',0); }
+    return;
+  }
+  congChave = '';
+  setMoney($('#valor'),'valor', simValorDoJazigo());
+}
+// Produto × quadra: Reserva é a quadra Reserva (teto de 60x); a M-21 (Mista) só tem
+// Perpétuo; as demais, Perpétuo e Temporário. Sem quadra (valor à mão), tudo livre.
+function simProdutosPermitidos(){
+  if(!simModoJazigo()) return null;
+  const q = state.jaz ? state.jaz.quadra : state.quadraSel;
+  if(!q) return null;
+  if(ehReserva(q)) return ['reserva'];
+  if(ehMista(q)) return ['perpetuo'];
+  return ['perpetuo','temporario'];
+}
+function simSyncProdutos(){
+  const ok = simProdutosPermitidos();
+  const bs = [...document.querySelectorAll('#segProduto button')];
+  bs.forEach(b=>{ b.disabled = !!ok && ok.indexOf(b.dataset.produto)<0; });
+  if(ok && ok.indexOf(state.produto)<0){
+    state.produto = ok[0];
+    bs.forEach(b=> b.setAttribute('aria-pressed', b.dataset.produto===state.produto));
+    clampPrazo(); syncProduto();
+  }
+}
+function simReconciliarJazigo(){
+  const j = state.jaz; if(!j) return;
+  const E = estListas[j.quadra];
+  const u = E && E.d.unidades.find(x=> x.jazigo===j.jazigo);
+  if(!u || u.situacao!=='disponivel' || !(u.valor>0)){
+    state.jaz = null; congChave = '';
+    setMoney($('#valor'),'valor',0);
+    toast(j.quadra+' · '+j.jazigo+' não está mais disponível na foto nova do estoque');
+    return;
+  }
+  if(u.valor!==j.valor){ j.valor = u.valor; simAplicarValor(); }
+}
+function simPintarJazigos(){
+  const temAlguma = QUADRAS_ORDEM.some(q=> estListas[q]);
+  if(!state.modoValor && temAlguma) state.modoValor = 'jazigo';
+  if(state.modoValor==='jazigo' && !temAlguma){ state.modoValor = ''; state.jaz = null; state.quadraSel = ''; }
+  const modoJz = simModoJazigo();
+  $('#jzBox').hidden = !modoJz;
+  const falha = $('#jzFalha'), btn = $('#btnValorModo');
+  if(!temAlguma && state.modoValor!=='mao'){
+    falha.hidden = !estUltimaBusca;
+    falha.textContent = estCarregando ? 'Carregando os jazigos do Cofre…'
+      : 'Não foi possível carregar os jazigos agora. Digite o valor à mão — o Pocket tenta de novo quando você voltar ao Simulador.';
+  } else falha.hidden = true;
+  btn.parentNode.hidden = !temAlguma;
+  btn.textContent = modoJz ? 'Digitar o valor à mão' : 'Escolher o jazigo na lista';
+  if(!modoJz) return;
+
+  const qs = QUADRAS_ORDEM.filter(q=> estListas[q]);
+  if(state.quadraSel && !estListas[state.quadraSel]) state.quadraSel = '';
+  $('#segQuadra').innerHTML = qs.map(q=>
+    `<button type="button" data-quadra="${escH(q)}" aria-pressed="${q===state.quadraSel}">${escH(QUADRA_ROTULO[q]||q)}</button>`).join('');
+  const chips = $('#chipsJazigo'), nota = $('#jzNota');
+  if(!state.quadraSel){ chips.innerHTML = ''; nota.textContent = 'Escolha a quadra para ver os jazigos à venda.'; return; }
+  const E = estListas[state.quadraSel], d = E.d;
+  const nDisp = d.unidades.filter(u=> u.situacao==='disponivel').length, nRes = d.unidades.length - nDisp;
+  // Escolhido o jazigo, a lista recolhe: na M-19 são ~200 pílulas, e o vendedor não pode
+  // ter de rolar por elas até a forma de pagamento. "Trocar jazigo" abre de novo.
+  const recolhe = !!state.jaz && state.jaz.quadra===state.quadraSel && !state.jzAberto;
+  const pilula = u=>{
+    const livre = u.situacao==='disponivel';
+    const sel = !!state.jaz && state.jaz.quadra===state.quadraSel && state.jaz.jazigo===u.jazigo;
+    return `<button type="button" data-jz="${escH(u.jazigo)}" aria-pressed="${sel}"${livre?'':' disabled title="Reservado no Facilita"'}>${escH(u.jazigo)}<span class="s">${livre ? 'R$ '+Math.round(u.valor).toLocaleString('pt-BR') : 'reservado'}</span></button>`;
+  };
+  chips.innerHTML = recolhe
+    ? d.unidades.filter(u=> u.jazigo===state.jaz.jazigo).map(pilula).join('')
+      + `<button type="button" data-trocar="1">Trocar jazigo<span class="s">${nDisp} disponíve${nDisp===1?'l':'is'}</span></button>`
+    : d.unidades.map(pilula).join('');
+  const origem = estCarregando ? ' · atualizando…'
+    : (E.deCache ? (estFalhou[state.quadraSel] ? ' · cópia do aparelho, não foi possível atualizar agora' : ' · cópia do aparelho') : '');
+  nota.innerHTML = (d.unidades.length ? '' : 'Nenhum jazigo à venda nesta quadra. ')
+    + `Estoque de <b>${escH(carimboCurto(d.atualizado_em))}</b>: ${nDisp} disponíve${nDisp===1?'l':'is'}, ${nRes} reservado${nRes===1?'':'s'}${origem}. `
+    + `<b>Quem reserva é o Facilita</b> — o Pocket só mostra a foto e não segura jazigo, e dois vendedores podem escolher o mesmo. Reserve no Facilita antes de fechar.`;
+}
+// Campo de valor e as notas dele: travado quando o valor vem do jazigo.
+function simSyncValorCampo(){
+  const modoJz = simModoJazigo();
+  const cong = simTemporarioCongelado();
+  const inp = $('#valor');
+  inp.readOnly = modoJz && !cong;
+  inp.parentNode.classList.toggle('input-travado', inp.readOnly);
+  const nt = $('#jzValorNota');
+  if(!modoJz){ nt.hidden = true; return; }
+  const j = state.jaz;
+  let h;
+  if(!j) h = 'O valor entra sozinho quando você escolher o jazigo.';
+  else if(cong) h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)} é do lote da ${escH(campResp.nome)}:</b> a base do Uso Temporário não segue o preço novo. Digite o valor da coluna <b>Uso Temporário</b> da tabela.`
+                  + (campResp.observacao ? `<br><i>Interno: ${escH(campResp.observacao)}</i>` : '');
+  else {
+    h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)}</b> — valor de tabela ${brl(j.valor)}.`;
+    if(ehMista(j.quadra)) h += ` A M-21 (Mista) é paga em <b>2 etapas</b>: esta simulação é da <b>1ª etapa (50%)</b>.`;
+    if(state.produto==='temporario') h += ` Uso Temporário: <b>20%</b> do Perpétuo.`;
+  }
+  nt.innerHTML = h; nt.hidden = false;
+}
+$('#segQuadra').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  state.quadraSel = b.dataset.quadra;
+  if(state.jaz && state.jaz.quadra!==state.quadraSel){ state.jaz = null; congChave = ''; setMoney($('#valor'),'valor',0); }
+  simSyncProdutos(); simPintarJazigos(); syncProduto(); render();
+});
+$('#chipsJazigo').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b || b.disabled) return;
+  if(b.dataset.trocar){ state.jzAberto = true; simPintarJazigos(); return; }
+  if(state.jaz && state.jaz.jazigo===b.dataset.jz && !state.jzAberto){ state.jzAberto = true; simPintarJazigos(); return; }
+  const E = estListas[state.quadraSel]; if(!E) return;
+  const u = E.d.unidades.find(x=> x.jazigo===b.dataset.jz);
+  if(!u || u.situacao!=='disponivel' || !(u.valor>0)) return;
+  state.jaz = {quadra:state.quadraSel, jazigo:u.jazigo, valor:u.valor};
+  state.campOn = true;                 // campanha nasce ligada a cada jazigo escolhido
+  state.jzAberto = false;
+  simSyncProdutos(); simAplicarValor(); simPintarJazigos(); syncProduto(); render();
+});
+$('#btnValorModo').addEventListener('click', ()=>{
+  if(simModoJazigo()){
+    state.modoValor = 'mao'; state.jaz = null; state.quadraSel = ''; congChave = '';
+    setMoney($('#valor'),'valor',0);
+    simSyncProdutos(); simPintarJazigos(); syncProduto(); render();
+    try{ $('#valor').focus(); }catch(e){}
+  } else {
+    state.modoValor = 'jazigo';
+    setMoney($('#valor'),'valor',0);
+    simSyncProdutos(); simPintarJazigos(); syncProduto(); render();
+    estBuscar();
+  }
+});
+$('#campChk').addEventListener('change', e=>{ state.campOn = e.target.checked; render(); });
+
 // ---- finance math ----
 function pmt(r,n,pv){ if(n<=0) return 0; if(r===0) return pv/n; return pv*r/(1-Math.pow(1+r,-n)); }
 // Arredondamento a centavos. Ponto ÚNICO: a parcela sai do calc() já arredondada, e o total
@@ -1981,18 +2356,27 @@ function descTetoMeio(){
 }
 function descInfo(){
   const teto = descTetoMeio();
+  // Campanha ligada SUBSTITUI a alçada: nada de descOn nem adicional por cima (não somam).
+  const cs = campSituacao();
+  if(cs.aplica) return {base:0, extra:0, total:cs.pct, extraOn:false, teto, camp:{nome:cs.nome, pct:cs.pct}};
   const base = (state.descOn && teto>0) ? teto : 0;  // desconto é OPCIONAL: só entra se marcado
   const extraOn = state.coord && bandExtra();
   const extra = extraOn ? 0.03 : 0;
   return {base, extra, total:base+extra, extraOn, teto};
 }
 function descLabelText(d){
+  if(d.camp) return d.camp.nome;
   const p=[];
   if(d.base>0) p.push(state.forma==='avista' ? (state.meioAV==='pix'?'Pix 3%':'cartão à vista 2%') : 'parcelado 1%');
   if(d.extraOn) p.push('adicional 3%');   // sem citar a faixa: este rótulo vai ao cliente
   return p.join(' + ');
 }
 
+// O rótulo da linha de desconto — o MESMO na tela, no WhatsApp, na carta e no anúncio.
+function descLinha(d){
+  return d.camp ? d.camp.nome+': −'+pctTxt(d.camp.pct)
+                : 'Desconto '+descLabelText(d)+' ('+(d.total*100).toFixed(0)+'%)';
+}
 function calc(){
   const v = state.valor;
   if(!v || v<=0) return null;
@@ -2035,6 +2419,7 @@ function calc(){
 function alcada(){
   const el=$('#alcadaMsg'), t=$('#alcadaTxt');
   const d=descInfo();
+  if(d.camp){ el.className='alcada self'; t.textContent=d.camp.nome+': −'+pctTxt(d.camp.pct)+' no lugar do desconto de alçada.'; return; }
   if(d.total<=0){ el.className='alcada self'; t.textContent='Sem desconto — valor cheio.'; return; }
   const lbl=descLabelText(d);
   // Segue em âmbar, mas o âmbar deixou de significar "peça aprovação": significa "você está
@@ -2045,6 +2430,29 @@ function alcada(){
 
 function render(){
   clampPrazo();
+  simSyncValorCampo();
+  // Campanha: o interruptor, a razão quando não entra, o prazo e o carimbo interno.
+  const cs = campSituacao();
+  $('#campField').hidden = !cs.mostra;
+  if(cs.mostra){
+    $('#campNome').textContent = campResp.nome;
+    $('#campChk').disabled = !!cs.motivo;
+    $('#campChk').checked = !cs.motivo && !!state.campOn;
+    $('#campPct').textContent = cs.motivo ? '— '+cs.motivo
+      : '— −'+pctTxt(campPctForma())+' no pagamento '+campFormaTxt()+(state.campOn?'':' (desligada)');
+    $('#campPrazo').textContent = campPrazoTxt();
+    const ob = $('#campObs');
+    ob.hidden = !(cs.aplica && campResp.observacao);
+    if(!ob.hidden) ob.innerHTML = '<b>Interno — não repassar ao cliente:</b> '+escH(campResp.observacao);
+  }
+  // Alçada desabilitada com a campanha ligada, com a razão ao lado.
+  if(cs.aplica){
+    state.descOn = false; state.coord = false;
+    $('#descChk').checked = false; $('#coordChk').checked = false;
+  }
+  $('#descChk').disabled = !!cs.aplica;
+  $('#coordChk').disabled = !!cs.aplica;
+  const coordOpt = $('#coordField .opt'); if(coordOpt) coordOpt.textContent = cs.aplica ? '(não soma com a '+cs.nome+')' : '(opcional)';
   // desconto opcional: mostra o teto do meio; some quando o meio não tem desconto (fin. 22–72x)
   const _teto = descTetoMeio();
   const df=$('#descField');
@@ -2052,7 +2460,7 @@ function render(){
     if(_teto>0){
       df.hidden=false;
       const lbl = state.forma==='avista' ? (state.meioAV==='pix'?'Pix à vista: até 3%':'cartão à vista: até 2%') : 'parcelado até 21x: até 1%';
-      $('#descTeto').textContent='— '+lbl;
+      $('#descTeto').textContent = cs.aplica ? '— não soma com a '+cs.nome : '— '+lbl;
       $('#descChk').checked=state.descOn;
     } else { df.hidden=true; }
   }
@@ -2063,7 +2471,7 @@ function render(){
   $('#prazoN').textContent = state.prazo;
   const pj=$('#prazoJuros');
   if(pj){
-    if(state.prazo<=21){ pj.className='prazojuros ok'; pj.textContent='Até 21x: sem juros · 1% de desconto'; }
+    if(state.prazo<=21){ pj.className='prazojuros ok'; pj.textContent='Até 21x: sem juros · '+(cs.aplica ? cs.nome+' −'+pctTxt(campPctForma()) : '1% de desconto'); }
     else { pj.className='prazojuros warn'; pj.textContent='22–72x: juros 1% a.m. · 1ª parcela no ato'; }
   }
   const r = calc();
@@ -2071,13 +2479,16 @@ function render(){
   else $('#prazoParc').textContent='—';
 
   const box=$('#resumoBody');
-  if(!r){ box.innerHTML='<div class="empty">Preencha o valor do jazigo para simular.</div>'; return; }
+  if(!r){ box.innerHTML='<div class="empty">'+((simModoJazigo() && !state.jaz) ? 'Escolha o jazigo para simular.' : 'Preencha o valor do jazigo para simular.')+'</div>'; return; }
 
-  const descRow = r.desconto>0.5 ? `
-    <div class="row"><span class="k">Valor de tabela</span><span class="v strike">${brl(r.tabela)}</span></div>
-    <div class="row"><span class="k">Desconto ${descLabelText(r.di)} (${(r.di.total*100).toFixed(0)}%)</span><span class="v pos">− ${brl(r.desconto)}</span></div>
+  const jzRows = state.jaz ? `
+    <div class="row"><span class="k">Jazigo</span><span class="v">${escH(state.jaz.quadra)} · ${escH(state.jaz.jazigo)}</span></div>
+    ${ehMista(state.jaz.quadra) ? `<div class="row"><span class="k">Valor total do jazigo (2 etapas)</span><span class="v">${brl(state.jaz.valor)}</span></div>` : ''}` : '';
+  const descRow = jzRows + (r.desconto>0.5 ? `
+    <div class="row"><span class="k">${valorLabel()} (tabela)</span><span class="v strike">${brl(r.tabela)}</span></div>
+    <div class="row"><span class="k">${escH(descLinha(r.di))}</span><span class="v pos">− ${brl(r.desconto)}</span></div>
     <div class="row"><span class="k">Valor com desconto</span><span class="v">${brl(r.comDesc)}</span></div>` : `
-    <div class="row"><span class="k">${valorLabel()}</span><span class="v">${brl(r.tabela)}</span></div>`;
+    <div class="row"><span class="k">${valorLabel()}</span><span class="v">${brl(r.tabela)}</span></div>`);
 
   if(r.forma==='avista'){
     const meioLbl = r.meioAV==='pix' ? 'Pix' : 'cartão';
@@ -2093,7 +2504,7 @@ function render(){
         ${descRow}
         <div class="row tot"><span class="k">Total à vista</span><span class="v">${brl(r.total)}</span></div>
       </div>
-      <div class="avnote">${avn}${r.di.extraOn?' <b>+3% adicional da faixa 24–25k aplicado.</b>':''}</div>
+      <div class="avnote">${r.di.camp ? '<b>'+escH(descLinha(r.di))+'</b> sobre o valor de tabela, sem juros.' : avn}${r.di.extraOn?' <b>+3% adicional da faixa 24–25k aplicado.</b>':''}</div>
       ${vpBlock(r)}
       ${actions()}`;
   } else {
@@ -2328,6 +2739,8 @@ function anunciarProposta(){
   const r = calc(); if(!r) return;
   anPropostaAtual = Object.assign({}, r, {
     produtoNome: PRODUTO_NOME[state.produto],
+    // o jazigo escolhido na lista chega pronto no anúncio: quadra e número, com sufixo
+    jaz: state.jaz ? {quadra: state.jaz.quadra, jazigo: normJazigo(state.jaz.jazigo)} : null,
     formaNome: r.forma==='avista' ? (r.meioAV==='pix'?'Pix':'Cartão') : (r.meio==='cartao'?'Cartão':'Boleto')
   });
   go('anuncio');
@@ -2347,10 +2760,14 @@ function propostaTexto(){
   const L=[];
   L.push('*Parque da Saudade — Proposta*');
   L.push(produtoLabel());
+  if(state.jaz){
+    L.push('Quadra '+state.jaz.quadra+' · jazigo '+normJazigo(state.jaz.jazigo));
+    if(ehMista(state.jaz.quadra)) L.push('Valor total do jazigo: '+brl(state.jaz.valor)+' — pago em 2 etapas; esta proposta é da 1ª etapa (50%).');
+  }
   L.push('');
   if(r.desconto>0.5){
     L.push(valorLabel()+' (tabela): '+brl(r.tabela));
-    L.push('Desconto '+descLabelText(r.di)+' ('+(r.di.total*100).toFixed(0)+'%): − '+brl(r.desconto));
+    L.push(r.di.camp ? descLinha(r.di)+' (− '+brl(r.desconto)+')' : descLinha(r.di)+': − '+brl(r.desconto));
     L.push('Valor com desconto: '+brl(r.comDesc));
   } else { L.push(valorLabel()+': '+brl(r.tabela)); }
   L.push('');
@@ -2365,6 +2782,8 @@ function propostaTexto(){
     cronoLinhas(r, false).forEach(l=>L.push(l));
     L.push('Total a prazo: '+brl(r.total));
   }
+  // o PRAZO da campanha vai ao cliente; a observação interna (reajuste) NUNCA
+  if(r.di.camp) L.push(r.di.camp.nome+': condição para fechamento até '+ddmm(campResp.vigencia.fechamento_ate)+'.');
   L.push('');
   if(state.produto==='temporario'){
     L.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
@@ -2381,16 +2800,23 @@ function produtoLabel(){
   return 'Jazigo Perpétuo';
 }
 // "Valor do jazigo Perpétuo / Reserva / Temporário" — mesmo rótulo do passo 2.
-function valorLabel(){ return 'Valor do jazigo ' + (PRODUTO_NOME[state.produto] || 'Perpétuo'); }
+function valorLabel(){
+  if(state.jaz && ehMista(state.jaz.quadra)) return '1ª etapa (50%) do jazigo ' + (PRODUTO_NOME[state.produto] || 'Perpétuo');
+  return 'Valor do jazigo ' + (PRODUTO_NOME[state.produto] || 'Perpétuo');
+}
 
 // Carta proposta: monta um documento formal e aciona a impressão (Salvar como PDF).
 // Reaproveita os mesmos números do resumo (calc/brl). Sempre com revisão humana antes do envio.
 function cartaPropostaHTML(r){
   const hoje = new Date().toLocaleDateString('pt-BR');
   const rows=[];
+  if(state.jaz){
+    rows.push(['Quadra '+state.jaz.quadra+' · jazigo '+normJazigo(state.jaz.jazigo), '']);
+    if(ehMista(state.jaz.quadra)) rows.push(['Valor total do jazigo (2 etapas)', brl(state.jaz.valor)]);
+  }
   if(r.desconto>0.5){
     rows.push([valorLabel()+' (tabela)', brl(r.tabela)]);
-    rows.push(['Desconto '+descLabelText(r.di)+' ('+(r.di.total*100).toFixed(0)+'%)', '− '+brl(r.desconto)]);
+    rows.push([descLinha(r.di), '− '+brl(r.desconto)]);
     rows.push(['Valor com desconto', brl(r.comDesc)]);
   } else {
     rows.push([valorLabel(), brl(r.tabela)]);
@@ -2416,6 +2842,7 @@ function cartaPropostaHTML(r){
   }
   if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
   if(state.produto==='perpetuo') notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
+  if(r.di.camp) notas.push(r.di.camp.nome+': condição para fechamento até '+ddmm(campResp.vigencia.fechamento_ate)+'.');
   notas.push('Proposta sujeita a confirmação e à disponibilidade de jazigos. Valores em reais (R$).');
 
   const trs = a => a.map(([k,v],i)=>`<tr${(a===cond && i===cond.length-1)?' class="cp-tot"':''}><td>${k}</td><td class="cp-num">${v}</td></tr>`).join('');
@@ -2474,6 +2901,7 @@ function go(view, push){
   if(view==='iq' && typeof iqRender==='function') iqRender();
   if(view==='carteira' && typeof cartAoEntrar==='function') cartAoEntrar();
   if(view==='anuncio' && typeof anAoEntrar==='function') anAoEntrar();
+  if(view==='sim') estBuscar();
   if(push!==false){ try{ history.pushState({view}, '', '#'+view); }catch(e){} }
 }
 document.querySelectorAll('[data-go]').forEach(b=> b.addEventListener('click', ()=> go(b.dataset.go)) );
@@ -2674,38 +3102,60 @@ $('#escToggle').addEventListener('click', e=>{
   }catch(e){}
 })();
 
-/* Barra de estoque da M-19. Le a rota publica do Cofre (sem token, so contagem).
-   Pinta primeiro o que estiver guardado no aparelho — o app e offline-first e a barra
-   nao pode piscar vazia — e depois substitui pelo numero da rede. */
+/* Barra de estoque: M-19 e Retomada (12/09). Le a rota publica do Cofre (sem token, so
+   contagem) pelo cofreLer, que tenta de novo quando o Google responde HTML no lugar do JSON.
+   Pinta primeiro o que estiver guardado no aparelho — o app e offline-first e a barra nao
+   pode piscar vazia — e depois substitui pelo numero da rede.
+   Na Retomada, as 42 ainda nao liberadas no Facilita chegam em `outros` (situacao
+   reserved-permanetly, que a contagem nao classifica): aqui elas somam no laranja, de
+   reservado, e o title diz quantas sao — do contrario a quadra apareceria 0 · 0 · 0. */
 (function(){
-  var URL_COFRE = 'https://script.google.com/macros/s/AKfycbydLmUEX3g6FeojFGAcVHfNKoPsr4d9oTBUdi7GtcfsirQL6xHJM0BELVGcCrcqrICY/exec';
-  var CHAVE = 'pocket_estoque_m19';
   var el = document.getElementById('barraEstoque');
   if (!el) return;
-
-  function pintar(d, deCache){
-    if (!d || typeof d.disponivel !== 'number') return;
-    document.getElementById('beDisp').textContent = d.disponivel;
-    document.getElementById('beRes').textContent  = d.reservado;
-    document.getElementById('beVend').textContent = d.vendido;
-    el.title = 'Quadra M-19 · ' + d.disponivel + ' disponíveis · ' + d.reservado +
-               ' reservados · ' + d.vendido + ' vendidos' +
-               (d.atualizado_em ? ' · atualizado em ' + d.atualizado_em : '');
-    el.classList.toggle('be-cache', !!deCache);
-    el.hidden = false;
-  }
-
-  try { var g = JSON.parse(localStorage.getItem(CHAVE) || 'null'); if (g) pintar(g, true); } catch(e){}
-
-  fetch(URL_COFRE + '?app=estoque&fn=quadra&q=M-19', { cache: 'no-store' })
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if (!d || d.ok !== true) return;          // rota velha ou erro: fica o que ja estava
+  ['M-19', 'Retomada'].forEach(function(q){
+    var g = el.querySelector('.be-grupo[data-q="' + q + '"]');
+    if (!g) return;
+    var CHAVE = q === 'M-19' ? 'pocket_estoque_m19' : 'pocket_estoque_' + q.toLowerCase();
+    function pintar(d, deCache){
+      if (!d || typeof d.disponivel !== 'number') return;
+      var outros = typeof d.outros === 'number' ? d.outros : 0;
+      g.querySelector('[data-c="disp"]').textContent = d.disponivel;
+      g.querySelector('[data-c="res"]').textContent  = d.reservado + outros;
+      g.querySelector('[data-c="vend"]').textContent = d.vendido;
+      g.title = 'Quadra ' + q + ' · ' + d.disponivel + ' disponíveis · ' + (d.reservado + outros) +
+                ' reservados' + (outros ? ' (' + outros + ' ainda não liberados no Facilita)' : '') +
+                ' · ' + d.vendido + ' vendidos' + (d.atualizado_em ? ' · estoque de ' + d.atualizado_em : '');
+      g.classList.toggle('be-cache', !!deCache);
+      g.hidden = false;
+      el.hidden = false;
+    }
+    pintar(guardaLer(CHAVE), true);
+    cofreLer('app=estoque&fn=quadra&q=' + encodeURIComponent(q)).then(function(d){
+      if (!d || d.ok !== true) return;          // HTML, erro ou quadra fora da lista: fica o que ja estava
       pintar(d, false);
-      try { localStorage.setItem(CHAVE, JSON.stringify(d)); } catch(e){}
-    })
-    .catch(function(){});                        // sem rede: fica o cache, ou fica escondida
+      guardaGravar(CHAVE, d);
+    });
+  });
 })();
+
+/* Campanha e listas de jazigo (12/09): desenha com a copia guardada e busca a nova. Sem
+   resposta e sem copia, a campanha fica DESLIGADA e o valor e digitado, como sempre foi. */
+function campPintarTabela(){
+  const box = document.getElementById('tabCampObs'); if(!box) return;
+  const ok = !!campResp && campResp.ativa===true && !!campResp.observacao;
+  box.hidden = !ok;
+  if(ok) document.getElementById('tabCampObsTxt').textContent = campResp.observacao;
+}
+campResp = campAceitar(guardaLer(CAMP_K));
+estCarregarGuardadas();
+simPintarJazigos(); syncProduto(); campPintarTabela();
+cofreLer('app=campanha&fn=vigente').then(d=>{
+  const ok = campAceitar(d);
+  if(!ok) return;                      // sem resposta boa: fica a copia (ou nada — desligada)
+  campResp = ok; guardaGravar(CAMP_K, ok);
+  campPintarTabela(); simAplicarValor(); render();
+});
+estBuscar(true);
 
 render();
 
@@ -3512,9 +3962,15 @@ function cartConcluir(texto){
      lugar de "454A" casou com a venda ERRADA (M-19-454 × 454A, 02–03/09).
      Guarda-se como TEXTO ("454A"), maiúsculo, sem zero à esquerda — a mesma
      normalização do `_fcNormJazigo` do Cofre. */
+  // Retomada (12/09): o jazigo é o CÓDIGO completo do Facilita (P-08-74) — letra, hífens,
+  // zero à esquerda no meio. Não passa pela normalização numérica.
+  const anEhRetomada = ()=> String(anSt.quadra).toLowerCase()==='retomada';
   $an('anJazigo').addEventListener('input', ()=>{
     const el = $an('anJazigo');
-    let v = el.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
+    if(el.readOnly) return;
+    let v;
+    if(anEhRetomada()){ v = el.value.toUpperCase().replace(/[^0-9A-Z-]/g,'').slice(0,10); el.value = v; anSt.jazigo = v; anRender(); return; }
+    v = el.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
     const m = v.match(/^0*(\d{0,4})([A-Z]?)/);
     v = m ? (m[1] + (m[1] ? m[2] : '')) : '';
     el.value = v;
@@ -3538,8 +3994,32 @@ function cartConcluir(texto){
   const anDetObrig = ()=> anSt.origem==='Google / Site' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção';
 
   // ---- carga da proposta (retrato do calc(), tirado no clique de Anunciar) ----
+  // Jazigo travado: veio escolhido na lista do Simulador (porta única, como o valor).
+  let anJzTravado = false;
+  function anJazigoDaProposta(p){
+    const seg = $an('anSegQuadra'), inp = $an('anJazigo'), nota = $an('anJzNota');
+    const botoes = ()=> [...seg.querySelectorAll('button')];
+    if(p.jaz && p.jaz.quadra && p.jaz.jazigo){
+      let b = botoes().find(x=> x.dataset.q===p.jaz.quadra);
+      if(!b){   // quadra que a lista do Cofre conhece e este seletor não (ex.: Reserva)
+        b = document.createElement('button'); b.type = 'button'; b.dataset.q = p.jaz.quadra;
+        b.textContent = p.jaz.quadra; seg.appendChild(b);
+      }
+      anSt.quadra = p.jaz.quadra; anSt.jazigo = p.jaz.jazigo;
+      botoes().forEach(x=>{ const meu = x===b; x.setAttribute('aria-pressed', meu); x.disabled = !meu; });
+      inp.value = p.jaz.jazigo; inp.readOnly = true; nota.hidden = false;
+      anJzTravado = true;
+    } else if(anJzTravado){
+      // a proposta anterior trazia jazigo; esta foi de valor digitado — solta e limpa
+      anSt.quadra = ''; anSt.jazigo = '';
+      botoes().forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; });
+      inp.value = ''; inp.readOnly = false; nota.hidden = true;
+      anJzTravado = false;
+    }
+  }
   function anCarregarProposta(){
     const p = anPropostaAtual;
+    anJazigoDaProposta(p);
     anSt.produto = p.produtoNome;
     anSt.forma = p.formaNome;
     anSt.valor = p.comDesc;             // valor efetivo do jazigo (com desconto, se houver)
@@ -3573,7 +4053,7 @@ function cartConcluir(texto){
     row('Produto', anEsc(anSt.produto));
     if(p.desconto>0.5){
       row('Valor de tabela', brl(p.tabela));
-      row('Desconto ('+(p.di.total*100).toFixed(0)+'%)', '&minus; '+brl(p.desconto));
+      row(p.di.camp ? anEsc(descLinha(p.di)) : 'Desconto ('+(p.di.total*100).toFixed(0)+'%)', '&minus; '+brl(p.desconto));
     }
     row('Valor do jazigo', brl(anSt.valor));
     if(p.forma==='prazo'){
@@ -3616,6 +4096,10 @@ function cartConcluir(texto){
     // E1 — obrigatórios e faixas (só o que o vendedor ainda digita)
     if(!anSt.quadra) faltas.push('quadra');
     if(!anSt.jazigo) faltas.push('jazigo nº');
+    else if(anJzTravado){ /* veio da lista do Cofre, pelo Simulador: o formato é o do Facilita */ }
+    else if(anEhRetomada()){
+      if(!/^[A-Z]-\d{1,2}-\d{1,4}$/.test(String(anSt.jazigo))) erros.push('Jazigo da Retomada: o código completo do Facilita (ex.: P-08-74).');
+    }
     else{
       const nj = parseInt(String(anSt.jazigo),10);
       if(!/^\d{1,4}[A-Z]?$/.test(String(anSt.jazigo)) || nj<1 || nj>9999) erros.push('Jazigo nº: de 1 a 9999, com uma letra no fim se houver (ex.: 454A).');
@@ -3692,7 +4176,9 @@ function cartConcluir(texto){
     // Desconto na mensagem (decisão do Ricardo, 23/08): só quando houver.
     // A linha 💲 segue sendo o valor efetivo (comDesc); a tabela vai ao lado.
     if(anPropostaAtual && anPropostaAtual.desconto>0.5)
-      L.push('🏷️ *Tabela:* '+brl(anPropostaAtual.tabela)+' (-'+(anPropostaAtual.di.total*100).toFixed(0)+'%)');
+      L.push('🏷️ *Tabela:* '+brl(anPropostaAtual.tabela)+(anPropostaAtual.di.camp
+        ? ' ('+descLinha(anPropostaAtual.di)+')'
+        : ' (-'+(anPropostaAtual.di.total*100).toFixed(0)+'%)'));
     if(anParcelado()){
       if(anSt.nat==='primeira'){
         // Sem sinal: a "entrada" É a 1ª das nparc parcelas (o valor é o da
@@ -3889,6 +4375,7 @@ function cartConcluir(texto){
   // novo é venda nova, e venda nova começa por uma proposta nova.
   $an('anNovo').addEventListener('click', ()=>{
     ['anJazigo','anCliente','anOrigemSub','anChegouSub','anDetalhe'].forEach(id=>{ $an(id).value=''; });
+    $an('anJazigo').readOnly = false; $an('anJzNota').hidden = true; anJzTravado = false;
     ['anSegQuadra','anSegDia'].forEach(id=>{ [...$an(id).querySelectorAll('button')].forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; }); });
     ['anOrigem','anChegou'].forEach(id=>{ $an(id).selectedIndex = 0; $an(id).classList.add('vazio'); });
     const vend = anSt.vendedor;
