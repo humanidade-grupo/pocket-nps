@@ -1981,7 +1981,7 @@ function seg(id, attr, key, cb){
     cb && cb(v); render();
   });
 }
-seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); simAplicarValor(); syncProduto(); });
+seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); simAplicarValor(); simPintarJazigos(); syncProduto(); });
 seg('#segDia','dia','dia', v=>{ state.dia = parseInt(v,10); });
 state.dia = diaSugerido(); syncDia();
 
@@ -2138,6 +2138,9 @@ const pctTxt = p => Math.round(p*1000)/10 + '%';
 // ORDEM e candidatas. Quem decide se a quadra aparece é a rota: a que responder "quadra
 // desconhecida" (fora da estoque.quadras_publicas da Config) não ganha botão. Não existe rota
 // que liste as quadras; por isso as cinco são perguntadas.
+// A RESERVA não vira botão de quadra (13/09): é produto de valor fixo, qualquer jazigo, e o
+// jazigo só é escolhido no fim (Playbook §2.3). A lista dela serve para uma coisa só — trazer
+// o valor quando o vendedor toca o produto Reserva.
 const QUADRAS_ORDEM = ['M-19','M-20','M-21','Reserva','Retomada'];
 const QUADRA_ROTULO = {'M-21':'M-21 (Mista)'};
 const QUADRA_MISTA = 'M-21';          // paga em 2 etapas: a rota dá o TOTAL, simula-se 50%
@@ -2175,12 +2178,22 @@ function estBuscar(forcar){
   }))).then(()=>{
     estCarregando = false;
     simReconciliarJazigo();
+    if(state.produto==='reserva') simAplicarValor();
     simPintarJazigos(); syncProduto(); render();
   });
 }
-const simModoJazigo = ()=> state.modoValor==='jazigo' && QUADRAS_ORDEM.some(q=> estListas[q]);
 const ehMista = q => q===QUADRA_MISTA;
 const ehReserva = q => semAcento(q)==='reserva';
+const temListaDeJazigo = ()=> QUADRAS_ORDEM.some(q=> !ehReserva(q) && estListas[q]);
+const simModoJazigo = ()=> state.modoValor==='jazigo' && temListaDeJazigo();
+// O valor da Reserva: o preço único dos disponíveis da lista `Reserva`. Mais de um preço, ou
+// lista ausente (Reserva fora da estoque.quadras_publicas), = null — o app não escolhe um.
+function reservaPreco(){
+  const q = QUADRAS_ORDEM.find(ehReserva), E = q && estListas[q];
+  if(!E) return null;
+  const vs = [...new Set(E.d.unidades.filter(u=> u.situacao==='disponivel' && u.valor>0).map(u=> u.valor))];
+  return vs.length===1 ? {valor:vs[0], d:E.d, deCache:E.deCache} : null;
+}
 // Os 50 do lote: "a base do Temporário fica congelada no preço de hoje" (observação da
 // campanha). 20% do preço NOVO sairia 5% acima — o app não inventa esse número; pede o da tabela.
 function simTemporarioCongelado(){
@@ -2194,9 +2207,20 @@ function simValorDoJazigo(){
   if(state.produto==='temporario') v *= TEMP_FRACAO;
   return Math.round(v*100)/100;
 }
-let congChave = '';
+let congChave = '', reservaChave = '';
 function simAplicarValor(){
-  if(!simModoJazigo() || !state.jaz) return;
+  if(!simModoJazigo()) return;
+  if(state.produto==='reserva'){
+    // Reserva não tem jazigo: solta o que estiver escolhido e usa o valor fixo do Cofre;
+    // sem ele, zera UMA vez e abre o campo para digitar (não apaga o que o vendedor digitar).
+    state.jaz = null; state.quadraSel = ''; congChave = '';
+    const pr = reservaPreco();
+    if(pr){ reservaChave = 'com'; setMoney($('#valor'),'valor', pr.valor); }
+    else if(reservaChave!=='sem'){ reservaChave = 'sem'; setMoney($('#valor'),'valor',0); }
+    return;
+  }
+  if(reservaChave){ reservaChave = ''; if(!state.jaz) setMoney($('#valor'),'valor',0); }
+  if(!state.jaz) return;
   if(simTemporarioCongelado()){
     const k = state.jaz.quadra+'|'+state.jaz.jazigo;
     if(congChave!==k){ congChave = k; setMoney($('#valor'),'valor',0); }
@@ -2205,15 +2229,14 @@ function simAplicarValor(){
   congChave = '';
   setMoney($('#valor'),'valor', simValorDoJazigo());
 }
-// Produto × quadra: Reserva é a quadra Reserva (teto de 60x); a M-21 (Mista) só tem
-// Perpétuo; as demais, Perpétuo e Temporário. Sem quadra (valor à mão), tudo livre.
+// Produto × quadra: a M-21 (Mista) não tem Temporário. Reserva fica sempre disponível —
+// tocar nela solta o jazigo (ver simAplicarValor). Sem quadra (valor à mão), tudo livre.
 function simProdutosPermitidos(){
   if(!simModoJazigo()) return null;
   const q = state.jaz ? state.jaz.quadra : state.quadraSel;
   if(!q) return null;
-  if(ehReserva(q)) return ['reserva'];
-  if(ehMista(q)) return ['perpetuo'];
-  return ['perpetuo','temporario'];
+  if(ehMista(q)) return ['perpetuo','reserva'];
+  return ['perpetuo','temporario','reserva'];
 }
 function simSyncProdutos(){
   const ok = simProdutosPermitidos();
@@ -2238,11 +2261,12 @@ function simReconciliarJazigo(){
   if(u.valor!==j.valor){ j.valor = u.valor; simAplicarValor(); }
 }
 function simPintarJazigos(){
-  const temAlguma = QUADRAS_ORDEM.some(q=> estListas[q]);
+  const temAlguma = temListaDeJazigo();
   if(!state.modoValor && temAlguma) state.modoValor = 'jazigo';
   if(state.modoValor==='jazigo' && !temAlguma){ state.modoValor = ''; state.jaz = null; state.quadraSel = ''; }
   const modoJz = simModoJazigo();
-  $('#jzBox').hidden = !modoJz;
+  // com o produto Reserva não há jazigo a escolher: o seletor recolhe
+  $('#jzBox').hidden = !modoJz || state.produto==='reserva';
   const falha = $('#jzFalha'), btn = $('#btnValorModo');
   if(!temAlguma && state.modoValor!=='mao'){
     falha.hidden = !estUltimaBusca;
@@ -2251,9 +2275,9 @@ function simPintarJazigos(){
   } else falha.hidden = true;
   btn.parentNode.hidden = !temAlguma;
   btn.textContent = modoJz ? 'Digitar o valor à mão' : 'Escolher o jazigo na lista';
-  if(!modoJz) return;
+  if(!modoJz || state.produto==='reserva') return;
 
-  const qs = QUADRAS_ORDEM.filter(q=> estListas[q]);
+  const qs = QUADRAS_ORDEM.filter(q=> !ehReserva(q) && estListas[q]);
   if(state.quadraSel && !estListas[state.quadraSel]) state.quadraSel = '';
   $('#segQuadra').innerHTML = qs.map(q=>
     `<button type="button" data-quadra="${escH(q)}" aria-pressed="${q===state.quadraSel}">${escH(QUADRA_ROTULO[q]||q)}</button>`).join('');
@@ -2283,14 +2307,19 @@ function simPintarJazigos(){
 function simSyncValorCampo(){
   const modoJz = simModoJazigo();
   const cong = simTemporarioCongelado();
+  const res = modoJz && state.produto==='reserva';
+  const pr = res ? reservaPreco() : null;
   const inp = $('#valor');
-  inp.readOnly = modoJz && !cong;
+  inp.readOnly = modoJz && !cong && !(res && !pr);
   inp.parentNode.classList.toggle('input-travado', inp.readOnly);
   const nt = $('#jzValorNota');
   if(!modoJz){ nt.hidden = true; return; }
   const j = state.jaz;
   let h;
-  if(!j) h = 'O valor entra sozinho quando você escolher o jazigo.';
+  if(res) h = pr
+    ? `<b>Reserva:</b> valor fixo de ${brl(pr.valor)}, qualquer jazigo — o jazigo é escolhido no fim. Estoque de ${escH(carimboCurto(pr.d.atualizado_em))}${pr.deCache ? ' · cópia do aparelho' : ''}.`
+    : `<b>Reserva:</b> o Cofre não trouxe um valor único da Reserva agora. Digite o valor.`;
+  else if(!j) h = 'O valor entra sozinho quando você escolher o jazigo.';
   else if(cong) h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)} é do lote da ${escH(campResp.nome)}:</b> a base do Uso Temporário não segue o preço novo. Digite o valor da coluna <b>Uso Temporário</b> da tabela.`
                   + (campResp.observacao ? `<br><i>Interno: ${escH(campResp.observacao)}</i>` : '');
   else {
@@ -2479,7 +2508,7 @@ function render(){
   else $('#prazoParc').textContent='—';
 
   const box=$('#resumoBody');
-  if(!r){ box.innerHTML='<div class="empty">'+((simModoJazigo() && !state.jaz) ? 'Escolha o jazigo para simular.' : 'Preencha o valor do jazigo para simular.')+'</div>'; return; }
+  if(!r){ box.innerHTML='<div class="empty">'+((simModoJazigo() && !state.jaz && state.produto!=='reserva') ? 'Escolha o jazigo para simular.' : 'Preencha o valor do jazigo para simular.')+'</div>'; return; }
 
   const jzRows = state.jaz ? `
     <div class="row"><span class="k">Jazigo</span><span class="v">${escH(state.jaz.quadra)} · ${escH(state.jaz.jazigo)}</span></div>
