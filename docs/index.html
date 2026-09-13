@@ -1203,14 +1203,7 @@ input.an-plain{padding-left:14px; font-size:16px}
 </header>
 
 <main class="wrap">
-  <div class="validade"><span class="dot"></span><span>Divulgação 01/08/2026 &middot; condições válidas até <b>31/08/2026</b></span></div>
-
-  <!-- Carimbo do reajuste (12/09): o texto `observacao` da rota ?app=campanha&fn=vigente,
-       só com campanha ativa. INTERNO — não vai para proposta, WhatsApp nem carta. -->
-  <div class="notecard" id="tabCampObs" hidden>
-    <div class="lbl">Interno &middot; não repassar ao cliente</div>
-    <ol><li id="tabCampObsTxt"></li></ol>
-  </div>
+  <div class="validade"><span class="dot"></span><span>Divulgação 14/09/2026 &middot; condições válidas até <b>31/10/2026</b></span></div>
 
   <div class="tools" style="margin-top:14px">
     <a class="tool" href="https://drive.google.com/file/d/1GXTu8Xk28KoNzxifY1v0gLhAIfjYwOsq/view" target="_blank" rel="noopener">
@@ -3179,20 +3172,14 @@ $('#escToggle').addEventListener('click', e=>{
 
 /* Campanha e listas de jazigo (12/09): desenha com a copia guardada e busca a nova. Sem
    resposta e sem copia, a campanha fica DESLIGADA e o valor e digitado, como sempre foi. */
-function campPintarTabela(){
-  const box = document.getElementById('tabCampObs'); if(!box) return;
-  const ok = !!campResp && campResp.ativa===true && !!campResp.observacao;
-  box.hidden = !ok;
-  if(ok) document.getElementById('tabCampObsTxt').textContent = campResp.observacao;
-}
 campResp = campAceitar(guardaLer(CAMP_K));
 estCarregarGuardadas();
-simPintarJazigos(); syncProduto(); campPintarTabela();
+simPintarJazigos(); syncProduto();
 cofreLer('app=campanha&fn=vigente').then(d=>{
   const ok = campAceitar(d);
   if(!ok) return;                      // sem resposta boa: fica a copia (ou nada — desligada)
   campResp = ok; guardaGravar(CAMP_K, ok);
-  campPintarTabela(); simAplicarValor(); render();
+  simAplicarValor(); render();
 });
 estBuscar(true);
 
