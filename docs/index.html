@@ -964,8 +964,14 @@ input.an-plain{padding-left:14px; font-size:16px}
       </div>
       <div class="chips" id="chipsValor"></div>
       <p class="fieldnote" id="notaTemporario" hidden>* Informe o valor da coluna <b>Uso Temporário</b> da tabela (20% do valor do Perpétuo).</p>
-      <p class="fieldnote" id="notaMista">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo.</p>
+      <p class="fieldnote" id="notaMista">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo — ou o valor <b>total</b>, se o cliente pagar as duas etapas agora.</p>
       <p class="fieldnote" id="jzValorNota" hidden></p>
+      <!-- M-21 (14/09): o cliente pode pagar só a 1ª etapa (50%) ou as duas de uma vez (100%).
+           Aparece só com jazigo da M-21 escolhido na lista. -->
+      <div class="seg" id="segEtapas" role="group" aria-label="Etapas da M-21" style="display:none; margin-top:9px">
+        <button type="button" data-etapas="1" aria-pressed="true">1ª etapa<span class="s">50% agora</span></button>
+        <button type="button" data-etapas="2" aria-pressed="false">As duas etapas<span class="s">100% agora</span></button>
+      </div>
       <div class="chips"><button type="button" id="btnValorModo">Digitar o valor à mão</button></div>
     </div>
   </section>
@@ -1938,7 +1944,8 @@ const state = {
   valor:0, entrada:0, prazo:60, dia:0,
   // seletor de jazigo (12/09): jaz = {quadra, jazigo, valor} escolhido na lista do Cofre;
   // modoValor '' (ainda sem lista) | 'jazigo' | 'mao'; campOn = interruptor da campanha
-  jaz:null, quadraSel:'', modoValor:'', campOn:true
+  jaz:null, quadraSel:'', modoValor:'', campOn:true,
+  m21Etapas:1   // M-21: 1 = só a 1ª etapa (50%) · 2 = as duas etapas agora (100%)
 };
 // Dia de vencimento das parcelas (2ª em diante): 05, 15 ou 25. O Facilita
 // pré-seleciona o dia SEGUINTE ao do primeiro pagamento; aqui a sugestão é a
@@ -2211,7 +2218,7 @@ function simTemporarioCongelado(){
 function simValorDoJazigo(){
   const j = state.jaz; if(!j) return 0;
   let v = j.valor;
-  if(ehMista(j.quadra)) v *= ETAPA_MISTA;
+  if(ehMista(j.quadra) && state.m21Etapas!==2) v *= ETAPA_MISTA;
   if(state.produto==='temporario') v *= TEMP_FRACAO;
   return Math.round(v*100)/100;
 }
@@ -2344,11 +2351,24 @@ function simSyncValorCampo(){
     h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)}</b> — valor de tabela ${brl(j.valor)}.`;
     if(j.foraDaLista) h += ` <b>Já não aparece como disponível nem reservado</b> (venda ganha no Facilita?). O valor é o da última foto.`;
     else if(j.reservado) h += ` <b>Reservado no Facilita</b> — siga só se a reserva é da sua venda.`;
-    if(ehMista(j.quadra)) h += ` A M-21 (Mista) é paga em <b>2 etapas</b>: esta simulação é da <b>1ª etapa (50%)</b>.`;
+    if(ehMista(j.quadra)) h += state.m21Etapas===2
+      ? ` A M-21 (Mista) é paga em <b>2 etapas</b>: aqui o cliente paga <b>as duas agora (100%)</b>.`
+      : ` A M-21 (Mista) é paga em <b>2 etapas</b>: esta simulação é da <b>1ª etapa (50%)</b>.`;
     if(state.produto==='temporario') h += ` Uso Temporário: <b>20%</b> do Perpétuo.`;
   }
   nt.innerHTML = h; nt.hidden = false;
 }
+function simSyncEtapas(){
+  const mostra = simModoJazigo() && !!state.jaz && ehMista(state.jaz.quadra) && state.produto!=='reserva';
+  const seg = $('#segEtapas');
+  seg.style.display = mostra ? '' : 'none';
+  [...seg.querySelectorAll('button')].forEach(b=> b.setAttribute('aria-pressed', parseInt(b.dataset.etapas,10)===state.m21Etapas));
+}
+$('#segEtapas').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  state.m21Etapas = parseInt(b.dataset.etapas,10)===2 ? 2 : 1;
+  simAplicarValor(); render();
+});
 $('#segQuadra').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
   state.quadraSel = b.dataset.quadra; state.jzConfirmar = '';
@@ -2370,6 +2390,7 @@ function simCliqueJazigo(e){
   state.jaz = {quadra:state.quadraSel, jazigo:u.jazigo, valor:u.valor, reservado};
   state.campOn = true;                 // campanha nasce ligada a cada jazigo escolhido
   state.jzAberto = false;
+  state.m21Etapas = 1;
   simSyncProdutos(); simAplicarValor(); simPintarJazigos(); syncProduto(); render();
 }
 $('#chipsJazigo').addEventListener('click', simCliqueJazigo);
@@ -2487,6 +2508,7 @@ function alcada(){
 function render(){
   clampPrazo();
   simSyncValorCampo();
+  simSyncEtapas();
   // Campanha: o interruptor, a razão quando não entra, o prazo e o carimbo interno.
   const cs = campSituacao();
   $('#campField').hidden = !cs.mostra;
@@ -2539,7 +2561,9 @@ function render(){
 
   const jzRows = state.jaz ? `
     <div class="row"><span class="k">Jazigo</span><span class="v">${escH(state.jaz.quadra)} · ${escH(state.jaz.jazigo)}</span></div>
-    ${ehMista(state.jaz.quadra) ? `<div class="row"><span class="k">Valor total do jazigo (2 etapas)</span><span class="v">${brl(state.jaz.valor)}</span></div>` : ''}` : '';
+    ${ehMista(state.jaz.quadra) ? (state.m21Etapas===2
+      ? `<div class="row"><span class="k">Etapas (M-21)</span><span class="v">as duas agora</span></div>`
+      : `<div class="row"><span class="k">Valor total do jazigo (2 etapas)</span><span class="v">${brl(state.jaz.valor)}</span></div>`) : ''}` : '';
   const descRow = jzRows + (r.desconto>0.5 ? `
     <div class="row"><span class="k">${valorLabel()} (tabela)</span><span class="v strike">${brl(r.tabela)}</span></div>
     <div class="row"><span class="k">${escH(descLinha(r.di))}</span><span class="v pos">− ${brl(r.desconto)}</span></div>
@@ -2797,6 +2821,7 @@ function anunciarProposta(){
     produtoNome: PRODUTO_NOME[state.produto],
     // o jazigo escolhido na lista chega pronto no anúncio: quadra e número, com sufixo
     jaz: state.jaz ? {quadra: state.jaz.quadra, jazigo: normJazigo(state.jaz.jazigo)} : null,
+    etapasM21: (state.jaz && ehMista(state.jaz.quadra)) ? state.m21Etapas : 0,
     formaNome: r.forma==='avista' ? (r.meioAV==='pix'?'Pix':'Cartão') : (r.meio==='cartao'?'Cartão':'Boleto')
   });
   go('anuncio');
@@ -2818,7 +2843,9 @@ function propostaTexto(){
   L.push(produtoLabel());
   if(state.jaz){
     L.push('Quadra '+state.jaz.quadra+' · jazigo '+normJazigo(state.jaz.jazigo));
-    if(ehMista(state.jaz.quadra)) L.push('Valor total do jazigo: '+brl(state.jaz.valor)+' — pago em 2 etapas; esta proposta é da 1ª etapa (50%).');
+    if(ehMista(state.jaz.quadra)) L.push(state.m21Etapas===2
+      ? 'Jazigo pago em 2 etapas; nesta proposta as duas etapas são pagas agora (100%).'
+      : 'Valor total do jazigo: '+brl(state.jaz.valor)+' — pago em 2 etapas; esta proposta é da 1ª etapa (50%).');
   }
   L.push('');
   if(r.desconto>0.5){
@@ -2857,7 +2884,7 @@ function produtoLabel(){
 }
 // "Valor do jazigo Perpétuo / Reserva / Temporário" — mesmo rótulo do passo 2.
 function valorLabel(){
-  if(state.jaz && ehMista(state.jaz.quadra)) return '1ª etapa (50%) do jazigo ' + (PRODUTO_NOME[state.produto] || 'Perpétuo');
+  if(state.jaz && ehMista(state.jaz.quadra)) return (state.m21Etapas===2 ? 'As duas etapas (100%) do jazigo ' : '1ª etapa (50%) do jazigo ') + (PRODUTO_NOME[state.produto] || 'Perpétuo');
   return 'Valor do jazigo ' + (PRODUTO_NOME[state.produto] || 'Perpétuo');
 }
 
@@ -2868,7 +2895,7 @@ function cartaPropostaHTML(r){
   const rows=[];
   if(state.jaz){
     rows.push(['Quadra '+state.jaz.quadra+' · jazigo '+normJazigo(state.jaz.jazigo), '']);
-    if(ehMista(state.jaz.quadra)) rows.push(['Valor total do jazigo (2 etapas)', brl(state.jaz.valor)]);
+    if(ehMista(state.jaz.quadra)) rows.push(state.m21Etapas===2 ? ['Etapas (M-21)', 'as duas pagas agora'] : ['Valor total do jazigo (2 etapas)', brl(state.jaz.valor)]);
   }
   if(r.desconto>0.5){
     rows.push([valorLabel()+' (tabela)', brl(r.tabela)]);
@@ -4143,6 +4170,7 @@ function cartConcluir(texto){
       row(p.di.camp ? anEsc(descLinha(p.di)) : 'Desconto ('+(p.di.total*100).toFixed(0)+'%)', '&minus; '+brl(p.desconto));
     }
     row('Valor do jazigo', brl(anSt.valor));
+    if(p.etapasM21) row('Etapas (M-21)', p.etapasM21===2 ? 'as duas pagas agora (100%)' : 'só a 1ª etapa (50%)');
     if(p.forma==='prazo'){
       row('Forma', anEsc(anSt.forma));
       row('Parcelas', anSt.qtde+'× de '+brl(anSt.parcela));
@@ -4264,6 +4292,8 @@ function cartConcluir(texto){
     L.push('*Produto:* '+(anSt.produto||'—'),'');
     L.push('*Cliente:* '+(anSt.cliente.trim()||'—'),'');
     L.push('💲 *Valor:* '+brl(anSt.valor));
+    if(anPropostaAtual && anPropostaAtual.etapasM21)
+      L.push('🪜 *Etapas:* '+(anPropostaAtual.etapasM21===2 ? 'as duas pagas agora (100%)' : 'só a 1ª etapa (50%)'));
     // Desconto na mensagem (decisão do Ricardo, 23/08): só quando houver.
     // A linha 💲 segue sendo o valor efetivo (comDesc); a tabela vai ao lado.
     if(anPropostaAtual && anPropostaAtual.desconto>0.5)
