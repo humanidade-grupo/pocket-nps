@@ -375,6 +375,11 @@ input:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.1
 .chips button .s{display:block; font-size:10.5px; font-weight:500; opacity:.8; margin-top:1px}
 .chips button:disabled{opacity:.38; cursor:not-allowed; text-decoration:line-through}
 .chips button:disabled .s{text-decoration:none}
+/* Reservado no Facilita (14/09): apagado como o desabilitado, mas TOCÁVEL — o fluxo certo é
+   lançar no Facilita e depois anunciar, e aí o jazigo da própria venda já está reservado. */
+.chips button[data-res]{opacity:.45; text-decoration:line-through}
+.chips button[data-res] .s{text-decoration:none}
+.chips button[data-res][aria-pressed="true"]{opacity:1; text-decoration:none}
 .chips button[aria-pressed="true"]{background:var(--marrom); color:var(--off-white); border-color:var(--marrom)}
 #segQuadra{flex-wrap:wrap}
 #segQuadra button{flex:1 1 30%}
@@ -2251,17 +2256,18 @@ function simSyncProdutos(){
     clampPrazo(); syncProduto();
   }
 }
+// A foto nova chegou com o jazigo escolhido. Ele NÃO cai por ter deixado de estar disponível:
+// o caminho normal é simular, lançar a venda no Facilita (Contrato → a unidade fica Reservada;
+// Venda Ganha → Vendida, medido em 14/09 em 45 vendas) e voltar para anunciar. O jazigo fica,
+// marcado, e a tela avisa. Muda só o preço, se o Cofre trouxer outro.
 function simReconciliarJazigo(){
   const j = state.jaz; if(!j) return;
   const E = estListas[j.quadra];
   const u = E && E.d.unidades.find(x=> x.jazigo===j.jazigo);
-  if(!u || u.situacao!=='disponivel' || !(u.valor>0)){
-    state.jaz = null; congChave = '';
-    setMoney($('#valor'),'valor',0);
-    toast(j.quadra+' · '+j.jazigo+' não está mais disponível na foto nova do estoque');
-    return;
-  }
-  if(u.valor!==j.valor){ j.valor = u.valor; simAplicarValor(); }
+  if(!u){ if(E) j.foraDaLista = true; return; }      // vendido/indisponível: a lista não traz mais
+  j.foraDaLista = false;
+  j.reservado = u.situacao!=='disponivel';
+  if(u.valor>0 && u.valor!==j.valor){ j.valor = u.valor; simAplicarValor(); }
 }
 function simPintarJazigos(){
   const temAlguma = temListaDeJazigo();
@@ -2294,7 +2300,7 @@ function simPintarJazigos(){
   const pilula = u=>{
     const livre = u.situacao==='disponivel';
     const sel = !!state.jaz && state.jaz.quadra===state.quadraSel && state.jaz.jazigo===u.jazigo;
-    return `<button type="button" data-jz="${escH(u.jazigo)}" aria-pressed="${sel}"${livre?'':' disabled title="Reservado no Facilita"'}>${escH(u.jazigo)}<span class="s">${livre ? 'R$ '+Math.round(u.valor).toLocaleString('pt-BR') : 'reservado'}</span></button>`;
+    return `<button type="button" data-jz="${escH(u.jazigo)}" aria-pressed="${sel}"${livre?'':' data-res="1" title="Reservado no Facilita"'}>${escH(u.jazigo)}<span class="s">${livre ? 'R$ '+Math.round(u.valor).toLocaleString('pt-BR') : 'reservado'}</span></button>`;
   };
   chips.innerHTML = recolhe
     ? d.unidades.filter(u=> u.jazigo===state.jaz.jazigo).map(pilula).join('')
@@ -2302,9 +2308,18 @@ function simPintarJazigos(){
     : d.unidades.map(pilula).join('');
   const origem = estCarregando ? ' · atualizando…'
     : (E.deCache ? (estFalhou[state.quadraSel] ? ' · cópia do aparelho, não foi possível atualizar agora' : ' · cópia do aparelho') : '');
+  const conf = state.jzConfirmar && d.unidades.find(u=> u.jazigo===state.jzConfirmar && u.situacao!=='disponivel');
+  if(conf){
+    // Confirmação no lugar da nota, com as pílulas que a tela já tem
+    nota.innerHTML = `<b>${escH(state.quadraSel)} · ${escH(conf.jazigo)} está reservado no Facilita.</b> Use só se a reserva é da venda que você lançou — se for de outro vendedor, escolha outro jazigo.`
+      + `<span class="chips"><button type="button" data-usar="${escH(conf.jazigo)}">Usar ${escH(conf.jazigo)}<span class="s">a reserva é minha</span></button>`
+      + `<button type="button" data-cancelar="1">Cancelar</button></span>`;
+    return;
+  }
   nota.innerHTML = (d.unidades.length ? '' : 'Nenhum jazigo à venda nesta quadra. ')
     + `Estoque de <b>${escH(carimboCurto(d.atualizado_em))}</b>: ${nDisp} disponíve${nDisp===1?'l':'is'}, ${nRes} reservado${nRes===1?'':'s'}${origem}. `
-    + `<b>Quem reserva é o Facilita</b> — o Pocket só mostra a foto e não segura jazigo, e dois vendedores podem escolher o mesmo. Reserve no Facilita antes de fechar.`;
+    + `<b>Quem reserva é o Facilita</b> — o Pocket só mostra a foto e não segura jazigo, e dois vendedores podem escolher o mesmo. Reserve no Facilita antes de fechar. `
+    + `Jazigo que já está como <b>venda ganha</b> no Facilita sai desta lista: para anunciá-lo, use <b>Digitar o valor à mão</b>.`;
 }
 // Campo de valor e as notas dele: travado quando o valor vem do jazigo.
 function simSyncValorCampo(){
@@ -2327,6 +2342,8 @@ function simSyncValorCampo(){
                   + (campResp.observacao ? `<br><i>Interno: ${escH(campResp.observacao)}</i>` : '');
   else {
     h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)}</b> — valor de tabela ${brl(j.valor)}.`;
+    if(j.foraDaLista) h += ` <b>Já não aparece como disponível nem reservado</b> (venda ganha no Facilita?). O valor é o da última foto.`;
+    else if(j.reservado) h += ` <b>Reservado no Facilita</b> — siga só se a reserva é da sua venda.`;
     if(ehMista(j.quadra)) h += ` A M-21 (Mista) é paga em <b>2 etapas</b>: esta simulação é da <b>1ª etapa (50%)</b>.`;
     if(state.produto==='temporario') h += ` Uso Temporário: <b>20%</b> do Perpétuo.`;
   }
@@ -2334,22 +2351,29 @@ function simSyncValorCampo(){
 }
 $('#segQuadra').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
-  state.quadraSel = b.dataset.quadra;
+  state.quadraSel = b.dataset.quadra; state.jzConfirmar = '';
   if(state.jaz && state.jaz.quadra!==state.quadraSel){ state.jaz = null; congChave = ''; setMoney($('#valor'),'valor',0); }
   simSyncProdutos(); simPintarJazigos(); syncProduto(); render();
 });
-$('#chipsJazigo').addEventListener('click', e=>{
+function simCliqueJazigo(e){
   const b = e.target.closest('button'); if(!b || b.disabled) return;
   if(b.dataset.trocar){ state.jzAberto = true; simPintarJazigos(); return; }
   if(state.jaz && state.jaz.jazigo===b.dataset.jz && !state.jzAberto){ state.jzAberto = true; simPintarJazigos(); return; }
   const E = estListas[state.quadraSel]; if(!E) return;
-  const u = E.d.unidades.find(x=> x.jazigo===b.dataset.jz);
-  if(!u || u.situacao!=='disponivel' || !(u.valor>0)) return;
-  state.jaz = {quadra:state.quadraSel, jazigo:u.jazigo, valor:u.valor};
+  if(b.dataset.cancelar){ state.jzConfirmar = ''; simPintarJazigos(); return; }
+  const alvo = b.dataset.usar || b.dataset.jz;
+  const u = E.d.unidades.find(x=> x.jazigo===alvo);
+  if(!u || !(u.valor>0)) return;
+  const reservado = u.situacao!=='disponivel';
+  if(reservado && !b.dataset.usar){ state.jzConfirmar = u.jazigo; simPintarJazigos(); return; }
+  state.jzConfirmar = '';
+  state.jaz = {quadra:state.quadraSel, jazigo:u.jazigo, valor:u.valor, reservado};
   state.campOn = true;                 // campanha nasce ligada a cada jazigo escolhido
   state.jzAberto = false;
   simSyncProdutos(); simAplicarValor(); simPintarJazigos(); syncProduto(); render();
-});
+}
+$('#chipsJazigo').addEventListener('click', simCliqueJazigo);
+$('#jzNota').addEventListener('click', simCliqueJazigo);   // os botões da confirmação moram na nota
 $('#btnValorModo').addEventListener('click', ()=>{
   if(simModoJazigo()){
     state.modoValor = 'mao'; state.jaz = null; state.quadraSel = ''; congChave = '';
