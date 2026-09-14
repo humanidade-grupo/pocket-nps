@@ -1793,7 +1793,7 @@ input.an-plain{padding-left:14px; font-size:16px}
         </div>
       </div>
       <div class="field">
-        <label>Jazigo nº</label>
+        <label id="anJzLabel">Jazigo nº</label>
         <input type="text" inputmode="text" autocapitalize="characters" id="anJazigo" class="an-plain" placeholder="ex.: 373 ou 454A" autocomplete="off" maxlength="10">
         <p class="fieldnote" id="anJzNota" hidden>Veio do jazigo escolhido no Simulador. Para trocar, volte e escolha outro.</p>
       </div>
@@ -4019,6 +4019,7 @@ function cartConcluir(texto){
     const el = $an('anJazigo');
     if(el.readOnly) return;
     let v;
+    if(anSt.quadra==='Reserva'){ v = el.value.replace(/\D/g,'').replace(/^0+/,'').slice(0,3); el.value = v; anSt.jazigo = v; anRender(); return; }
     if(anEhRetomada()){ v = el.value.toUpperCase().replace(/[^0-9A-Z-]/g,'').slice(0,10); el.value = v; anSt.jazigo = v; anRender(); return; }
     v = el.value.toUpperCase().replace(/[^0-9A-Z]/g,'');
     const m = v.match(/^0*(\d{0,4})([A-Z]?)/);
@@ -4046,9 +4047,45 @@ function cartConcluir(texto){
   // ---- carga da proposta (retrato do calc(), tirado no clique de Anunciar) ----
   // Jazigo travado: veio escolhido na lista do Simulador (porta única, como o valor).
   let anJzTravado = false;
+  // Reserva (14/09): não tem jazigo físico — o cliente compra "na planta". O Facilita cadastra
+  // as reservas numeradas (1, 2, 3…) e vende em sequência; o anúncio leva a quadra "Reserva" e
+  // o Nº DA RESERVA que o Facilita deu na venda, para o Cofre casar anúncio × venda como sempre.
+  let anReservaAtiva = false;
+  const AN_JZ_LABEL = 'Jazigo nº', AN_JZ_PH = 'ex.: 373 ou 454A';
+  function anBotaoReserva(seg){
+    let b = [...seg.querySelectorAll('button')].find(x=> x.dataset.q==='Reserva');
+    if(!b){ b = document.createElement('button'); b.type = 'button'; b.dataset.q = 'Reserva'; b.textContent = 'Reserva'; seg.appendChild(b); }
+    return b;
+  }
+  function anSairDaReserva(){
+    const seg = $an('anSegQuadra'), inp = $an('anJazigo');
+    anBotaoReserva(seg).style.display = 'none';
+    $an('anJzLabel').textContent = AN_JZ_LABEL; inp.placeholder = AN_JZ_PH; inp.inputMode = 'text';
+    anReservaAtiva = false;
+  }
   function anJazigoDaProposta(p){
     const seg = $an('anSegQuadra'), inp = $an('anJazigo'), nota = $an('anJzNota');
     const botoes = ()=> [...seg.querySelectorAll('button')];
+    if(p.produtoNome==='Reserva'){
+      const b = anBotaoReserva(seg);
+      b.style.display = '';
+      if(!anReservaAtiva || anSt.quadra!=='Reserva'){ anSt.jazigo = ''; inp.value = ''; }
+      anSt.quadra = 'Reserva';
+      botoes().forEach(x=>{ const meu = x===b; x.setAttribute('aria-pressed', meu); x.disabled = !meu; });
+      $an('anJzLabel').textContent = 'Nº da reserva no Facilita';
+      inp.placeholder = 'ex.: 15'; inp.inputMode = 'numeric'; inp.readOnly = false;
+      nota.textContent = 'Reserva não tem jazigo físico: informe o número da reserva que o Facilita deu nesta venda.';
+      nota.hidden = false;
+      anJzTravado = false; anReservaAtiva = true;
+      return;
+    }
+    if(anReservaAtiva){
+      anSt.quadra = ''; anSt.jazigo = ''; inp.value = '';
+      botoes().forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; });
+      nota.hidden = true;
+      anSairDaReserva();
+      nota.textContent = 'Veio do jazigo escolhido no Simulador. Para trocar, volte e escolha outro.';
+    }
     if(p.jaz && p.jaz.quadra && p.jaz.jazigo){
       let b = botoes().find(x=> x.dataset.q===p.jaz.quadra);
       if(!b){   // quadra que a lista do Cofre conhece e este seletor não (ex.: Reserva)
@@ -4145,7 +4182,11 @@ function cartConcluir(texto){
 
     // E1 — obrigatórios e faixas (só o que o vendedor ainda digita)
     if(!anSt.quadra) faltas.push('quadra');
-    if(!anSt.jazigo) faltas.push('jazigo nº');
+    if(!anSt.jazigo) faltas.push(anSt.quadra==='Reserva' ? 'nº da reserva' : 'jazigo nº');
+    else if(anSt.quadra==='Reserva'){
+      const nr = parseInt(String(anSt.jazigo),10);
+      if(!/^\d{1,3}$/.test(String(anSt.jazigo)) || nr<1 || nr>999) erros.push('Nº da reserva: de 1 a 999 — o número que o Facilita deu nesta venda.');
+    }
     else if(anJzTravado){ /* veio da lista do Cofre, pelo Simulador: o formato é o do Facilita */ }
     else if(anEhRetomada()){
       if(!/^[A-Z]-\d{1,2}-\d{1,4}$/.test(String(anSt.jazigo))) erros.push('Jazigo da Retomada: o código completo do Facilita (ex.: P-08-74).');
@@ -4219,7 +4260,7 @@ function cartConcluir(texto){
     const L = [];
     L.push('📢 *ANÚNCIO DE VENDA*','');
     L.push('*Quadra:* '+(anSt.quadra||'—'));
-    L.push('*Jazigo nº:* '+(anSt.jazigo||'—'));
+    L.push((anSt.quadra==='Reserva' ? '*Reserva nº:* ' : '*Jazigo nº:* ')+(anSt.jazigo||'—'));
     L.push('*Produto:* '+(anSt.produto||'—'),'');
     L.push('*Cliente:* '+(anSt.cliente.trim()||'—'),'');
     L.push('💲 *Valor:* '+brl(anSt.valor));
@@ -4426,6 +4467,8 @@ function cartConcluir(texto){
   $an('anNovo').addEventListener('click', ()=>{
     ['anJazigo','anCliente','anOrigemSub','anChegouSub','anDetalhe'].forEach(id=>{ $an(id).value=''; });
     $an('anJazigo').readOnly = false; $an('anJzNota').hidden = true; anJzTravado = false;
+    if(anReservaAtiva) anSairDaReserva();
+    $an('anJzNota').textContent = 'Veio do jazigo escolhido no Simulador. Para trocar, volte e escolha outro.';
     ['anSegQuadra','anSegDia'].forEach(id=>{ [...$an(id).querySelectorAll('button')].forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; }); });
     ['anOrigem','anChegou'].forEach(id=>{ $an(id).selectedIndex = 0; $an(id).classList.add('vazio'); });
     const vend = anSt.vendedor;
