@@ -377,7 +377,7 @@ input:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.1
 .chips button:disabled .s{text-decoration:none}
 /* Reservado no Facilita (14/09): apagado como o desabilitado, mas TOCÁVEL — o fluxo certo é
    lançar no Facilita e depois anunciar, e aí o jazigo da própria venda já está reservado. */
-.chips button[data-res]{opacity:.45; text-decoration:line-through}
+.chips button[data-res]{opacity:.55; border-style:dashed}   /* sem risco: riscado parece desativado, e ele é tocável */
 .chips button[data-res] .s{text-decoration:none}
 .chips button[data-res][aria-pressed="true"]{opacity:1; text-decoration:none}
 .chips button[aria-pressed="true"]{background:var(--marrom); color:var(--off-white); border-color:var(--marrom)}
@@ -2326,6 +2326,7 @@ function simPintarJazigos(){
   nota.innerHTML = (d.unidades.length ? '' : 'Nenhum jazigo à venda nesta quadra. ')
     + `Estoque de <b>${escH(carimboCurto(d.atualizado_em))}</b>: ${nDisp} disponíve${nDisp===1?'l':'is'}, ${nRes} reservado${nRes===1?'':'s'}${origem}. `
     + `<b>Quem reserva é o Facilita</b> — o Pocket só mostra a foto e não segura jazigo, e dois vendedores podem escolher o mesmo. Reserve no Facilita antes de fechar. `
+    + (nRes ? `<b>Reservado aparece apagado, mas dá para tocar:</b> se a reserva é da venda que você lançou, toque no jazigo para simular e anunciar. ` : '')
     + `Jazigo que já está como <b>venda ganha</b> no Facilita sai desta lista: para anunciá-lo, use <b>Digitar o valor à mão</b>.`;
 }
 // Campo de valor e as notas dele: travado quando o valor vem do jazigo.
