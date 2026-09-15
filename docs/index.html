@@ -896,7 +896,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 31/08/2026 · 00:32</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 15/09/2026 · 17:03</div>
     </footer>
   </main>
 </section>
@@ -1133,7 +1133,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     </div>
     <span class="apptag">Pocket NPS · Escala</span>
     <h1>Escala — Setembro/2026</h1>
-    <p class="lead">Rodízio contínuo nos 7 dias; a cada 4 dias cada vendedor do rodízio passa por todos os postos.</p>
+    <p class="lead">Um vendedor por posto. No fim de semana, Parque e Jardim Norte com um cada — e cada vendedor folga um fim de semana inteiro por mês.</p>
   </div>
 </header>
 
@@ -1175,8 +1175,8 @@ input.an-plain{padding-left:14px; font-size:16px}
   <div class="legend" id="escLegend"></div>
 
   <footer>
-    <div class="sens">Escala fixa de Setembro/2026 — 4 vendedores no rodízio + 1 fixa no Parque.</div>
-    <div class="inst">Todo dia: 1× JN 12-16 · 1× JN 16-20 · 1× Livre · o Parque com 2 (1 nos dias de folga da novata).</div>
+    <div class="sens">Escala de Setembro/2026 — vale de 16/09. O Jaime entra no Parque e, no fim de semana, só aos domingos.</div>
+    <div class="inst">Dia útil: 1× Parque 8-18 · 1× JN 12-16 · 1× JN 16-20. Fim de semana: 1× Parque 8-18 · 1× JN 13-18.</div>
   </footer>
 </main>
 </section>
@@ -2993,18 +2993,19 @@ window.addEventListener('popstate', e=> go((e.state&&e.state.view)||'home', fals
 // A rota inicial por hash NÃO mora aqui — ver rotaInicial() no fim do script.
 
 // ==================== ESCALA DA EQUIPE — mês em ESCALA_MES.rotulo ====================
-// Escala mensal fixa. Rodízio contínuo nos 7 dias; cada vendedor do rodízio
-// passa por todos os postos no ciclo. Dados estáticos (verbatim).
-const ESCALA_MES = {"rotulo":"Setembro/2026","vendedores":["Ana Luiza","Guilherme","Wanderson","Felipe","A confirmar"],"escala":{"2026-08-31":{"Ana Luiza":"JN 16-20","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-01":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-02":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-03":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-04":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-05":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-06":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-07":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-08":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-09":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-10":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-11":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-12":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-13":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-14":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-15":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-16":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-17":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-18":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-19":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-20":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-21":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-22":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-23":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-24":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-25":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-26":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"},"2026-09-27":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18","A confirmar":"Parque 8-18"},"2026-09-28":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16","A confirmar":"Livre"},"2026-09-29":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","A confirmar":"Parque 8-18"},"2026-09-30":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","A confirmar":"Parque 8-18"}}};
+// Escala mensal fixa (dados estáticos, verbatim). A partir de 16/09: 1 vendedor por posto; ninguém
+// trabalha os dois dias do fim de semana e cada um folga um inteiro por mês — o Jaime, só Parque e só domingo.
+const ESCALA_MES = {"rotulo":"Setembro/2026","vendedores":["Ana Luiza","Guilherme","Wanderson","Felipe","Jaime"],"escala":{"2026-08-31":{"Ana Luiza":"JN 16-20","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-01":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-02":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-03":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-04":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-05":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-06":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-07":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-08":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-09":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-10":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-11":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-12":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-13":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-14":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-15":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-16":{"Ana Luiza":"Livre","Guilherme":"JN 16-20","Wanderson":"JN 12-16","Felipe":"Parque 8-18","Jaime":"Livre"},"2026-09-17":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"JN 12-16","Jaime":"Livre"},"2026-09-18":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"JN 12-16","Felipe":"Parque 8-18","Jaime":"Livre"},"2026-09-19":{"Ana Luiza":"Livre","Guilherme":"JN 13-18","Wanderson":"Parque 8-18","Felipe":"Livre","Jaime":"Livre"},"2026-09-20":{"Ana Luiza":"JN 13-18","Guilherme":"Livre","Wanderson":"Livre","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-09-21":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","Jaime":"Livre"},"2026-09-22":{"Ana Luiza":"JN 12-16","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 16-20","Jaime":"Livre"},"2026-09-23":{"Ana Luiza":"JN 16-20","Guilherme":"Parque 8-18","Wanderson":"Livre","Felipe":"JN 12-16","Jaime":"Livre"},"2026-09-24":{"Ana Luiza":"Livre","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Parque 8-18","Jaime":"Livre"},"2026-09-25":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","Jaime":"Livre"},"2026-09-26":{"Ana Luiza":"Parque 8-18","Guilherme":"Livre","Wanderson":"JN 13-18","Felipe":"Livre","Jaime":"Livre"},"2026-09-27":{"Ana Luiza":"Livre","Guilherme":"Livre","Wanderson":"Livre","Felipe":"JN 13-18","Jaime":"Parque 8-18"},"2026-09-28":{"Ana Luiza":"Livre","Guilherme":"JN 16-20","Wanderson":"Parque 8-18","Felipe":"JN 12-16","Jaime":"Livre"},"2026-09-29":{"Ana Luiza":"JN 16-20","Guilherme":"JN 12-16","Wanderson":"Livre","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-09-30":{"Ana Luiza":"JN 12-16","Guilherme":"Parque 8-18","Wanderson":"Livre","Felipe":"JN 16-20","Jaime":"Livre"}}};
 
-// Definição dos 4 postos: cor, abreviação (grade) e texto da legenda.
+// Definição dos 5 postos: cor, abreviação (grade) e texto da legenda.
 const POSTOS = {
   'Parque 8-18':{cor:'#55684E', abbr:'P',  leg:'Parque 8-18 — Parque da Saudade — turno cheio 8h às 18h (10h)'},
   'JN 12-16':   {cor:'#B5552A', abbr:'J1', leg:'JN 12-16 — Jardim Norte — Turno 1, 12h às 16h (4h)'},
   'JN 16-20':   {cor:'#7A3B1E', abbr:'J2', leg:'JN 16-20 — Jardim Norte — Turno 2, 16h às 20h (4h)'},
+  'JN 13-18':   {cor:'#98452A', abbr:'J',  leg:'JN 13-18 — Jardim Norte — fim de semana, 13h às 18h (5h)'},
   'Livre':      {cor:'#9A968E', abbr:'L',  leg:'Livre'}
 };
-const POSTO_ORDEM = ['Parque 8-18','JN 12-16','JN 16-20','Livre'];
+const POSTO_ORDEM = ['Parque 8-18','JN 12-16','JN 16-20','JN 13-18','Livre'];
 const ESC_DIAS = Object.keys(ESCALA_MES.escala).sort(); // '2026-08-31' (ponte) + '2026-09-01'..'2026-09-30'
 const WD_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 let escSel = ESC_DIAS[0]; // dia selecionado (ISO)
@@ -3037,9 +3038,10 @@ function renderEscDia(){
   // postos do dia — mantém a ordem oficial dos vendedores
   const dia = ESCALA_MES.escala[escSel] || {};
   $('#escDay').innerHTML = ESCALA_MES.vendedores.map(v=>{
-    const p = escPosto(dia[v]);
+    const nome = dia[v] || '—';
+    const p = escPosto(nome);
     return `<div class="esc2-row"><span class="nm">${v}</span>`+
-           `<span class="esc2-chip" style="background:${p.cor}">${dia[v]}</span></div>`;
+           `<span class="esc2-chip" style="background:${p.cor}">${nome}</span></div>`;
   }).join('');
 }
 
