@@ -1,7 +1,10 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 08/09/2026 17:20 — só bump de cache (vencimento
+Alterações: Rev. 16/09/2026 16:40 — só bump de cache (tela nova Evento 50 Anos,
+#evento: cadastro de visitantes com portão do PIN da Carteira e fila offline
+evento50_fila; card na home de 19/09 a 23/09).
+Rev. 08/09/2026 17:20 — só bump de cache (vencimento
 05/15/25 escolhido no Simulador, datas reais no cronograma e dia travado no
 Anúncio).
 Rev. 29/08/2026 09:35 — só bump de cache (guarda [hidden] na
@@ -66,7 +69,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260916-1330';
+const CACHE = 'pocket-nps-260916-1640';
 
 const CORE = [
 './',
