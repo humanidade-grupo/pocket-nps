@@ -689,6 +689,40 @@ details.cfg[open] summary .chev{transform:rotate(90deg)}
   @page{size:A4; margin:16mm}
 }
 
+/* ---------- Escala em papel (botão Imprimir) ---------- */
+/* Mesma ideia da carta: uma folha própria, escondida na tela. No papel os postos
+   vão por extenso — a grade da tela usa abreviação, que ninguém decora na parede. */
+.esc2-print{width:100%; margin-top:16px; border:1.5px solid var(--border-strong); background:transparent; color:var(--marrom); font-family:inherit; font-size:13.5px; font-weight:700; padding:12px; border-radius:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px}
+#escalaImpressao{display:none}
+#escalaImpressao .ep-doc{color:#1a1a1a; font-family:Arial,Helvetica,sans-serif; font-size:9.5pt; line-height:1.3}
+#escalaImpressao .ep-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #4A2C0E; padding-bottom:6pt; margin-bottom:9pt}
+#escalaImpressao .ep-brand{font-size:15pt; font-weight:800; color:#4A2C0E; letter-spacing:.2px}
+#escalaImpressao .ep-org{font-size:8.5pt; color:#555; margin-top:1pt; font-weight:400}
+#escalaImpressao .ep-mes{font-size:12pt; font-weight:700; color:#4A2C0E; text-align:right}
+#escalaImpressao .ep-emitida{font-size:8pt; color:#555; font-weight:400; margin-top:1pt}
+#escalaImpressao .ep-t{width:100%; border-collapse:collapse; table-layout:fixed}
+#escalaImpressao .ep-t th{font-size:8.5pt; font-weight:700; color:#4A2C0E; text-align:left; padding:0 3pt 4pt; border-bottom:1.2pt solid #4A2C0E}
+#escalaImpressao .ep-t td{padding:1.1pt 3pt; border-bottom:.5pt solid #ddd7ca; vertical-align:middle}
+#escalaImpressao .ep-t .ep-dia{width:46pt; white-space:nowrap; font-weight:700; color:#4A2C0E}
+#escalaImpressao .ep-t .ep-dia small{display:inline-block; font-weight:400; color:#666; margin-left:2pt}
+#escalaImpressao .ep-fds td{background:#efece4}
+#escalaImpressao .ep-seg td{border-top:1pt solid #b9b1a2}
+#escalaImpressao .ep-p{display:block; border-left:3pt solid #999; padding:.8pt 4pt; font-size:8.5pt; font-weight:700; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+#escalaImpressao .ep-p.ep-off{border-left-color:#c9c4ba; color:#8a857c; font-weight:400}
+#escalaImpressao .ep-rodape{margin-top:9pt; border-top:1pt solid #ddd7ca; padding-top:6pt}
+#escalaImpressao .ep-reg{font-size:8.5pt; color:#333; margin-bottom:4pt}
+#escalaImpressao .ep-leg{display:flex; flex-wrap:wrap; gap:3pt 14pt; font-size:8pt; color:#333}
+#escalaImpressao .ep-leg span{display:flex; align-items:center; gap:4pt}
+#escalaImpressao .ep-leg i{width:8pt; height:8pt; border-radius:2pt; display:inline-block; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+#escalaImpressao .ep-foot{margin-top:7pt; font-size:7.5pt; color:#888; text-align:center}
+@media print{
+  body.print-escala > *:not(#escalaImpressao){display:none!important}
+  body.print-escala #escalaImpressao{display:block!important}
+  body.print-escala{background:#fff}
+  #escalaImpressao{page:escala}
+  @page escala{size:A4 portrait; margin:12mm}
+}
+
 /* ---------- Logomarca oficial (header) ---------- */
 .brandlogo{height:60px; width:auto; display:block}
 .home-head .brandlogo{height:74px}
@@ -896,7 +930,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 15/09/2026 · 17:21</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 15/09/2026 · 22:16</div>
     </footer>
   </main>
 </section>
@@ -1173,6 +1207,8 @@ input.an-plain{padding-left:14px; font-size:16px}
 
   <!-- legenda -->
   <div class="legend" id="escLegend"></div>
+
+  <button class="esc2-print" id="btnImprimirEscala">🖨 Imprimir a escala do mês</button>
 
   <footer>
     <div class="sens">Escala de Setembro/2026 — vale de 16/09. O Jaime faz o rodízio do Parque e, nos demais dias úteis, está em outro local. Não trabalha aos sábados.</div>
@@ -1588,6 +1624,7 @@ input.an-plain{padding-left:14px; font-size:16px}
 
 <!-- Carta proposta: preenchida sob demanda pelo JS; visível apenas na impressão (Salvar como PDF) -->
 <div id="cartaProposta" aria-hidden="true"></div>
+<div id="escalaImpressao" aria-hidden="true"></div>
 
 
 <!-- ==================== CARTEIRA DO DIA ==================== -->
@@ -3080,6 +3117,58 @@ function escGradeHTML(diasISO){
   });
   return h+'</tbody>';
 }
+
+// ---- escala em papel (A4 retrato: um dia por linha, posto por extenso) ----
+// Fundo chapado some em impressora configurada para ignorar cor de fundo, então
+// cada posto leva TAMBÉM uma barra colorida na lateral, que a impressora respeita.
+function epTint(hex){
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},.16)`;
+}
+function escalaImpressaoHTML(){
+  const hoje=new Date(), dd=String(hoje.getDate()).padStart(2,'0'), mm=String(hoje.getMonth()+1).padStart(2,'0');
+  const emitida=`${dd}/${mm}/${hoje.getFullYear()}`;
+  let linhas='';
+  ESC_DIAS.forEach(iso=>{
+    const dt=escParseISO(iso), dow=dt.getDay(), [,m,d]=iso.split('-');
+    const cls=[dow===0||dow===6?'ep-fds':'', dow===1?'ep-seg':''].filter(Boolean).join(' ');
+    let tds='';
+    ESCALA_MES.vendedores.forEach(v=>{
+      const nome=(ESCALA_MES.escala[iso]||{})[v] || '—';
+      const trabalha=!!POSTOS[nome] && nome!=='Livre';
+      const p=escPosto(nome);
+      const st=trabalha?`border-left-color:${p.cor}; background:${epTint(p.cor)}`:'';
+      tds+=`<td><span class="ep-p${trabalha?'':' ep-off'}" style="${st}">${nome}</span></td>`;
+    });
+    linhas+=`<tr class="${cls}"><td class="ep-dia">${d}/${m}<small>${WD_CURTO[dow]}</small></td>${tds}</tr>`;
+  });
+  const leg=POSTO_ORDEM.map(k=>`<span><i style="background:${POSTOS[k].cor}"></i>${POSTOS[k].leg}</span>`).join('');
+  const txt=s=>{ const el=document.querySelector('#view-escala footer .'+s); return el?el.textContent:''; };
+  return `<div class="ep-doc">
+    <div class="ep-head">
+      <div><div class="ep-brand">Parque da Saudade</div><div class="ep-org">Escala da Equipe Comercial</div></div>
+      <div><div class="ep-mes">${ESCALA_MES.rotulo}</div><div class="ep-emitida">Impressa em ${emitida}</div></div>
+    </div>
+    <table class="ep-t">
+      <thead><tr><th>Dia</th>${ESCALA_MES.vendedores.map(v=>`<th>${v}</th>`).join('')}</tr></thead>
+      <tbody>${linhas}</tbody>
+    </table>
+    <div class="ep-rodape">
+      <div class="ep-reg">${txt('sens')}</div>
+      <div class="ep-reg">${txt('inst')}</div>
+      <div class="ep-leg">${leg}</div>
+    </div>
+    <div class="ep-foot">Parque da Saudade · Escala gerada no Pocket NPS (app da equipe) em ${emitida}</div>
+  </div>`;
+}
+function imprimirEscala(){
+  $('#escalaImpressao').innerHTML = escalaImpressaoHTML();
+  document.body.classList.add('print-escala');
+  const cleanup=()=>{ document.body.classList.remove('print-escala'); window.removeEventListener('afterprint', cleanup); };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(()=>{ try{ window.print(); }catch(e){ cleanup(); toast('Impressão indisponível neste dispositivo'); } }, 60);
+}
+
 // ---- render da grade conforme o modo (semana / mês) ----
 function renderEscGrade(){
   const label=$('#escGridLabel');
@@ -3180,6 +3269,7 @@ $('#escToggle').addEventListener('click', e=>{
   [...b.parentNode.children].forEach(x=>x.setAttribute('aria-pressed', x===b));
   escVisModo = b.dataset.vis; renderEscGrade();
 });
+$('#btnImprimirEscala').addEventListener('click', imprimirEscala);
 
 // saudação por horário (America/Sao_Paulo)
 (function(){
