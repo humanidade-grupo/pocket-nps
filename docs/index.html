@@ -946,7 +946,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 16/09/2026 · 17:30</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 16/09/2026 · 17:50</div>
     </footer>
   </main>
 </section>
@@ -2041,6 +2041,11 @@ input.an-plain{padding-left:14px; font-size:16px}
     <section class="card">
       <div class="step"><span class="n">2</span><h2>Como soube do evento?</h2></div>
       <div class="chips" id="evComoSoube" role="group" aria-label="Como soube do evento?" style="margin-top:0"></div>
+      <p class="fieldnote an-apoio" id="evComoApoio" hidden></p>
+      <div class="field" id="evFComoSub" hidden>
+        <label for="evComoSub" id="evComoSubLbl">Qual</label>
+        <input type="text" id="evComoSub" class="an-plain" autocomplete="off">
+      </div>
     </section>
 
     <section class="card">
@@ -4825,8 +4830,28 @@ function cartConcluir(texto){
   const EV_MEUS_DIAS = 7;                      // nome e telefone de visitante não ficam no celular além disso
   const EV_JANELA_CARD = ['2026-09-16', '2026-09-23'];   // começo antecipado de 19/09 para hoje (Ricardo, 16/09): treino da equipe até sexta
   const EV_LOTE = 25;
-  const EV_COMO_SOUBE = ['Mensagem de WhatsApp do Parque','Panfleto','Outdoor, busdoor ou painel',
-    'Convite, redes sociais ou missa','Anúncio na internet','Indicação de alguém','Já frequenta o Parque','Outro'];
+  // (16/09, 2º tempo) "Como soube" = a lista de ORIGEM do Anúncio de Venda, que espelha o CRM
+  // Facilita caractere a caractere, com o mesmo detalhe e o mesmo texto de apoio. Cópia das
+  // constantes AN_ORIGENS / AN_ORIGEM_SUB / AN_SUB_PH / AN_ORIGEM_APOIO, que vivem na IIFE do
+  // anúncio e não são alcançáveis daqui. Mudou lá, muda aqui (e no Evento50.gs e no form).
+  const EV_COMO_SOUBE = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Indicação','Já é cliente','Outro'];
+  const EV_COMO_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
+  const EV_COMO_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco'};
+  const EV_COMO_APOIO = {
+    'Google / Site':'Ele pesquisou e achou a gente, ou clicou num anúncio do Google. O site em si não é origem — é destino.',
+    'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook.',
+    'Meta Ads do vendedor':'Você pagou o impulsionamento do seu bolso. Se o anúncio não é seu, a opção é a de cima.',
+    'Outdoor':'Ele citou ter visto a peça. Diga qual.',
+    'Painel de LED':'Ele citou ter visto a peça. Diga qual.',
+    'Busdoor':'Ele citou ter visto a peça. Diga qual.',
+    'Panfletagem':'Ele recebeu ou viu o panfleto. Diga onde.',
+    'Evento':'Conheceu a gente num evento. Diga qual.',
+    'PDV Jardim Norte':'Passou no shopping e viu o quiosque, sem ter visto nada antes. Se viu um outdoor e por isso foi lá, a origem é o outdoor.',
+    'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
+    'Indicação':'Alguém falou da gente para ele. Diga quem.',
+    'Já é cliente':'Ele ou a família já compraram aqui.',
+    'Outro':"Só quando nada acima descreve. Se 'Outro' virar hábito, o dado morre."
+  };
   const EV_RESULTADO = ['Só visitou','Interessado, sem proposta','Recebeu proposta','Comprou'];
   const EV_PRODUTO = ['M-19 Lote 50 Anos','M-19','M-20','M-21 Mista','Retomada','Outro'];
   const EV_MOTIVO = ['Preço','Vai decidir com a família','Sem condição agora','Já tem jazigo','Só veio ao evento','Outro'];
@@ -4896,8 +4921,10 @@ function cartConcluir(texto){
     el.innerHTML = lista.map(v => '<button type="button" data-v="' + evEsc(v) + '" aria-pressed="false">' + evEsc(v) + '</button>').join('');
     el.addEventListener('click', e => {
       const b = e.target.closest('button'); if(!b) return;
+      if(chave === 'comoSoube' && evSt.comoSoube !== b.dataset.v) $ev('evComoSub').value = '';
       evSt[chave] = b.dataset.v;
       evRender();
+      if(chave === 'comoSoube' && EV_COMO_SUB[b.dataset.v]) $ev('evComoSub').focus();
     });
   }
   evChips('evComoSoube', EV_COMO_SOUBE, 'comoSoube');
@@ -4917,7 +4944,7 @@ function cartConcluir(texto){
   EV_TELS.forEach(id => $ev(id).addEventListener('input', () => {
     const inp = $ev(id); inp.value = evMascara(inp.value); evRender();
   }));
-  ['evNome','evI1n','evI2n','evI3n'].forEach(id => $ev(id).addEventListener('input', () => { if(evTentou) evRender(); }));
+  ['evNome','evComoSub','evI1n','evI2n','evI3n'].forEach(id => $ev(id).addEventListener('input', () => { if(evTentou) evRender(); }));
   $ev('evConsent').addEventListener('change', () => { if(evTentou) evRender(); });
 
   // ---- regras (as mesmas do servidor; o servidor confere de novo) ----
@@ -4944,6 +4971,8 @@ function cartConcluir(texto){
     else if(!evTel(tBruto)) f.push('Telefone do visitante incompleto — confira o DDD e o número.');
     if(!evSt.jaCliente) f.push('Já é cliente do Parque?');
     if(!evSt.comoSoube) f.push('Como soube do evento?');
+    else if(EV_COMO_SUB[evSt.comoSoube] && $ev('evComoSub').value.trim().length < 3)
+      f.push('Como soube — ' + EV_COMO_SUB[evSt.comoSoube].toLowerCase() + ' (mínimo 3 caracteres).');
     if(!evSt.resultado) f.push('Resultado do atendimento.');
     if(EV_PEDE_PRODUTO.indexOf(evSt.resultado) >= 0 && !evSt.produto) f.push('Produto.');
     if(evSt.resultado && evSt.resultado !== 'Comprou' && !evSt.motivo) f.push('Principal motivo de não comprar.');
@@ -4960,6 +4989,12 @@ function cartConcluir(texto){
     const pedeMot = !!evSt.resultado && evSt.resultado !== 'Comprou';
     if(!pedeProd) evSt.produto = '';
     if(!pedeMot) evSt.motivo = '';
+    const sub = EV_COMO_SUB[evSt.comoSoube];
+    $ev('evFComoSub').hidden = !sub;
+    if(sub){ $ev('evComoSubLbl').textContent = sub; $ev('evComoSub').placeholder = EV_COMO_PH[evSt.comoSoube] || ''; }
+    const apoio = EV_COMO_APOIO[evSt.comoSoube];
+    $ev('evComoApoio').hidden = !apoio;
+    if(apoio) $ev('evComoApoio').textContent = apoio;
     $ev('evFProduto').hidden = !pedeProd;
     $ev('evFMotivo').hidden = !pedeMot;
     evMarcar('evJaCliente', evSt.jaCliente);
@@ -5004,6 +5039,7 @@ function cartConcluir(texto){
       telefone: tel,
       ja_cliente: evSt.jaCliente,
       como_soube: evSt.comoSoube,             // rótulo EXATO — o Cofre grava como está
+      como_soube_detalhe: EV_COMO_SUB[evSt.comoSoube] ? $ev('evComoSub').value.replace(/\s+/g,' ').trim() : '',
       resultado: evSt.resultado,
       produto: evSt.produto,
       motivo: evSt.motivo,
@@ -5024,7 +5060,7 @@ function cartConcluir(texto){
   $ev('evCadastrar').addEventListener('click', evCadastrar);
 
   function evLimpar(){
-    ['evNome','evTel','evI1n','evI1t','evI2n','evI2t','evI3n','evI3t'].forEach(id => { $ev(id).value = ''; });
+    ['evNome','evTel','evComoSub','evI1n','evI1t','evI2n','evI2t','evI3n','evI3t'].forEach(id => { $ev(id).value = ''; });
     $ev('evConsent').checked = false;
     evSt = { jaCliente:'', comoSoube:'', resultado:'', produto:'', motivo:'' };
     evTentou = false;
