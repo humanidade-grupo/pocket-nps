@@ -2282,6 +2282,7 @@ function campAceitar(d){
   const pct = x => typeof x==='number' && x>=0 && x<1;
   if(!iso(v.inicio) || !iso(v.fechamento_ate) || !pct(ds.avista) || !pct(ds.ate_21x) || !pct(ds.acima_21x)
      || !d.escopo || typeof d.escopo!=='object' || !d.nome) return null;
+  if(d.lote!=null && typeof d.lote!=='object') return null;   // campanha.lote é opcional (18/09)
   return d;
 }
 // "Dentro da vigência" = do início até o FECHAMENTO: o desconto é oferecido no dia e o cliente
@@ -2301,9 +2302,16 @@ function campEscopoTem(quadra, jazigo){
   if(typeof e==='string') return semAcento(e)==='todos';
   return Array.isArray(e) && e.some(j=> normJazigo(j)===normJazigo(jazigo));
 }
-// O jazigo está numa lista NOMINAL do escopo (os 50 do lote), e não num "todos".
+// O jazigo está no LOTE (os 50 da M-19). Desde 18/09 o lote tem chave própria (campanha.lote),
+// porque o escopo passou a dizer "M-19: todos" e deixou de carregar a lista. Sem a chave,
+// vale a lista NOMINAL do escopo, como antes.
 function campNoLote(quadra, jazigo){
-  const e = campEscopoDe(quadra);
+  const d = campResp;
+  let e;
+  if(d && d.lote && typeof d.lote==='object'){
+    const k = Object.keys(d.lote).find(x=> semAcento(x)===semAcento(quadra||''));
+    e = k===undefined ? undefined : d.lote[k];
+  }else e = campEscopoDe(quadra);
   return Array.isArray(e) && e.some(j=> normJazigo(j)===normJazigo(jazigo));
 }
 function campPctForma(){
@@ -2321,7 +2329,7 @@ function campSituacao(){
   if(fora) return {mostra:true, aplica:false, motivo:(PRODUTO_NOME[state.produto]||'Este produto')+' está fora da '+nome+'.'};
   const pct = campPctForma();
   if(!(pct>0)) return {mostra:true, aplica:false, motivo:'Pagamento '+campFormaTxt()+' não tem desconto na '+nome+'.'};
-  return {mostra:true, aplica:!!state.campOn, pct, nome};
+  return {mostra:true, aplica:!!state.campOn, pct, nome, selo:campResp.selo||''};
 }
 function campPrazoTxt(){
   const v = campResp.vigencia;
@@ -2617,7 +2625,7 @@ function descInfo(){
   const teto = descTetoMeio();
   // Campanha ligada SUBSTITUI a alçada: nada de descOn nem adicional por cima (não somam).
   const cs = campSituacao();
-  if(cs.aplica) return {base:0, extra:0, total:cs.pct, extraOn:false, teto, camp:{nome:cs.nome, pct:cs.pct}};
+  if(cs.aplica) return {base:0, extra:0, total:cs.pct, extraOn:false, teto, camp:{nome:cs.nome, pct:cs.pct, selo:cs.selo}};
   const base = (state.descOn && teto>0) ? teto : 0;  // desconto é OPCIONAL: só entra se marcado
   const extraOn = state.coord && bandExtra();
   const extra = extraOn ? 0.03 : 0;
@@ -4421,6 +4429,7 @@ function cartConcluir(texto){
     }
     const R = [];
     const row = (k,v)=>{ R.push('<div class="r"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>'); };
+    if(p.di && p.di.camp && p.di.camp.selo) row('Selo', '🏅 '+anEsc(p.di.camp.selo));
     row('Produto', anEsc(anSt.produto));
     if(p.desconto>0.5){
       row('Valor de tabela', brl(p.tabela));
@@ -4543,7 +4552,12 @@ function cartConcluir(texto){
   const anDiaTxt = ()=> anSt.dia? ('0'+anSt.dia).slice(-2) : '—';
   function anMsg(){
     const L = [];
-    L.push('📢 *ANÚNCIO DE VENDA*','');
+    L.push('📢 *ANÚNCIO DE VENDA*');
+    // Selo da campanha (18/09): só quando a venda saiu com o desconto dela. O texto vem
+    // da campanha.selo da Config — o Pocket não escreve nome de campanha.
+    const selo = anPropostaAtual && anPropostaAtual.di && anPropostaAtual.di.camp && anPropostaAtual.di.camp.selo;
+    if(selo) L.push('🏅 *'+selo+'*');
+    L.push('');
     L.push('*Quadra:* '+(anSt.quadra||'—'));
     L.push((anSt.quadra==='Reserva' ? '*Reserva nº:* ' : '*Jazigo nº:* ')+(anSt.jazigo||'—'));
     L.push('*Produto:* '+(anSt.produto||'—'),'');
