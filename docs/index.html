@@ -2535,8 +2535,7 @@ function simSyncValorCampo(){
     ? `<b>Reserva:</b> valor fixo de ${brl(pr.valor)}, qualquer jazigo — o jazigo é escolhido no fim. Estoque de ${escH(carimboCurto(pr.d.atualizado_em))}${pr.deCache ? ' · cópia do aparelho' : ''}.`
     : `<b>Reserva:</b> o Cofre não trouxe um valor único da Reserva agora. Digite o valor.`;
   else if(!j) h = 'O valor entra sozinho quando você escolher o jazigo.';
-  else if(cong) h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)} é do lote da ${escH(campResp.nome)}:</b> a base do Uso Temporário não segue o preço novo. Digite o valor da coluna <b>Uso Temporário</b> da tabela.`
-                  + (campResp.observacao ? `<br><i>Interno: ${escH(campResp.observacao)}</i>` : '');
+  else if(cong) h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)} é do lote da ${escH(campResp.nome)}:</b> a base do Uso Temporário não segue o preço novo. Digite o valor da coluna <b>Uso Temporário</b> da tabela.`;
   else {
     h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)}</b> — valor de tabela ${brl(j.valor)}.`;
     if(j.foraDaLista) h += ` <b>Já não aparece como disponível nem reservado</b> (venda ganha no Facilita?). O valor é o da última foto.`;
@@ -2709,9 +2708,9 @@ function render(){
     $('#campPct').textContent = cs.motivo ? '— '+cs.motivo
       : '— −'+pctTxt(campPctForma())+' no pagamento '+campFormaTxt()+(state.campOn?'':' (desligada)');
     $('#campPrazo').textContent = campPrazoTxt();
-    const ob = $('#campObs');
-    ob.hidden = !(cs.aplica && campResp.observacao);
-    if(!ob.hidden) ob.innerHTML = '<b>Interno — não repassar ao cliente:</b> '+escH(campResp.observacao);
+    // A campanha.observacao NÃO aparece na tela (18/09, pedido do Ricardo): é nota interna da
+    // Config e ficava na frente do cliente durante a simulação. Segue na resposta da rota.
+    $('#campObs').hidden = true;
   }
   // Alçada desabilitada com a campanha ligada, com a razão ao lado.
   if(cs.aplica){
