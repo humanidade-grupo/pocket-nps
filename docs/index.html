@@ -1031,7 +1031,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <div class="step"><span class="n">3</span><h2>Forma de pagamento</h2></div>
     <div class="seg" id="segForma" role="group" aria-label="Forma de pagamento">
       <button data-forma="prazo" aria-pressed="true">A prazo<span class="s" id="formaPrazoHint">até 72x</span></button>
-      <button data-forma="avista" aria-pressed="false">À vista<span class="s">Pix ou cartão</span></button>
+      <button data-forma="avista" aria-pressed="false">À vista<span class="s">Pix ou cartão 1x</span></button>
     </div>
 
     <!-- A PRAZO -->
@@ -1086,8 +1086,10 @@ input.an-plain{padding-left:14px; font-size:16px}
         <label>Meio (à vista)</label>
         <div class="seg" id="segMeioAV" role="group" aria-label="Meio à vista">
           <button data-meioav="pix" aria-pressed="true">Pix<span class="s">−3%</span></button>
-          <button data-meioav="cartao" aria-pressed="false">Cartão<span class="s">−2%</span></button>
+          <button data-meioav="cartao" aria-pressed="false">Cartão 1x<span class="s">−2%</span></button>
         </div>
+        <!-- 18/09: vendedor pôs aqui um cartão em 21x e a proposta saiu com os 20% do à vista. -->
+        <p class="fieldnote">Cartão <b>em 1x</b>. Parcelou no cartão (2x a 21x)? Volte e escolha <b>A prazo › Cartão</b>.</p>
       </div>
     </div>
 
@@ -2760,7 +2762,7 @@ function render(){
     <div class="row"><span class="k">${valorLabel()}</span><span class="v">${brl(r.tabela)}</span></div>`);
 
   if(r.forma==='avista'){
-    const meioLbl = r.meioAV==='pix' ? 'Pix' : 'cartão';
+    const meioLbl = r.meioAV==='pix' ? 'Pix' : 'cartão 1x';
     const avn = r.di.total>0
       ? `À vista no ${meioLbl}: <b>${(r.di.total*100).toFixed(0)}% de desconto</b>, sem juros.`
       : `À vista no ${meioLbl} · sem juros.`;
@@ -3044,7 +3046,7 @@ function propostaTexto(){
   } else { L.push(valorLabel()+': '+brl(r.tabela)); }
   L.push('');
   if(r.forma==='avista'){
-    L.push('*À vista — '+(r.meioAV==='pix'?'Pix':'cartão')+' (sem juros)*');
+    L.push('*À vista — '+(r.meioAV==='pix'?'Pix':'cartão 1x')+' (sem juros)*');
     L.push('Total: '+brl(r.total));
   } else {
     L.push('*A prazo — '+(r.meio==='cartao'?'cartão':'boleto')+'*');
@@ -3095,7 +3097,7 @@ function cartaPropostaHTML(r){
   }
   let condTitulo, cond=[];
   if(r.forma==='avista'){
-    condTitulo = 'À vista — '+(r.meioAV==='pix'?'Pix':'cartão')+' (sem juros)';
+    condTitulo = 'À vista — '+(r.meioAV==='pix'?'Pix':'cartão 1x')+' (sem juros)';
     cond.push(['Total à vista', brl(r.total)]);
   } else {
     condTitulo = 'A prazo — '+(r.meio==='cartao'?'cartão de crédito (sem juros)':(r.semJuros?'boleto (sem juros)':'boleto (1% a.m.)'));
