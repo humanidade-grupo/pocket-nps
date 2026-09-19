@@ -889,40 +889,49 @@ input.an-plain{padding-left:14px; font-size:16px}
 .ct-vazio h3{font-family:"PF Marlet Display","Playfair Display",serif; font-size:18px; margin:12px 0 4px}
 .ct-vazio p{font-size:13px; color:var(--muted); margin:0}
 .ct-rodape{font-size:11.5px; color:var(--muted); margin:18px 4px 0; padding-top:12px; border-top:1px dashed var(--border-strong)}
+
+/* ---------- Home numa tela só (19/09/2026) ---------- */
+.hm-cab{background:linear-gradient(160deg,#FDBE0E 0%,#EEAF16 52%,#CC900B 100%); padding:calc(env(safe-area-inset-top) + 14px) 16px 13px; display:flex; align-items:center; justify-content:space-between; gap:12px}
+.hm-cab .hm-logo{height:40px; width:auto; display:block}
+.hm-ola{text-align:right; font-size:12px; color:rgba(53,31,9,.8); line-height:1.25}
+.hm-ola b{display:block; font-family:"PF Marlet Display","Playfair Display",serif; font-size:17px; font-weight:700; color:var(--marrom-2)}
+.hm-main{max-width:520px; margin:0 auto; padding:10px 14px calc(env(safe-area-inset-bottom) + 10px); display:flex; flex-direction:column; gap:10px}
+.hm-main .barra-estoque{margin:0; padding:4px 6px 8px}
+.hm-agora{background:var(--card); border:1px solid rgba(204,144,11,.5); border-radius:14px; box-shadow:0 0 0 3px rgba(253,190,14,.18); overflow:hidden}
+.hm-agora:not(:has(.hm-l:not([hidden]))){display:none}
+.hm-l{display:flex; width:100%; align-items:center; gap:10px; padding:11px 12px; font:inherit; font-size:13.5px; color:var(--marrom); background:none; border:0; text-align:left; cursor:pointer}
+.hm-l[hidden]{display:none}
+.hm-l:not([hidden]) ~ .hm-l:not([hidden]){border-top:1px solid var(--border)}
+.hm-l .n{min-width:24px; height:24px; border-radius:12px; background:var(--dourado); color:#fff; font-weight:700; font-size:12.5px; display:grid; place-items:center; padding:0 7px; flex:0 0 auto}
+.hm-l .n.ev{background:var(--verde-2)}
+.hm-l .tx{flex:1}
+.hm-l .tx b{font-weight:600}
+.hm-l .arw{color:var(--dourado); font-size:18px}
+.hm-grade{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.hm-tile{position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-height:96px; padding:12px 12px 11px; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 2px rgba(66,39,12,.06), 0 6px 18px rgba(66,39,12,.08); font:inherit; color:var(--marrom); text-align:left; cursor:pointer}
+.hm-tile:active{transform:scale(.98)}
+.hm-tile .ic{width:36px; height:36px; border-radius:11px; background:rgba(204,144,11,.12); display:grid; place-items:center}
+.hm-tile .ic svg{width:20px; height:20px; stroke:var(--dourado); fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
+.hm-tile .t{font-family:"PF Marlet Display","Playfair Display",serif; font-size:15.5px; font-weight:700; line-height:1.12}
+.hm-tile .d{font-size:11.5px; color:var(--muted); line-height:1.3; margin-top:-4px}
+.hm-tile .bd{position:absolute; top:10px; right:10px; min-width:22px; height:22px; border-radius:11px; background:var(--dourado); color:#fff; font-size:12px; font-weight:700; display:grid; place-items:center; padding:0 6px}
+.hm-tile .bd[hidden]{display:none}
+.hm-rodape{text-align:center; font-size:10.5px; color:var(--muted); line-height:1.35; padding-top:2px}
 </style>
 </head>
 <body>
 
 <!-- ==================== HOME ==================== -->
 <section class="view active" id="view-home">
-  <div class="home-head">
-    <div class="deco"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="841.2131" height="910.218" viewBox="0 0 841.2131 910.218">
-<defs>
-<clipPath id="clip_1">
-<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M539.3936 84.74298H1380.6067V994.961H539.3936Z" clip-rule="evenodd"/>
-</clipPath>
-<clipPath id="clip_2">
-<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M0 1080H1920V0H0Z"/>
-</clipPath>
-</defs>
-<g clip-path="url(#clip_1)">
-<g clip-path="url(#clip_2)">
-<path transform="matrix(1,0,0,-1,450.565,8)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0 39.455-2.633C61.893-4.131 83.315-5.447 105.486-10.131 111.29-11.357 166.219-41.418 157.827-61.496L146.269-89.144C131.02-125.624 102.772-162.096 129.505-198.98 136.188-208.201 141.169-221.389 151.2-227.426 165.82-236.224 185.306-239.266 202.379-239.124 227.095-238.918 249.814-240.622 273.885-244.55 311.902-250.754 301.477-273.252 327.468-281.478 346.204-287.407 363.741-291.099 382.648-298.884 350.667-299.915 332.522-290.925 300.013-303.691 257.192-320.506 220.098-328.385 182.035-354.84 177.871-360.255 178.284-369.867 177.167-376.312 169.849-418.538 190.961-439.82 222.392-462.144 237.094-472.586 251.073-483.241 264.88-494.492 273.333-501.38 274.309-510.595 273.047-520.843 270.195-544.003 265.849-565.771 260.744-588.691 254.373-617.292 223.033-658.015 205.757-682.235L148.385-762.668C114.531-810.131 46.061-872.147-7.337-893.475-9.198-894.218-13.887-894.002-13.65-893.067-13.415-892.139-12.861-889.431-12.266-888.562L18.183-844.164C39.188-813.535 67.443-720.838 80.434-681.673L92.654-644.832C96.349-633.693 101.356-623.503 106.007-612.557 109.763-603.717 107.718-592.309 118.558-586.37 114.525-576.881 111.718-568.263 107.249-559.243 95.11-534.739 64.168-510.128 45.543-488.538 33.208-474.239 15.298-438.638 8.667-420.308 7.029-415.779 1.862-410.643-4.443-412.774-26.31-420.163-50.823-420.37-72.801-429.176L-408.043-595.624C-419.411-601.268-429.321-605.469-442.565-607.204-432.425-595.965-421.025-586.917-407.767-580.269L-300.965-526.711C-295.829-524.135-289.703-520.776-285.378-517.485L-225.259-471.73C-251.787-478.146-274.937-483.541-298.41-492.729L-382.242-525.545C-392.651-529.619-402.372-533.223-415.031-532.096-399.52-518.871-382.099-511.863-363.619-504.17L-180.964-428.141C-156.325-417.885-134.406-404.577-111.419-391.26-79.046-372.504-50.426-349.557-25.492-322.018-13.253-308.5-24.651-276.461-24.868-268.069L-25.665-237.32C-26.092-220.837-23.532-202.922-18.587-187.216L.804-125.621-4.837-99.897C-15.247-101.327-19.566-94.486-26.155-91.343L-52.34-78.85C-66.665-72.016-81.418-67.622-96.66-63.116-109.996-59.174-122.582-53.707-136.214-50.758-154.613-46.778-173.118-44.396-191.986-43.043-207.544-41.927-221.81-45.471-239.071-42.484-185.262-15.717-127.614-5.808-69.832 0H0Z"/>
-</g>
-</g>
-</svg>
-</div>
-    <div class="hwrap">
-      <div class="brandrow">
-        <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
-        
-      </div>
-      <span class="apptag">Pocket NPS</span>
-      <h1>Ferramentas de bolso da equipe</h1>
-      <p class="lead">Tudo o que o vendedor precisa na ponta, sem depender da coordenação. Conduza cada atendimento com calma e respeito.</p>
-    </div>
+  <!-- HOME NUMA TELA SÓ (19/09/2026, opção A aprovada pelo Ricardo — mockup claude.ai/code/artifact/VfUFXnYT1vXSTUKBaLJ8SQ).
+       Cabeçalho compacto · barra de estoque · faixa "Agora" (só o que pede ação; some vazia) · grade 2 colunas.
+       Cabe em 375×667 sem rolagem. Ferramenta nova = meia linha da grade, nunca um card empilhado.
+       O "IQ de Venda — Em breve" saiu da home (a tela view-iq segue no código, sem porta). -->
+  <div class="hm-cab">
+    <img class="hm-logo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    <div class="hm-ola" id="greet">Bem-vindo</div>
   </div>
-  <main class="wrap">
+  <main class="hm-main">
     <!-- Barra de estoque: M-19 e Retomada (12/09). Cada grupo nasce escondido: quadra cuja
          rota nao respondeu (e sem copia no aparelho) simplesmente nao aparece. -->
     <div id="barraEstoque" class="barra-estoque" hidden aria-live="polite">
@@ -939,72 +948,43 @@ input.an-plain{padding-left:14px; font-size:16px}
         <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
       </span>
     </div>
-    <div class="greet" id="greet">Bem-vindo. Escolha uma ferramenta para começar.</div>
-    <div class="tools">
-      <!-- Evento 50 Anos (16/09): visível de 16/09 a 23/09 (EV_JANELA_CARD no script; era 19/09, antecipado para o treino).
-           A rota #evento funciona fora da janela — só o card some. -->
-      <button class="tool" data-go="evento" id="evCardHome" hidden>
-        <span class="ic"><svg viewBox="0 0 24 24"><polygon points="12 3 14.6 8.6 20.5 9.2 16 13.2 17.3 19 12 16 6.7 19 8 13.2 3.5 9.2 9.4 8.6"/></svg></span>
-        <span class="tx"><span class="t">🎉 Evento 50 Anos — Cadastro</span><span class="d">Um visitante por vez, em menos de um minuto. Funciona sem sinal.</span></span>
-        <span class="badge">Evento</span>
-        <span class="arw">&rsaquo;</span>
-      </button>
 
-      <!-- Contratos para assinar (19/09): a contagem é só do que é do vendedor cobrar (com o cliente).
-           Sem sessão neste aparelho, o card existe mas não mostra número — sem PIN a rota não sabe de quem é. -->
-      <button class="tool" data-go="contratos" id="ctCardHome">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><path d="M8.5 16.5c1.2-1.6 2-1.6 2.6-.4.5 1 1.2 1 2-.2.6-.8 1.3-.9 2.4-.1"/></svg></span>
-        <span class="tx"><span class="t">Contratos para assinar</span><span class="d" id="ctCardDesc">Entre com o seu PIN para ver os contratos das suas vendas.</span></span>
-        <span class="badge" id="ctCardBadge">Novo</span>
-        <span class="arw" id="ctCardArw">&rsaquo;</span>
-      </button>
+    <!-- "Agora": só o que pede ação. Cada linha nasce escondida; a faixa inteira some quando
+         nenhuma está à mostra (:has). Evento 50 Anos: janela EV_JANELA_CARD no script do evento.
+         Contratos: só quando há contrato esperando o cliente do vendedor da sessão. -->
+    <div class="hm-agora">
+      <button class="hm-l" data-go="contratos" id="ctAgora" hidden><span class="n" id="ctAgoraN">0</span><span class="tx" id="ctAgoraTx">Contratos esperando o seu cliente</span><span class="arw">&rsaquo;</span></button>
+      <button class="hm-l" data-go="evento" id="evCardHome" hidden><span class="n ev">&#9733;</span><span class="tx"><b>Evento 50 Anos</b> — cadastro de visitantes</span><span class="arw">&rsaquo;</span></button>
+    </div>
 
-      <button class="tool" data-go="sim">
-        <span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="10.5" y2="11"/><line x1="13.5" y1="11" x2="16" y2="11"/><line x1="8" y1="14.5" x2="10.5" y2="14.5"/><line x1="13.5" y1="14.5" x2="16" y2="14.5"/><line x1="8" y1="18" x2="10.5" y2="18"/></svg></span>
-        <span class="tx"><span class="t">Simulador de Financiamento</span><span class="d">Monte a proposta de jazigo na hora — boleto, cartão ou à vista.</span></span>
-        <span class="badge">Ativo</span>
-        <span class="arw">›</span>
+    <div class="hm-grade">
+      <button class="hm-tile" data-go="sim">
+        <span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="10.5" y2="11"/><line x1="13.5" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="10.5" y2="15"/><line x1="13.5" y1="15" x2="16" y2="15"/></svg></span>
+        <span class="t">Simulador</span><span class="d">Proposta e anúncio</span>
       </button>
-
-      <button class="tool" data-go="escala">
-        <span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8.5" y1="4.5" x2="8.5" y2="20.5"/><line x1="14" y1="4.5" x2="14" y2="20.5"/></svg></span>
-        <span class="tx"><span class="t">Escala da Equipe</span><span class="d">Escala de Setembro/2026, dia a dia — o posto de cada vendedor.</span></span>
-        <span class="badge">Ativo</span>
-        <span class="arw">›</span>
-      </button>
-
-      <button class="tool" data-go="carteira">
+      <button class="hm-tile" data-go="carteira">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v14.5"/><path d="M4 6.5V18a2 2 0 0 0 2 2h13"/><line x1="8" y1="9" x2="15" y2="9"/><line x1="8" y1="13" x2="12.5" y2="13"/></svg></span>
-        <span class="tx"><span class="t">Carteira do Dia</span><span class="d">Sua lista de contatos do dia, um por vez, pelo seu WhatsApp.</span></span>
-        <span class="badge">Novo</span>
-        <span class="arw">&rsaquo;</span>
+        <span class="t">Carteira do Dia</span><span class="d">Contatos pelo WhatsApp</span>
       </button>
-
-      <button class="tool soon" aria-disabled="true" disabled>
-        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.6"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/><line x1="3" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/></svg></span>
-        <span class="tx"><span class="t">IQ de Venda</span><span class="d">A nota de qualidade da venda — preço, prazo, desconto e canal.</span></span>
-        <span class="badge">Em breve</span>
+      <button class="hm-tile" data-go="contratos" id="ctCardHome"><span class="bd" id="ctCardBadge" hidden>0</span>
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><path d="M8.5 16.5c1.2-1.6 2-1.6 2.6-.4.5 1 1.2 1 2-.2.6-.8 1.3-.9 2.4-.1"/></svg></span>
+        <span class="t">Contratos</span><span class="d" id="ctCardDesc">Falta assinar</span>
       </button>
-
-      <button class="tool" data-go="tabelas">
+      <button class="hm-tile" data-go="tabelas">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h12"/></svg></span>
-        <span class="tx"><span class="t">Tabela de Preços</span><span class="d">Consulta rápida de valores por produto e quadra.</span></span>
-        <span class="badge">Ativo</span>
-        <span class="arw">&rsaquo;</span>
+        <span class="t">Tabela de Preços</span><span class="d">Por produto e quadra</span>
       </button>
-
-      <button class="tool" data-go="faq">
+      <button class="hm-tile" data-go="escala">
+        <span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8.5" y1="4.5" x2="8.5" y2="20.5"/><line x1="14" y1="4.5" x2="14" y2="20.5"/></svg></span>
+        <span class="t">Escala</span><span class="d">Postos do mês e o Cheguei</span>
+      </button>
+      <button class="hm-tile" data-go="faq">
         <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.7 2.7 0 1 1 3.4 2.6c-.85.28-1.2.9-1.2 1.75"/><line x1="12" y1="16.8" x2="12" y2="16.81"/></svg></span>
-        <span class="tx"><span class="t">FAQ — Jazigos Mistos</span><span class="d">Perguntas e respostas sobre a Quadra Mista: humano + pet.</span></span>
-        <span class="badge">Novo</span>
-        <span class="arw">&rsaquo;</span>
+        <span class="t">FAQ Mistos</span><span class="d">Humano + pet</span>
       </button>
     </div>
-    <footer>
-      <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
-      <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 19/09/2026 · 14:44</div>
-    </footer>
+
+    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 19/09/2026 · 15:08</span></div>
   </main>
 </section>
 
@@ -3291,6 +3271,7 @@ function go(view, push){
   if(view==='evento' && typeof evAoEntrar==='function') evAoEntrar();
   if(view==='contratos' && typeof ctAoEntrar==='function') ctAoEntrar();
   if(view==='home' && typeof ctPintarCard==='function') ctPintarCard();
+  if(view==='home' && typeof homeSaudar==='function') homeSaudar();
   if(view==='sim') estBuscar();
   if(push!==false){ try{ history.pushState({view}, '', '#'+view); }catch(e){} }
 }
@@ -3553,14 +3534,21 @@ $('#escToggle').addEventListener('click', e=>{
 });
 $('#btnImprimirEscala').addEventListener('click', imprimirEscala);
 
-// saudação por horário (America/Sao_Paulo)
-(function(){
+// saudação por horário (America/Sao_Paulo) + nome de quem entrou com o PIN (home nova, 19/09).
+// Chamada de novo em go('home'): quem entra ou sai da Carteira muda o nome sem recarregar.
+function homeSaudar(){
   try{
     const h = parseInt(new Intl.DateTimeFormat('pt-BR',{hour:'numeric',hour12:false,timeZone:'America/Sao_Paulo'}).format(new Date()),10);
     const per = h<12?'Bom dia':(h<18?'Boa tarde':'Boa noite');
-    document.getElementById('greet').innerHTML = `<b>${per}.</b> Escolha uma ferramenta para começar.`;
+    let nome = '';
+    try{ const ses = JSON.parse(localStorage.getItem('carteira_sessao')||'null'); nome = (ses && ses.token && ses.vendedor) || ''; }catch(e){}
+    const el = document.getElementById('greet');
+    el.textContent = '';
+    if(nome){ el.append(per + ','); const b = document.createElement('b'); b.textContent = nome; el.append(b); }
+    else { const b = document.createElement('b'); b.textContent = per; el.append(b); }
   }catch(e){}
-})();
+}
+homeSaudar();
 
 /* Barra de estoque: M-19 e Retomada (12/09). Le a rota publica do Cofre (sem token, so
    contagem) pelo cofreLer, que tenta de novo quando o Google responde HTML no lugar do JSON.
@@ -5446,21 +5434,21 @@ function cartConcluir(texto){
     $ct('ctListas').innerHTML = h;
   }
 
-  // ---- o card da home ----
+  // ---- a home: o tile da grade e a linha da faixa "Agora" ----
+  // O número é só do que é do vendedor cobrar (com o cliente). "Com a casa" vai na descrição do tile.
   function ctPintarCard(){
-    const card = $ct('ctCardHome'); if(!card) return;
+    const desc = $ct('ctCardDesc'), badge = $ct('ctCardBadge'), agora = $ct('ctAgora');
+    if(!desc || !badge || !agora) return;
     const s = ctSessao(), tem = !!(s && s.token);
     const d = tem ? (ctDados || ctLerCache(s.vendedor)) : null;
-    const desc = $ct('ctCardDesc'), badge = $ct('ctCardBadge'), arw = $ct('ctCardArw');
-    card.classList.remove('ct-destaque');
-    badge.className = 'badge'; badge.textContent = 'Novo'; badge.hidden = false; arw.hidden = false;
-    if(!tem){ desc.textContent = 'Entre com o seu PIN para ver os contratos das suas vendas.'; return; }
-    if(!d || d.sem_espelho){ desc.textContent = 'Os contratos das suas vendas que ainda faltam assinar.'; return; }
-    const n = (d.cliente || []).length, k = (d.casa || []).length;
-    desc.innerHTML = (n ? '<b>' + ctPlural(n, 'esperando o seu cliente', 'esperando o seu cliente') + '</b>' : 'Nenhum esperando o seu cliente') +
-                     (k ? ' · ' + k + (k === 1 ? ' parado com a casa' : ' parados com a casa') : '');
-    if(n){ card.classList.add('ct-destaque'); badge.className = 'badge ct-conta'; badge.textContent = String(n); arw.hidden = true; }
-    else { badge.hidden = true; }
+    const n = (d && !d.sem_espelho) ? (d.cliente || []).length : 0;
+    const k = (d && !d.sem_espelho) ? (d.casa || []).length : 0;
+    desc.textContent = !tem ? 'Entre com o seu PIN' : (k ? k + ' com a casa' : 'Falta assinar');
+    badge.hidden = !n; badge.textContent = String(n);
+    agora.hidden = !n;
+    try{ homeSaudar(); }catch(e){}          // o nome da saudação segue a mesma sessão
+    $ct('ctAgoraN').textContent = String(n);
+    $ct('ctAgoraTx').innerHTML = '<b>' + (n === 1 ? 'Contrato' : 'Contratos') + '</b> esperando o seu cliente';
   }
   window.ctPintarCard = ctPintarCard;
 
