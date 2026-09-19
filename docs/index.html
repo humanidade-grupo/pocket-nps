@@ -841,6 +841,54 @@ input.an-plain{padding-left:14px; font-size:16px}
 .tool[hidden]{display:none}   /* o display:flex da .tool vencia o hidden do card sazonal da home */
 .ev-ind{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px}
 
+
+/* ---------- Contratos para assinar (19/09/2026) ----------
+   Duas listas, nunca uma: "com o seu cliente" (é dele cobrar) e "com a casa" (não é).
+   Mockup aprovado: claude.ai/code/artifact/25ZdvSka3jBXwPHYwRwcGy */
+.tool .badge.ct-conta{background:var(--dourado); color:#fff; font-size:12px; letter-spacing:0; padding:3px 9px}
+.tool.ct-destaque{border-color:rgba(204,144,11,.55); box-shadow:0 0 0 3px rgba(253,190,14,.22), var(--shadow)}
+.tool .tx .d b{color:var(--marrom)}
+.ct-carimbo{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin:18px 2px 0}
+.ct-carimbo i{width:8px; height:8px; border-radius:50%; background:var(--ok); flex:0 0 auto}
+.ct-carimbo.velho i{background:var(--warn)}
+.ct-tarja{background:rgba(181,127,10,.13); border:1px solid rgba(181,127,10,.32); color:var(--cta-hover); border-radius:var(--radius-sm); padding:11px 13px; font-size:13px; line-height:1.45; font-weight:600; margin-top:12px}
+.ct-tarja span{display:block; font-weight:500; color:var(--marrom); opacity:.8; margin-top:3px}
+.ct-secao{display:flex; align-items:baseline; justify-content:space-between; margin:22px 2px 0}
+.ct-secao h2{font-size:17px; margin:0}
+.ct-secao .n{font-size:12px; font-weight:700; color:var(--muted)}
+.ct-secao-nota{font-size:12px; color:var(--muted); margin:2px 2px 0}
+.ct-pend{padding:14px 15px}
+.ct-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+.ct-jazigo{font-size:10.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted)}
+.ct-cliente{font-family:"PF Marlet Display","Playfair Display",serif; font-size:19px; font-weight:700; line-height:1.15; margin:2px 0 0; overflow-wrap:anywhere}
+.ct-relogio{text-align:right; flex:0 0 auto; max-width:92px}
+.ct-relogio b{display:block; font-family:"PF Marlet Display","Playfair Display",serif; font-size:26px; line-height:1; font-variant-numeric:tabular-nums}
+.ct-relogio span{display:block; font-size:10.5px; color:var(--muted); letter-spacing:.3px; line-height:1.3; margin-top:2px}
+.ct-relogio.quente b{color:var(--danger)}
+.ct-relogio.morno b{color:var(--warn)}
+.ct-signs{display:flex; flex-wrap:wrap; gap:6px; margin-top:11px}
+.ct-sg{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:4px 9px 4px 7px; border-radius:20px; background:rgba(181,127,10,.15); color:var(--cta-hover)}
+.ct-sg::before{content:""; width:7px; height:7px; border-radius:50%; border:1.5px solid currentColor}
+.ct-sg.ok{background:rgba(78,122,62,.13); color:var(--ok)}
+.ct-sg.ok::before{background:currentColor}
+.ct-btn{display:block; margin-top:13px; border-radius:11px; padding:12px 10px; font-weight:700; font-size:14px; text-align:center; background:var(--dourado); color:#fff; text-decoration:none}
+.ct-btn:active{background:var(--cta-hover)}
+.ct-meta{font-size:11.5px; color:var(--muted); margin-top:9px}
+.ct-casa{background:#EFEEE6; box-shadow:none}
+.ct-casa .ct-cliente{font-size:17px}
+.ct-alivio{font-size:12.5px; color:var(--verde-2); font-weight:600; margin-top:10px}
+.ct-alivio.neutro{color:var(--muted)}
+.ct-assinados{padding:6px 15px}
+.ct-as{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px}
+.ct-as:last-child{border-bottom:0}
+.ct-as b{font-weight:600; overflow-wrap:anywhere}
+.ct-as span{color:var(--muted); font-size:12px; white-space:nowrap}
+.ct-as .ck{color:var(--ok); font-weight:700; margin-right:4px}
+.ct-vazio{text-align:center; padding:24px 18px}
+.ct-vazio .ok{width:44px; height:44px; margin:0 auto; border-radius:50%; display:grid; place-items:center; background:rgba(78,122,62,.14); color:var(--ok); font-size:21px; font-weight:700}
+.ct-vazio h3{font-family:"PF Marlet Display","Playfair Display",serif; font-size:18px; margin:12px 0 4px}
+.ct-vazio p{font-size:13px; color:var(--muted); margin:0}
+.ct-rodape{font-size:11.5px; color:var(--muted); margin:18px 4px 0; padding-top:12px; border-top:1px dashed var(--border-strong)}
 </style>
 </head>
 <body>
@@ -902,6 +950,15 @@ input.an-plain{padding-left:14px; font-size:16px}
         <span class="arw">&rsaquo;</span>
       </button>
 
+      <!-- Contratos para assinar (19/09): a contagem é só do que é do vendedor cobrar (com o cliente).
+           Sem sessão neste aparelho, o card existe mas não mostra número — sem PIN a rota não sabe de quem é. -->
+      <button class="tool" data-go="contratos" id="ctCardHome">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><path d="M8.5 16.5c1.2-1.6 2-1.6 2.6-.4.5 1 1.2 1 2-.2.6-.8 1.3-.9 2.4-.1"/></svg></span>
+        <span class="tx"><span class="t">Contratos para assinar</span><span class="d" id="ctCardDesc">Entre com o seu PIN para ver os contratos das suas vendas.</span></span>
+        <span class="badge" id="ctCardBadge">Novo</span>
+        <span class="arw" id="ctCardArw">&rsaquo;</span>
+      </button>
+
       <button class="tool" data-go="sim">
         <span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="10.5" y2="11"/><line x1="13.5" y1="11" x2="16" y2="11"/><line x1="8" y1="14.5" x2="10.5" y2="14.5"/><line x1="13.5" y1="14.5" x2="16" y2="14.5"/><line x1="8" y1="18" x2="10.5" y2="18"/></svg></span>
         <span class="tx"><span class="t">Simulador de Financiamento</span><span class="d">Monte a proposta de jazigo na hora — boleto, cartão ou à vista.</span></span>
@@ -946,7 +1003,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <footer>
       <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
       <div class="inst">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
-      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 16/09/2026 · 17:50</div>
+      <div class="inst" id="deployStamp" style="margin-top:6px; opacity:.7">Atualizado em 19/09/2026 · 14:44</div>
     </footer>
   </main>
 </section>
@@ -1781,6 +1838,62 @@ input.an-plain{padding-left:14px; font-size:16px}
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
     <div class="inst">O app não envia mensagem sozinho. Quem fala é você, do seu número.</div>
+  </footer>
+</main>
+</section>
+
+<!-- ==================== CONTRATOS PARA ASSINAR (19/09/2026) ==================== -->
+<section class="view" id="view-contratos">
+<header>
+  <div class="deco"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="841.2131" height="910.218" viewBox="0 0 841.2131 910.218">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M539.3936 84.74298H1380.6067V994.961H539.3936Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M0 1080H1920V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,450.565,8)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0 39.455-2.633C61.893-4.131 83.315-5.447 105.486-10.131 111.29-11.357 166.219-41.418 157.827-61.496L146.269-89.144C131.02-125.624 102.772-162.096 129.505-198.98 136.188-208.201 141.169-221.389 151.2-227.426 165.82-236.224 185.306-239.266 202.379-239.124 227.095-238.918 249.814-240.622 273.885-244.55 311.902-250.754 301.477-273.252 327.468-281.478 346.204-287.407 363.741-291.099 382.648-298.884 350.667-299.915 332.522-290.925 300.013-303.691 257.192-320.506 220.098-328.385 182.035-354.84 177.871-360.255 178.284-369.867 177.167-376.312 169.849-418.538 190.961-439.82 222.392-462.144 237.094-472.586 251.073-483.241 264.88-494.492 273.333-501.38 274.309-510.595 273.047-520.843 270.195-544.003 265.849-565.771 260.744-588.691 254.373-617.292 223.033-658.015 205.757-682.235L148.385-762.668C114.531-810.131 46.061-872.147-7.337-893.475-9.198-894.218-13.887-894.002-13.65-893.067-13.415-892.139-12.861-889.431-12.266-888.562L18.183-844.164C39.188-813.535 67.443-720.838 80.434-681.673L92.654-644.832C96.349-633.693 101.356-623.503 106.007-612.557 109.763-603.717 107.718-592.309 118.558-586.37 114.525-576.881 111.718-568.263 107.249-559.243 95.11-534.739 64.168-510.128 45.543-488.538 33.208-474.239 15.298-438.638 8.667-420.308 7.029-415.779 1.862-410.643-4.443-412.774-26.31-420.163-50.823-420.37-72.801-429.176L-408.043-595.624C-419.411-601.268-429.321-605.469-442.565-607.204-432.425-595.965-421.025-586.917-407.767-580.269L-300.965-526.711C-295.829-524.135-289.703-520.776-285.378-517.485L-225.259-471.73C-251.787-478.146-274.937-483.541-298.41-492.729L-382.242-525.545C-392.651-529.619-402.372-533.223-415.031-532.096-399.52-518.871-382.099-511.863-363.619-504.17L-180.964-428.141C-156.325-417.885-134.406-404.577-111.419-391.26-79.046-372.504-50.426-349.557-25.492-322.018-13.253-308.5-24.651-276.461-24.868-268.069L-25.665-237.32C-26.092-220.837-23.532-202.922-18.587-187.216L.804-125.621-4.837-99.897C-15.247-101.327-19.566-94.486-26.155-91.343L-52.34-78.85C-66.665-72.016-81.418-67.622-96.66-63.116-109.996-59.174-122.582-53.707-136.214-50.758-154.613-46.778-173.118-44.396-191.986-43.043-207.544-41.927-221.81-45.471-239.071-42.484-185.262-15.717-127.614-5.808-69.832 0H0Z"/>
+</g>
+</g>
+</svg>
+</div>
+  <div class="hwrap">
+    <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
+    <div class="brandrow" style="margin-top:12px">
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    </div>
+    <span class="apptag">Pocket NPS · Contratos</span>
+    <h1>Contratos para assinar</h1>
+    <p class="lead">O contrato só vale assinado. Cobre o seu cliente; o que está com a casa, a casa resolve.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="cart-aviso" id="ctAviso" style="margin-top:14px"></div>
+
+  <!-- Portão: o PIN da Carteira. Quem é o vendedor sai da sessão, no servidor — nunca de uma seleção aqui. -->
+  <div id="ctGate" hidden>
+    <section class="card">
+      <p style="margin:0 0 12px; font-size:14.5px; line-height:1.5">Entre com o seu PIN para ver os contratos das suas vendas.</p>
+      <button class="cart-btn" id="ctBtnPin" type="button">Entrar com meu PIN</button>
+      <p class="fieldnote">É o mesmo PIN da Carteira do Dia. Depois de entrar, o app volta para cá.</p>
+    </section>
+  </div>
+
+  <div id="ctCorpo" hidden>
+    <div class="ct-carimbo" id="ctCarimbo"><i></i><span>Conferindo…</span></div>
+    <div class="ct-tarja" id="ctTarja" hidden></div>
+    <div id="ctListas"></div>
+    <div style="margin-top:18px"><button class="cart-btn sec" id="ctBtnRecarregar" type="button">Conferir de novo</button></div>
+  </div>
+
+  <footer>
+    <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
+    <div class="inst">A situação dos contratos vem da D4Sign uma vez por dia. O botão abre o negócio no Facilita.</div>
   </footer>
 </main>
 </section>
@@ -3176,6 +3289,8 @@ function go(view, push){
   if(view==='carteira' && typeof cartAoEntrar==='function') cartAoEntrar();
   if(view==='anuncio' && typeof anAoEntrar==='function') anAoEntrar();
   if(view==='evento' && typeof evAoEntrar==='function') evAoEntrar();
+  if(view==='contratos' && typeof ctAoEntrar==='function') ctAoEntrar();
+  if(view==='home' && typeof ctPintarCard==='function') ctPintarCard();
   if(view==='sim') estBuscar();
   if(push!==false){ try{ history.pushState({view}, '', '#'+view); }catch(e){} }
 }
@@ -3986,6 +4101,9 @@ async function cartEntrar(){
     // portão da tela #evento volta para lá — o PIN foi digitado para cadastrar.
     try{ if(window.evento50SubirFila) window.evento50SubirFila(); }catch(e){}
     try{ if(sessionStorage.getItem('evento50_voltar')){ sessionStorage.removeItem('evento50_voltar'); go('evento'); } }catch(e){}
+    // Contratos para assinar: o card da home ganha o número com o token novo; quem veio do portão volta para a tela.
+    try{ if(window.ctBuscar) window.ctBuscar(); }catch(e){}
+    try{ if(sessionStorage.getItem('contratos_voltar')){ sessionStorage.removeItem('contratos_voltar'); go('contratos'); } }catch(e){}
   }catch(e){
     cartAvisar('cart-erro-login', e.message === 'sem_url'
       ? 'A carteira ainda não está conectada ao servidor.'
@@ -5196,6 +5314,211 @@ function cartConcluir(texto){
   if(evFila.length) evSubirFila();                 // sobrou fila da sessão anterior
 })();
 
+// ==================== CONTRATOS PARA ASSINAR (19/09/2026) ====================
+// O vendedor vê os contratos das vendas DELE que ainda faltam assinar na D4Sign, em DUAS listas:
+// "com o seu cliente" (é dele cobrar) e "com a casa" (não é — cliente já assinou, ou o contrato
+// ainda não foi enviado). Cobrar um cliente que já assinou queima a tela na primeira vez.
+// Backend: ação contratos_meus no Cofre (ContratosPocket.gs), portão = sessão do PIN da Carteira.
+// A fonte é a passada diária da D4Sign (status.py, 8h no PC do Ricardo): o carimbo fica sempre à
+// vista, e passada que não é de hoje ganha tarja — senão o vendedor cobra assinatura de ontem.
+(function(){
+  const $ct = id => document.getElementById(id);
+  const CT_K = 'contratos_ultimo';     // última resposta, por aparelho: o card da home nasce com número
+  const CT_FACILITA = 'https://estrelaurbanidade.facilitavendas.com/vendas/negocios/';
+  const CT_SESSAO_MORTA = ['TOKEN_INVALIDO','VENDEDOR_INATIVO'];
+  let ctDados = null, ctBuscando = false, ctErro = '';
+
+  const ctEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function ctSessao(){ try{ return JSON.parse(localStorage.getItem('carteira_sessao')||'null'); }catch(e){ return null; } }
+  function ctLerCache(vend){
+    try{ const c = JSON.parse(localStorage.getItem(CT_K)||'null'); return (c && c.vendedor === vend) ? c : null; }catch(e){ return null; }
+  }
+  function ctGravarCache(d){ try{ d ? localStorage.setItem(CT_K, JSON.stringify(d)) : localStorage.removeItem(CT_K); }catch(e){} }
+  function ctNome(n){ try{ return cartNomeBonito(n) || '(sem nome)'; }catch(e){ return n || '(sem nome)'; } }
+  function ctHoje(){ try{ return escHojeISO(); }catch(e){ return ''; } }
+  function ctDataBR(iso){ const m = String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '/' + m[2] : ''; }
+  function ctOntem(){ const d = new Date(); d.setDate(d.getDate() - 1);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  const ctPlural = (n, um, varios) => n + ' ' + (n === 1 ? um : varios);
+
+  // ---- carimbo da passada ----
+  function ctPassadaDeHoje(d){ const c = String((d && d.passada && d.passada.carimbo) || ''); return !!c && c.slice(0,10) === ctHoje(); }
+  function ctCarimboTxt(c){
+    c = String(c || '');
+    if(!c) return 'A D4Sign ainda não foi conferida.';
+    const dia = c.slice(0,10), hora = c.slice(11,16);
+    const quando = dia === ctHoje() ? 'hoje' : dia === ctOntem() ? 'ontem' : 'em ' + ctDataBR(dia);
+    return 'Conferido na D4Sign ' + quando + (hora ? ' às ' + hora : '');
+  }
+
+  // ---- uma linha ----
+  function ctRelogio(n, rotulo){
+    if(n === null || n === undefined) return '<div class="ct-relogio"><b>—</b><span>' + rotulo + '</span></div>';
+    if(n === 0) return '<div class="ct-relogio"><b style="font-size:19px">Hoje</b><span>' + (rotulo === 'desde o envio' ? 'enviado' : 'cadastrado') + '</span></div>';
+    const cls = n >= 7 ? ' quente' : n >= 3 ? ' morno' : '';
+    return '<div class="ct-relogio' + cls + '"><b>' + n + '</b><span>' + (n === 1 ? 'dia ' : 'dias ') + rotulo + '</span></div>';
+  }
+  function ctRotuloPessoa(p){ return p === 'CLIENTE' ? 'Cliente' : p === 'TESTEMUNHA' ? 'Testemunha' : p; }
+  function ctChips(it, clienteAssinou){
+    const falta = (it.falta || []).map(p => '<span class="ct-sg">' + ctEsc(ctRotuloPessoa(p)) + '</span>').join('');
+    return '<div class="ct-signs">' + (clienteAssinou ? '<span class="ct-sg ok">Cliente</span>' : '') + falta + '</div>';
+  }
+  function ctTopo(it, rotuloDias){
+    return '<div class="ct-top"><div><div class="ct-jazigo">' + ctEsc(it.rotulo) +
+      (it.modalidade && !/^reserva$/i.test(it.modalidade) ? ' · ' + ctEsc(it.modalidade) : '') + '</div>' +
+      '<p class="ct-cliente">' + ctEsc(ctNome(it.cliente)) + '</p></div>' + ctRelogio(it.dias, rotuloDias) + '</div>';
+  }
+  function ctLinhaCliente(it){
+    return '<div class="card ct-pend">' + ctTopo(it, 'desde o envio') + ctChips(it, false) +
+      '<a class="ct-btn" href="' + CT_FACILITA + encodeURIComponent(it.deal) + '" target="_blank" rel="noopener">Abrir o negócio no Facilita</a>' +
+      '<div class="ct-meta">Enviado para assinatura em ' + ctEsc(ctDataBR(it.cadastro) || '—') + ' · ' +
+      it.assinadas + ' de ' + it.total + ' assinaturas</div></div>';
+  }
+  function ctLinhaCasa(it){
+    if(!it.enviado){
+      const txt = it.fase === 'EDITANDO' ? 'O contrato ainda está sendo preparado na D4Sign.'
+                                        : 'O contrato está na D4Sign, mas ainda não foi enviado para assinatura.';
+      return '<div class="card ct-pend ct-casa">' + ctTopo(it, 'desde o cadastro') +
+        '<div class="ct-alivio neutro">' + txt + '</div></div>';
+    }
+    const n = (it.falta || []).length;
+    const txt = n ? '✓ Seu cliente assinou. ' + (n === 1 ? 'Falta 1 assinatura da casa.' : 'Faltam ' + n + ' assinaturas da casa.')
+                  : '✓ Seu cliente assinou.';
+    return '<div class="card ct-pend ct-casa">' + ctTopo(it, 'desde o envio') + ctChips(it, true) +
+      '<div class="ct-alivio">' + txt + '</div></div>';
+  }
+  function ctLevou(n){ return n === null || n === undefined ? '' : n === 0 ? 'levou menos de 1 dia' : 'levou ' + ctPlural(n, 'dia', 'dias'); }
+
+  // ---- a tela ----
+  function ctPintar(){
+    const s = ctSessao(), tem = !!(s && s.token);
+    $ct('ctGate').hidden = tem;
+    $ct('ctCorpo').hidden = !tem;
+    const av = $ct('ctAviso');
+    av.textContent = ctErro || '';
+    av.className = 'cart-aviso' + (ctErro ? ' on erro' : '');
+    if(!tem) return;
+
+    const d = ctDados;
+    const car = $ct('ctCarimbo');
+    if(!d){
+      car.className = 'ct-carimbo';
+      car.innerHTML = '<i></i><span>' + (ctBuscando ? 'Conferindo os seus contratos…' : 'Ainda sem resposta do servidor.') + '</span>';
+      $ct('ctTarja').hidden = true;
+      $ct('ctListas').innerHTML = '';
+      return;
+    }
+    const deHoje = ctPassadaDeHoje(d);
+    car.className = 'ct-carimbo' + (deHoje ? '' : ' velho');
+    car.innerHTML = '<i></i><span>' + ctEsc(ctCarimboTxt(d.passada && d.passada.carimbo)) + (ctBuscando ? ' · atualizando…' : '') + '</span>';
+    const tarja = $ct('ctTarja');
+    tarja.hidden = deHoje || !!d.sem_espelho;
+    if(!deHoje) tarja.innerHTML = 'A última conferência na D4Sign não é de hoje.<span>Alguém pode ter assinado depois disso. Antes de ligar, confira no Facilita.</span>';
+
+    if(d.sem_espelho){
+      $ct('ctListas').innerHTML = '<div class="card ct-vazio"><h3>A D4Sign ainda não foi conferida</h3><p>Assim que a primeira conferência rodar, os seus contratos aparecem aqui.</p></div>';
+      return;
+    }
+    const cli = d.cliente || [], casa = d.casa || [], ass = d.assinados || [];
+    let h = '<div class="ct-secao"><h2>Com o seu cliente</h2><span class="n">' + cli.length + '</span></div>';
+    if(cli.length){
+      h += '<p class="ct-secao-nota">Falta a assinatura dele. Do mais antigo para o mais novo.</p>' + cli.map(ctLinhaCliente).join('');
+    } else {
+      h += '<div class="card ct-vazio"><div class="ok">✓</div><h3>Nenhum contrato esperando o seu cliente</h3>' +
+           '<p>Nenhuma venda sua está parada na assinatura do cliente.</p></div>';
+    }
+    if(casa.length){
+      h += '<div class="ct-secao"><h2>Com a casa</h2><span class="n">' + casa.length + '</span></div>' +
+           '<p class="ct-secao-nota">Não depende do seu cliente. Não precisa ligar.</p>' + casa.map(ctLinhaCasa).join('');
+    }
+    if(ass.length){
+      h += '<div class="ct-secao"><h2>Assinados na semana</h2><span class="n">' + ass.length + '</span></div>' +
+           '<div class="card ct-assinados">' + ass.map(it =>
+             '<div class="ct-as"><b><span class="ck">✓</span>' + ctEsc(it.rotulo) + ' · ' + ctEsc(ctNome(it.cliente)) + '</b><span>' + ctEsc(ctLevou(it.levou)) + '</span></div>'
+           ).join('') + '</div>';
+    }
+    const fora = (d.contagem && d.contagem.fora_do_alcance) || 0;
+    if(fora && d.corte){
+      h += '<p class="ct-rodape">' + (fora === 1 ? '1 venda sua é anterior' : fora + ' vendas suas são anteriores') + ' a ' + ctEsc(ctDataBR(d.corte)) +
+           ', quando o espelho da D4Sign começou. ' + (fora === 1 ? 'Ela não aparece' : 'Elas não aparecem') + ' aqui — não quer dizer que ' +
+           (fora === 1 ? 'esteja' : 'estejam') + ' sem contrato.</p>';
+    }
+    $ct('ctListas').innerHTML = h;
+  }
+
+  // ---- o card da home ----
+  function ctPintarCard(){
+    const card = $ct('ctCardHome'); if(!card) return;
+    const s = ctSessao(), tem = !!(s && s.token);
+    const d = tem ? (ctDados || ctLerCache(s.vendedor)) : null;
+    const desc = $ct('ctCardDesc'), badge = $ct('ctCardBadge'), arw = $ct('ctCardArw');
+    card.classList.remove('ct-destaque');
+    badge.className = 'badge'; badge.textContent = 'Novo'; badge.hidden = false; arw.hidden = false;
+    if(!tem){ desc.textContent = 'Entre com o seu PIN para ver os contratos das suas vendas.'; return; }
+    if(!d || d.sem_espelho){ desc.textContent = 'Os contratos das suas vendas que ainda faltam assinar.'; return; }
+    const n = (d.cliente || []).length, k = (d.casa || []).length;
+    desc.innerHTML = (n ? '<b>' + ctPlural(n, 'esperando o seu cliente', 'esperando o seu cliente') + '</b>' : 'Nenhum esperando o seu cliente') +
+                     (k ? ' · ' + k + (k === 1 ? ' parado com a casa' : ' parados com a casa') : '');
+    if(n){ card.classList.add('ct-destaque'); badge.className = 'badge ct-conta'; badge.textContent = String(n); arw.hidden = true; }
+    else { badge.hidden = true; }
+  }
+  window.ctPintarCard = ctPintarCard;
+
+  // ---- a busca ----
+  async function ctBuscar(){
+    const s = ctSessao();
+    if(!s || !s.token || ctBuscando) { ctPintarCard(); return; }
+    ctBuscando = true; ctPintar();
+    try{
+      const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+      const timer = ctl ? setTimeout(() => ctl.abort(), 25000) : null;
+      let j;
+      try{
+        // sem Content-Type de propósito: header customizado dispara preflight que o GAS não responde
+        const r = await fetch(CARTEIRA_API, { method:'POST', signal: ctl ? ctl.signal : undefined,
+          body: JSON.stringify({ acao:'contratos_meus', token: s.token }) });
+        j = await r.json();
+      } finally { if(timer) clearTimeout(timer); }
+      if(j && j.ok === true){
+        ctDados = j; ctErro = ''; ctGravarCache(j);
+      } else if(j && CT_SESSAO_MORTA.indexOf(String(j.erro || '')) >= 0){
+        ctDados = null; ctGravarCache(null);
+        ctErro = j.msg || 'Sua sessão expirou. Entre de novo com o seu PIN.';
+        try{ cartSessaoCaiu(ctErro); }catch(e){ try{ localStorage.removeItem('carteira_sessao'); }catch(_){} }
+      } else {
+        ctErro = 'O servidor não respondeu direito agora' + ((j && j.msg) ? ' (' + j.msg + ')' : '') + '.' + (ctDados ? ' A lista abaixo é a da última conferência.' : '');
+      }
+    }catch(e){
+      ctErro = 'Sem conexão com o servidor.' + (ctDados ? ' A lista abaixo é a da última conferência.' : ' Tente de novo em instantes.');
+    }finally{
+      ctBuscando = false;
+      ctPintar(); ctPintarCard();
+    }
+  }
+  window.ctBuscar = ctBuscar;
+
+  // ---- entrada na tela ----
+  function ctAoEntrar(){
+    const s = ctSessao();
+    if(s && s.token && !ctDados) ctDados = ctLerCache(s.vendedor);
+    if(!(s && s.token)) ctDados = null;
+    ctPintar();
+    ctBuscar();
+  }
+  window.ctAoEntrar = ctAoEntrar;
+
+  $ct('ctBtnPin').addEventListener('click', () => {
+    try{ sessionStorage.setItem('contratos_voltar', '1'); }catch(e){}
+    ctErro = '';
+    go('carteira');
+  });
+  $ct('ctBtnRecarregar').addEventListener('click', ctBuscar);
+
+  // Uma busca por abertura do app: o card da home nasce da cópia do aparelho e se corrige sozinho.
+  ctPintarCard();
+  ctBuscar();
+})();
+
 // ==================== ROTA INICIAL POR HASH ====================
 // Roda no FIM do script de propósito. Quando isto ficava lá em cima, junto do
 // router, abrir o app em #carteira (ou #escala) chamava go() antes de as
@@ -5207,7 +5530,7 @@ function cartConcluir(texto){
 // Se mudar de lugar, tem que continuar depois da última declaração do arquivo.
 (function rotaInicial(){
   var rotas = { '#sim':'sim', '#escala':'escala', '#tabelas':'tabelas', '#faq':'faq',
-                '#carteira':'carteira', '#anuncio':'anuncio', '#evento':'evento', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
+                '#carteira':'carteira', '#anuncio':'anuncio', '#evento':'evento', '#contratos':'contratos', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
   var destino = rotas[location.hash];
   if(!destino) return;
   try{
