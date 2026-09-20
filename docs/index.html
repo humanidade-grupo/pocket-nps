@@ -4272,14 +4272,19 @@ function cartConcluir(texto){
 // vencimento, origem e quem vendeu.
 // Origem do lead ("o que trouxe o cliente") e Chegou por ("por onde ele falou")
 // são DOIS campos e viram DUAS colunas no Cofre (origem · entrada) — não fundir.
-// Os 13 rótulos de origem espelham o CRM Facilita CARACTERE A CARACTERE: o
+// Os 15 rótulos de origem espelham o CRM Facilita CARACTERE A CARACTERE: o
 // cruzamento anúncio × CRM compara texto com texto, e qualquer diferença quebra
 // a conferência sem gerar erro nenhum. Não "melhorar" os rótulos.
+// (20/09) 13 -> 15: `Disparo WhatsApp` e `Email Marketing`, grupo D (comunicação
+// ativa), entre "Visita ao Parque" e "Indicação". Existem no Facilita desde 16/09
+// (ids 74 e 75). As duas pedem o subcampo "Qual"; NÃO entram em anDetObrig() — o
+// mínimo de 40 caracteres continua só em Google/Site, Outro e Ligação. Nenhuma
+// combinação delas com as portas é improvável, então a AN_MATRIZ não muda.
 (function(){
   // Sem "Não informado" de propósito: quem não sabe usa "Outro" e escreve o que houve.
-  const AN_ORIGENS = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Indicação','Já é cliente','Outro'];
-  const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
-  const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco'};
+  const AN_ORIGENS = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
+  const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
+  const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
   // "WhatsApp do Parque" e não "WhatsApp (SATI)": SATI é nome de plataforma,
   // vocabulário interno que o vendedor não conhece. Este campo não espelha o
   // CRM (a porta não existe no Facilita), então renomear aqui é seguro.
@@ -4343,6 +4348,8 @@ function cartConcluir(texto){
     'Evento':'Conheceu a gente num evento. Diga qual.',
     'PDV Jardim Norte':'Passou no shopping e viu o quiosque, sem ter visto nada antes. Se viu um outdoor e por isso foi lá, a origem é o outdoor.',
     'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
+    'Disparo WhatsApp':'A mensagem que o Parque mandou. Não confundir com a porta WhatsApp do Parque — a porta é por onde ele falou; esta é o que o fez agir. Diga qual disparo.',
+    'Email Marketing':'E-mail enviado pelo Parque. Diga qual campanha.',
     'Indicação':'Alguém falou da gente para ele. Diga quem.',
     'Já é cliente':'Ele ou a família já compraram aqui.',
     'Outro':"Só quando nada acima descreve. Se 'Outro' virar hábito, o dado morre."
@@ -4955,9 +4962,9 @@ function cartConcluir(texto){
   // Facilita caractere a caractere, com o mesmo detalhe e o mesmo texto de apoio. Cópia das
   // constantes AN_ORIGENS / AN_ORIGEM_SUB / AN_SUB_PH / AN_ORIGEM_APOIO, que vivem na IIFE do
   // anúncio e não são alcançáveis daqui. Mudou lá, muda aqui (e no Evento50.gs e no form).
-  const EV_COMO_SOUBE = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Indicação','Já é cliente','Outro'];
-  const EV_COMO_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
-  const EV_COMO_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco'};
+  const EV_COMO_SOUBE = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
+  const EV_COMO_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
+  const EV_COMO_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
   const EV_COMO_APOIO = {
     'Google / Site':'Ele pesquisou e achou a gente, ou clicou num anúncio do Google. O site em si não é origem — é destino.',
     'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook.',
@@ -4969,6 +4976,8 @@ function cartConcluir(texto){
     'Evento':'Conheceu a gente num evento. Diga qual.',
     'PDV Jardim Norte':'Passou no shopping e viu o quiosque, sem ter visto nada antes. Se viu um outdoor e por isso foi lá, a origem é o outdoor.',
     'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
+    'Disparo WhatsApp':'A mensagem que o Parque mandou. Não confundir com a porta WhatsApp do Parque — a porta é por onde ele falou; esta é o que o fez agir. Diga qual disparo.',
+    'Email Marketing':'E-mail enviado pelo Parque. Diga qual campanha.',
     'Indicação':'Alguém falou da gente para ele. Diga quem.',
     'Já é cliente':'Ele ou a família já compraram aqui.',
     'Outro':"Só quando nada acima descreve. Se 'Outro' virar hábito, o dado morre."
