@@ -1,7 +1,17 @@
 /* Pocket NPS — Parque da Saudade
 Service worker: offline + instalação PWA.
 Gerado em: 14/08/2026 17:10
-Alterações: Rev. 19/09/2026 15:08 — só bump de cache (home numa tela só: cabeçalho
+Alterações: Rev. 22/09/2026 17:00 — bump de cache de DUAS entregas que nasceram na mesma
+tarde, em duas sessões, no mesmo index.html. Um bump só serve para as duas: se cada uma
+bumpasse, a segunda sobrescreveria a primeira e a equipe poderia receber metade.
+(1) Campanha 50 Anos encerrada em 20/09 — sobra o saldo do Lote 50 na M-19 até 27/09,
+pela Config do Cofre; venda de retomada SUSPENSA — a quadra sai da barra de estoque, do
+Simulador e do Anúncio, e fica com aviso na Tabela de Preços e no FAQ; o card do Evento
+50 Anos sai da home; o botão "À vista" passa a dizer "somente Pix".
+(2) Tela nova Gestão da Carteira (#carteira-gestao), atrás do PIN de gestão: subir
+mailing, dividir entre a equipe e acompanhar. Ela carrega SheetJS sob demanda, de
+propósito fora do CORE deste cache.
+Rev. 19/09/2026 15:08 — só bump de cache (home numa tela só: cabeçalho
 compacto, faixa "Agora" e grade de 2 colunas; sai o card "IQ de Venda — Em breve").
 Rev. 19/09/2026 14:44 — só bump de cache (tela nova Contratos para
 assinar, #contratos: duas listas — com o seu cliente × com a casa —, portão do PIN
@@ -78,7 +88,7 @@ fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-260920-2';
+const CACHE = 'pocket-nps-260922-1700';
 
 const CORE = [
 './',

@@ -4,6 +4,30 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 22/09/2026 (Ricardo) — CAMPANHA 50 ANOS ENCERRADA, RETOMADA SUSPENSA, À VISTA
+       É PIX. A campanha acabou em 20/09; do escopo sobra só o SALDO dos 50 jazigos do
+       Lote 50 Anos na M-19, aberto para repescagem de quem visitou o Parque no dia 20,
+       até 27/09 (fechamento 30/09). M-21 e Retomadas saíram, e não voltam. Nada disso
+       está escrito aqui: a regra vive nas chaves campanha.* da Config do Cofre, lida
+       pela rota ?app=campanha&fn=vigente — esta linha é só o registro da decisão.
+       No app: (1) o card "Evento 50 Anos" saiu da faixa "Agora" da home — o evento foi
+       em 20/09; a tela #evento e a fila offline continuam, sem porta. (2) VENDA DE
+       RETOMADA SUSPENSA: a quadra saiu da barra de estoque da home, do seletor do
+       Simulador (QUADRAS_ORDEM) e do Anúncio de Venda, e saiu da chave
+       estoque.quadras_publicas da Config. Tirar só da Config não bastava — quando a
+       rota responde "quadra desconhecida" a barra MANTÉM a cópia guardada no aparelho.
+       O card da Tabela de Preços e a pergunta do FAQ ficam, marcados "venda suspensa":
+       a tabela segue consultável, a venda não. (3) O botão "À vista" dizia "Pix ou
+       cartão 1x" e passa a dizer "somente Pix", com aviso destacado no #blocoAvista.
+       O À VISTA NO CARTÃO SAIU INTEIRO (Ricardo, 22/09): o seletor "Meio (à vista)" some
+       — com uma opção só ele não era escolha, era contradição na mesma tela —, o teto de
+       2% do descTetoMeio() vira 0.03 fixo, e os quatro textos que ofereciam cartão à
+       vista foram corrigidos: a linha das Regras, o rodapé do Simulador e as duas
+       observações da Tabela de Preços (M-19/M-20 e M-21). Cartão agora existe só
+       PARCELADO, até 21x sem juros. state.meioAV fica fixo em 'pix' de propósito: é ele
+       que mantém corretos os rótulos do resumo, do WhatsApp, da carta e do Anúncio sem
+       tocar em nenhum deles. ⚠️ E o seg('#segMeioAV',…) TEVE de sair junto: seg() faz
+       $(id).addEventListener e, sem o elemento, derrubava o app inteiro no carregamento.
      Rev. 25/08/2026 01:05 (Ricardo) — MATRIZ DE COERÊNCIA E O "CONFERE.": as regras
        origem × chegou saíram do meio do anValida() para AN_MATRIZ, objeto único e
        comentado no topo do bloco, em três níveis: 🔴 contradição (Visita ao Parque ×
@@ -803,6 +827,106 @@ header h1, .home-head h1, header p.lead, .home-head p.lead{margin-left:auto; mar
 .cart-kpi b{display:block; font-family:"PF Marlet Display",serif; font-size:22px; line-height:1}
 .cart-kpi span{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; font-weight:700}
 
+/* ---------- Gestão da Carteira (22/09/2026) ---------- */
+/* Só o que a Carteira do vendedor ainda não tinha. card, step, field, fieldnote,
+   lbl, cart-btn, cart-aviso, cart-barra, cart-kpi e cart-chip são reusados como
+   estão — o mockup foi desenhado com as variáveis desta folha, e colar o CSS dele
+   por cima criaria um segundo sistema visual dentro do mesmo app. */
+#view-carteira-gestao [hidden]{display:none!important}
+.cg-tela{display:none}
+.cg-tela.on{display:block; animation:fade .22s ease}
+.cg-selo{position:absolute; right:16px; top:18px; font-size:10px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; background:var(--marrom-2); color:var(--bege); padding:5px 9px; border-radius:20px; z-index:2}
+.cg-passos{display:flex; gap:5px; margin:18px 2px 4px}
+.cg-passos i{flex:1; height:5px; border-radius:9px; background:rgba(66,39,12,.12)}
+.cg-passos i.f{background:var(--dourado)}
+.cg-passos-rot{font-size:11.5px; color:var(--muted); margin:0 2px}
+
+.cg-lista{padding:12px 0; border-top:1px solid var(--border)}
+.cg-lista:first-of-type{border-top:0; padding-top:4px}
+.cg-lista-top{display:flex; justify-content:space-between; gap:10px; align-items:baseline}
+.cg-lista-nome{font-weight:700; font-size:14.5px}
+.cg-pill{font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; padding:3px 8px; border-radius:20px; white-space:nowrap}
+.cg-pill.ativa{background:rgba(103,127,95,.16); color:var(--verde-2)}
+.cg-pill.pausada{background:rgba(181,127,10,.16); color:var(--cta-hover)}
+.cg-pill.encerrada{background:rgba(66,39,12,.10); color:var(--muted)}
+.cg-num{display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.cg-num b{color:var(--marrom)}
+.cg-link{border:0; background:none; color:var(--dourado); font-family:inherit; font-weight:700; font-size:13px; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
+
+.cg-tab{width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; margin-top:8px}
+.cg-tab th{font-size:10px; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); font-weight:700; text-align:right; padding:0 0 6px}
+.cg-tab th:first-child,.cg-tab td:first-child{text-align:left}
+.cg-tab td{padding:8px 0; border-top:1px solid var(--border); text-align:right}
+.cg-tab td:first-child{font-weight:700}
+
+.cg-solta{border:2px dashed var(--border-strong); border-radius:14px; background:#fff; padding:20px 14px; text-align:center; cursor:pointer; width:100%; font-family:inherit; color:var(--marrom)}
+.cg-solta b{display:block; font-size:15px}
+.cg-solta span{font-size:12px; color:var(--muted)}
+.cg-arq{display:flex; align-items:center; gap:11px; background:#fff; border:1.5px solid var(--verde); border-radius:12px; padding:11px 12px}
+.cg-arq .ic{width:34px; height:40px; border-radius:6px; background:rgba(103,127,95,.16); color:var(--verde-2); display:grid; place-items:center; font-size:10px; font-weight:800; flex:0 0 auto}
+.cg-arq b{display:block; font-size:14px; word-break:break-all}
+.cg-arq span{font-size:12px; color:var(--muted)}
+.cg-ou{display:flex; align-items:center; gap:10px; font-size:11px; color:var(--muted); margin:12px 0; text-transform:uppercase; letter-spacing:1px}
+.cg-ou::before,.cg-ou::after{content:""; flex:1; height:1px; background:var(--border)}
+.cg-mapa{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.cg-mapa label{font-weight:500; font-size:11.5px; color:var(--muted)}
+.cg-amostra{margin-top:12px; border:1px solid var(--border); border-radius:12px; overflow:auto; background:#fff; max-height:280px}
+.cg-amostra table{width:100%; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums}
+.cg-amostra th{background:#F1EFE7; text-align:left; font-size:10px; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); padding:7px 10px; position:sticky; top:0}
+.cg-amostra td{padding:7px 10px; border-top:1px solid var(--border)}
+
+.cg-grande{text-align:center; padding:6px 0 4px}
+.cg-grande b{display:block; font-family:"PF Marlet Display",serif; font-size:48px; line-height:1; font-variant-numeric:tabular-nums}
+.cg-grande span{font-size:13px; color:var(--muted)}
+.cg-funil div{display:flex; justify-content:space-between; gap:10px; padding:9px 2px; border-top:1px solid var(--border); font-size:13.5px; font-variant-numeric:tabular-nums}
+.cg-funil div span{color:var(--muted)}
+.cg-funil div.menos b{color:var(--danger)}
+.cg-funil div.total{border-top:2px solid var(--marrom); font-size:15px}
+.cg-funil div.total span{color:var(--marrom); font-weight:700}
+.cg-funil div.total b{color:var(--verde-2); font-size:17px}
+
+.cg-msgv{margin-top:14px}
+.cg-msgv .topo{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+.cg-msgv .topo label{font-size:12.5px; font-weight:700}
+.cg-msgv .topo span{font-size:11.5px; color:var(--muted)}
+.cg-chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+.cg-chipbtn{border:1px solid var(--border-strong); background:#fff; color:var(--marrom); font-family:inherit; font-size:12px; font-weight:700; padding:5px 10px; border-radius:20px; cursor:pointer}
+.cg-previa{margin-top:10px; background:#E7F6DA; border-radius:12px 12px 12px 3px; padding:10px 12px; font-size:13.5px; line-height:1.5; white-space:pre-wrap; color:#1f2a17}
+
+.cg-disp{display:flex; justify-content:space-between; align-items:baseline; gap:10px}
+.cg-disp b{font-family:"PF Marlet Display",serif; font-size:30px; line-height:1; font-variant-numeric:tabular-nums}
+.cg-disp span{font-size:12.5px; color:var(--muted); text-align:right}
+.cg-medidor{height:10px; border-radius:99px; background:rgba(66,39,12,.10); overflow:hidden; margin:12px 0 6px}
+.cg-medidor i{display:block; height:100%; background:var(--dourado); transition:width .2s}
+.cg-medidor i.passou{background:var(--danger)}
+.cg-med-rot{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.cg-med-rot b{color:var(--marrom)}
+.cg-atalhos{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+.cg-mini{width:auto; padding:9px 13px; font-size:13px}
+.cg-vend{display:grid; grid-template-columns:auto 1fr auto; gap:4px 10px; align-items:center; padding:12px 0; border-top:1px solid var(--border)}
+.cg-vend:first-of-type{border-top:0}
+.cg-vend input[type=checkbox]{width:20px; height:20px; accent-color:var(--dourado)}
+.cg-vend .nm{font-weight:700; font-size:15px}
+.cg-vend .sub{grid-column:2 / 4; font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+.cg-vend.fora .nm,.cg-vend.fora .sub{opacity:.45}
+.cg-stepper{display:flex; align-items:center; border:1.5px solid var(--border-strong); border-radius:12px; background:#fff; overflow:hidden}
+.cg-stepper button{border:0; background:transparent; width:36px; height:40px; font-family:inherit; font-size:19px; font-weight:700; color:var(--marrom); cursor:pointer}
+.cg-stepper button:active{background:var(--bege)}
+.cg-stepper input{width:54px; border:0; text-align:center; font-family:inherit; font-size:16px; font-weight:800; color:var(--marrom); font-variant-numeric:tabular-nums; outline:none; background:transparent}
+.cg-stepper.off{opacity:.4; pointer-events:none}
+.cg-ritmo input{width:38px; border:1px solid var(--border-strong); border-radius:7px; text-align:center; font-family:inherit; font-size:11.5px; font-weight:700; color:var(--marrom); padding:2px 0; background:#fff}
+
+.cg-res{display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-top:1px solid var(--border); font-size:14px; font-variant-numeric:tabular-nums}
+.cg-res:first-child{border-top:0}
+.cg-res span{color:var(--muted)}
+.cg-res b{text-align:right}
+.cg-linha-btn{display:flex; gap:8px; margin-top:14px}
+.cg-linha-btn .cart-btn{flex:1}
+.cg-kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-top:10px}
+.cg-kpis .cart-kpi{padding:11px 4px; text-align:center}
+.cg-kpis .cart-kpi b{font-size:20px}
+.cg-kpis .cart-kpi span{font-size:9.5px}
+
 /* ---------- Anúncio de Venda ---------- */
 /* hidden precisa vencer qualquer display de classe dentro da tela */
 #view-anuncio [hidden]{display:none!important}
@@ -932,8 +1056,8 @@ input.an-plain{padding-left:14px; font-size:16px}
     <div class="hm-ola" id="greet">Bem-vindo</div>
   </div>
   <main class="hm-main">
-    <!-- Barra de estoque: M-19 e Retomada (12/09). Cada grupo nasce escondido: quadra cuja
-         rota nao respondeu (e sem copia no aparelho) simplesmente nao aparece. -->
+    <!-- Barra de estoque: so M-19 (12/09; a Retomada saiu em 22/09, venda suspensa). O grupo
+         nasce escondido: quadra cuja rota nao respondeu (e sem copia no aparelho) nao aparece. -->
     <div id="barraEstoque" class="barra-estoque" hidden aria-live="polite">
       <span class="be-grupo" data-q="M-19" hidden>
         <span class="be-quadra">M-19</span>
@@ -941,20 +1065,14 @@ input.an-plain{padding-left:14px; font-size:16px}
         <span class="be-item"><i class="be-dot be-laranja"></i><b data-c="res">–</b></span>
         <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
       </span>
-      <span class="be-grupo" data-q="Retomada" hidden>
-        <span class="be-quadra">Retomada</span>
-        <span class="be-item"><i class="be-dot be-verde"></i><b data-c="disp">–</b></span>
-        <span class="be-item"><i class="be-dot be-laranja"></i><b data-c="res">–</b></span>
-        <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
-      </span>
     </div>
 
     <!-- "Agora": só o que pede ação. Cada linha nasce escondida; a faixa inteira some quando
-         nenhuma está à mostra (:has). Evento 50 Anos: janela EV_JANELA_CARD no script do evento.
-         Contratos: só quando há contrato esperando o cliente do vendedor da sessão. -->
+         nenhuma está à mostra (:has).
+         Contratos: só quando há contrato esperando o cliente do vendedor da sessão.
+         (22/09) O card do Evento 50 Anos saiu daqui — o evento foi em 20/09. -->
     <div class="hm-agora">
       <button class="hm-l" data-go="contratos" id="ctAgora" hidden><span class="n" id="ctAgoraN">0</span><span class="tx" id="ctAgoraTx">Contratos esperando o seu cliente</span><span class="arw">&rsaquo;</span></button>
-      <button class="hm-l" data-go="evento" id="evCardHome" hidden><span class="n ev">&#9733;</span><span class="tx"><b>Evento 50 Anos</b> — cadastro de visitantes</span><span class="arw">&rsaquo;</span></button>
     </div>
 
     <div class="hm-grade">
@@ -984,7 +1102,7 @@ input.an-plain{padding-left:14px; font-size:16px}
       </button>
     </div>
 
-    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 20/09/2026 · 07:20</span></div>
+    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 22/09/2026 · 17:10</span></div>
   </main>
 </section>
 
@@ -1068,7 +1186,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <div class="step"><span class="n">3</span><h2>Forma de pagamento</h2></div>
     <div class="seg" id="segForma" role="group" aria-label="Forma de pagamento">
       <button data-forma="prazo" aria-pressed="true">A prazo<span class="s" id="formaPrazoHint">até 72x</span></button>
-      <button data-forma="avista" aria-pressed="false">À vista<span class="s">Pix ou cartão 1x</span></button>
+      <button data-forma="avista" aria-pressed="false">À vista<span class="s">somente Pix</span></button>
     </div>
 
     <!-- A PRAZO -->
@@ -1119,15 +1237,14 @@ input.an-plain{padding-left:14px; font-size:16px}
 
     <!-- A VISTA -->
     <div id="blocoAvista" hidden>
-      <div class="field">
-        <label>Meio (à vista)</label>
-        <div class="seg" id="segMeioAV" role="group" aria-label="Meio à vista">
-          <button data-meioav="pix" aria-pressed="true">Pix<span class="s">−3%</span></button>
-          <button data-meioav="cartao" aria-pressed="false">Cartão 1x<span class="s">−2%</span></button>
-        </div>
-        <!-- 18/09: vendedor pôs aqui um cartão em 21x e a proposta saiu com os 20% do à vista. -->
-        <p class="fieldnote">Cartão <b>em 1x</b>. Parcelou no cartão (2x a 21x)? Volte e escolha <b>A prazo › Cartão</b>.</p>
-      </div>
+      <!-- 22/09 (Ricardo): à vista é PIX, e só. O seletor "Meio (à vista)" com Pix × Cartão 1x
+           saiu inteiro daqui — com uma opção só ele não é escolha, é contradição na mesma tela.
+           O aviso reaproveita a caixa .prazojuros.warn do slider de prazo: nenhum CSS novo.
+           state.meioAV continua existindo, fixo em 'pix': é ele que mantém corretos os rótulos
+           do resumo, do WhatsApp, da carta e do Anúncio sem mexer em nenhum deles. -->
+      <div class="prazojuros warn" style="margin-top:0">À vista é <b>somente por Pix</b> — o Parque não recebe à vista no cartão.</div>
+      <!-- 18/09: vendedor pôs um cartão em 21x aqui e a proposta saiu com os 20% do à vista. -->
+      <p class="fieldnote">Cartão, só parcelado. Vai pagar no cartão? Volte e escolha <b>A prazo › Cartão</b> (até 21x sem juros).</p>
     </div>
 
     <!-- Campanha comercial (12/09). Regra, percentuais, datas e escopo vêm da rota pública
@@ -1167,8 +1284,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <div class="rbody">
       <div class="rgrp">
         <h4>Desconto — teto de alçada</h4>
-        <div class="rrow"><span class="rk">À vista no Pix</span><span class="rv">3%</span></div>
-        <div class="rrow"><span class="rk">À vista no cartão de crédito</span><span class="rv">2%</span></div>
+        <div class="rrow"><span class="rk">À vista no Pix <b>(o único à vista)</b></span><span class="rv">3%</span></div>
         <div class="rrow"><span class="rk">Parcelado até 21x (cartão ou boleto)</span><span class="rv">1%</span></div>
         <div class="rrow"><span class="rk">Jazigo na faixa 24–25k · desconto adicional</span><span class="rv">+3%</span></div>
       </div>
@@ -1189,7 +1305,7 @@ input.an-plain{padding-left:14px; font-size:16px}
 
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
-    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: Pix −3% ou cartão −2%. Descontos são tetos e são opcionais; há +3% adicional na faixa 24–25k. Quadra Mista: informar 50% do valor. Jazigo Temporário: 20% do Perpétuo, uso imediato, até 21x sem juros.</div>
+    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: <b>somente Pix</b>, −3% — o Parque não recebe à vista no cartão. Descontos são tetos e são opcionais; há +3% adicional na faixa 24–25k. Quadra Mista: informar 50% do valor. Jazigo Temporário: 20% do Perpétuo, uso imediato, até 21x sem juros.</div>
     <div class="inst" style="margin-top:8px">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
   </footer>
 </main>
@@ -1342,8 +1458,8 @@ input.an-plain{padding-left:14px; font-size:16px}
       <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>
       <span class="tx">
         <span class="t">Retomadas</span>
-        <span class="d">Perpétuo e Temporário &middot; à vista de R$ 27.799 a R$ 23.299.</span>
-        <span class="tabmeta"><span>42 jazigos</span><span>4 faixas</span><span>21x &middot; 72x</span><span>Temp. 20%</span></span>
+        <span class="d"><b>Venda suspensa desde 22/09/2026.</b> A tabela fica aqui para consulta &mdash; não ofereça retomada ao cliente. Perpétuo e Temporário &middot; à vista de R$ 27.799 a R$ 23.299.</span>
+        <span class="tabmeta"><span>venda suspensa</span><span>42 jazigos</span><span>4 faixas</span><span>21x &middot; 72x</span><span>Temp. 20%</span></span>
       </span>
       <span class="arw">&rsaquo;</span>
     </a>
@@ -1352,7 +1468,7 @@ input.an-plain{padding-left:14px; font-size:16px}
   <div class="notecard">
     <div class="lbl">M-19 e M-20 &middot; observações</div>
     <ol>
-      <li><b>Jazigo Perpétuo (uso imediato):</b> à vista via Pix ou cartão, ou parcelado em até 21x sem juros no cartão de crédito.</li>
+      <li><b>Jazigo Perpétuo (uso imediato):</b> à vista <b>somente via Pix</b>, ou parcelado em até 21x sem juros no cartão de crédito.</li>
       <li><b>Jazigo Temporário (uso imediato):</b> mesmas condições. O valor do Uso Temporário corresponde a <b>20%</b> do valor do Uso Perpétuo.</li>
       <li><b>Boleto até 72x (com juros):</b> o jazigo poderá ser utilizado somente após a quitação integral.</li>
     </ol>
@@ -1362,7 +1478,7 @@ input.an-plain{padding-left:14px; font-size:16px}
     <div class="lbl">M-21 (Mista) &middot; observações</div>
     <ol>
       <li><b>Duas etapas:</b> 50% no ato e os 50% restantes na entrega do jazigo, prevista para julho/2027.</li>
-      <li>Os valores da tabela referem-se à <b>1ª etapa</b>, que pode ser paga à vista, via Pix ou cartão, ou parcelada em até 21x sem juros ou 72x com juros. A 2ª etapa é paga na entrega, nas mesmas condições.</li>
+      <li>Os valores da tabela referem-se à <b>1ª etapa</b>, que pode ser paga à vista <b>somente via Pix</b>, ou parcelada em até 21x sem juros ou 72x com juros. A 2ª etapa é paga na entrega, nas mesmas condições.</li>
     </ol>
   </div>
 
@@ -1671,7 +1787,7 @@ input.an-plain{padding-left:14px; font-size:16px}
   <section class="faq-sec">
     <h2><span class="num">14</span>Campanha e quadras</h2>
     <details class="faq"><summary><span class="q">O desconto da campanha soma com o meu desconto?</span><span class="chev">›</span></summary><div class="a"><p><strong>Não.</strong> A campanha substitui o desconto de alçada; os dois não se somam.</p></div></details>
-    <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p></div></details>
+    <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p><p><strong>A venda de retomada está suspensa desde 22/09/2026.</strong> Os jazigos saíram do estoque no Facilita e a quadra saiu do Simulador e do Anúncio de Venda. A tabela de preços continua na tela Tabela de Preços, só para consulta.</p></div></details>
   </section>
   <div class="faq-foot">Material de apoio elaborado a partir do Regulamento Interno v3.0 (julho/2026). Para situações não previstas aqui, consultar a Administração do Parque da Saudade, que resolve os casos omissos com base na legislação aplicável.</div>
 </main>
@@ -1822,6 +1938,243 @@ input.an-plain{padding-left:14px; font-size:16px}
 </main>
 </section>
 
+<!-- ==================== GESTAO DA CARTEIRA (22/09/2026) ====================
+     Atras do PIN de gestao. Quem entra com papel = gestao cai aqui em vez de cair
+     no "Pegar minha lista de hoje" — o login e o mesmo, a porta e que muda.
+     Nao e caminho /gestao/: o sw.js ignora esse caminho de proposito.
+     Sem a .deco das outras telas de proposito: aquele SVG tem 3 KB e esta tela ja
+     carrega SheetJS sob demanda; o gradiente do header sozinho ja identifica. -->
+<section class="view" id="view-carteira-gestao">
+<header>
+  <div class="hwrap">
+    <span class="cg-selo">Gestão</span>
+    <button class="backbtn" id="cg-voltar"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> <span id="cg-voltar-rot">Ferramentas</span></button>
+    <div class="brandrow" style="margin-top:12px">
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    </div>
+    <span class="apptag">Pocket NPS · Carteira</span>
+    <h1 id="cg-titulo">Gestão da Carteira</h1>
+    <p class="lead" id="cg-lead">Suba listas, divida entre a equipe e acompanhe.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ---- painel ---- -->
+  <section class="cg-tela on" id="cg-painel">
+    <div class="cart-aviso" id="cg-erro-painel"></div>
+    <div class="card">
+      <div class="lbl">Listas em andamento</div>
+      <div id="cg-listas" style="margin-top:8px"></div>
+      <div style="margin-top:14px"><button class="cart-btn" id="cg-btn-nova">Subir novo mailing</button></div>
+    </div>
+
+    <div class="card">
+      <div class="lbl">A equipe hoje</div>
+      <table class="cg-tab">
+        <thead><tr><th>Vendedor</th><th>Ritmo/dia</th><th>Hoje</th><th>Na fila</th></tr></thead>
+        <tbody id="cg-equipe"></tbody>
+      </table>
+      <p class="fieldnote"><b>Na fila</b> = leads já entregues a ele e ainda não abordados, somando todas as listas.</p>
+    </div>
+
+    <div style="margin-top:14px"><button class="cart-btn sec" id="cg-btn-carteira">Ver minha carteira do dia</button></div>
+  </section>
+
+  <!-- ---- 1 subir o mailing ---- -->
+  <section class="cg-tela" id="cg-p1">
+    <div class="cg-passos"><i class="f"></i><i></i><i></i><i></i><i></i></div>
+    <div class="cg-passos-rot">1 de 5 · Subir o mailing</div>
+    <div class="card">
+      <div class="step"><span class="n">1</span><h2>Subir o mailing</h2></div>
+      <div class="field" style="margin-top:4px">
+        <label for="cg-nome">Nome da lista</label>
+        <input class="cart-sel" id="cg-nome" maxlength="120" placeholder="Panfletagem Centro · set/26">
+      </div>
+      <p class="fieldnote">É o nome que aparece para o vendedor no card do lead, e o detalhe da origem <b>Disparo WhatsApp</b> quando a venda for anunciada.</p>
+
+      <div class="field">
+        <label>Arquivo</label>
+        <input type="file" id="cg-file" accept=".csv,.xlsx,.xls,text/csv" hidden>
+        <button class="cg-solta" id="cg-solta"><b>Escolher arquivo</b><span>.xlsx ou .csv, exportado da planilha</span></button>
+        <div class="cg-arq" id="cg-arq" hidden>
+          <div class="ic" id="cg-arq-tipo">CSV</div>
+          <div style="flex:1"><b id="cg-arq-nome">—</b><span id="cg-arq-sub"></span></div>
+          <button class="cg-link" id="cg-trocar">Trocar</button>
+        </div>
+      </div>
+
+      <div class="cg-ou">ou</div>
+      <button class="cart-btn sec" id="cg-btn-colar">Colar da planilha</button>
+      <div id="cg-colar-box" hidden>
+        <div class="field">
+          <label for="cg-colar">Cole aqui (uma linha por contato)</label>
+          <textarea class="cart-msg" id="cg-colar" style="min-height:120px" placeholder="Nome&#9;Telefone"></textarea>
+        </div>
+        <button class="cart-btn sec cg-mini" id="cg-colar-usar">Usar o que foi colado</button>
+      </div>
+
+      <div id="cg-mapa-box" hidden>
+        <div class="field">
+          <label>Onde está cada coisa</label>
+          <div class="cg-mapa">
+            <div><label for="cg-col-fone">Telefone</label><select class="cart-sel" id="cg-col-fone"></select></div>
+            <div><label for="cg-col-nome">Nome</label><select class="cart-sel" id="cg-col-nome"></select></div>
+          </div>
+          <p class="fieldnote">O app adivinha pelas palavras do cabeçalho. Você só troca se errar.</p>
+        </div>
+        <div class="cg-amostra">
+          <table><thead><tr><th>Nome</th><th>Telefone</th></tr></thead><tbody id="cg-amostra"></tbody></table>
+        </div>
+      </div>
+
+      <div class="cart-aviso" id="cg-erro-p1" style="margin-top:12px"></div>
+      <div style="margin-top:16px"><button class="cart-btn" id="cg-btn-contar" disabled>Contar leads</button></div>
+    </div>
+  </section>
+
+  <!-- ---- 2 contagem ---- -->
+  <section class="cg-tela" id="cg-p2">
+    <div class="cg-passos"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></div>
+    <div class="cg-passos-rot">2 de 5 · Contagem</div>
+    <div class="card">
+      <div class="cg-grande"><b id="cg-c-total">0</b><span>linhas no arquivo</span></div>
+      <div class="cg-funil" id="cg-funil"></div>
+      <p class="fieldnote">Ninguém é apagado do seu arquivo: os descartados ficam listados com o motivo, para você conferir.</p>
+      <div style="margin-top:10px"><button class="cg-link" id="cg-ver-desc">Ver os descartados</button></div>
+      <div class="cg-amostra" id="cg-descartes" hidden>
+        <table><thead><tr><th>Linha</th><th>Telefone</th><th>Motivo</th></tr></thead><tbody id="cg-desc-corpo"></tbody></table>
+      </div>
+      <div class="cg-linha-btn">
+        <button class="cart-btn sec" data-cg="p1">Voltar</button>
+        <button class="cart-btn" data-cg="p3">Continuar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- 3 mensagem ---- -->
+  <section class="cg-tela" id="cg-p3">
+    <div class="cg-passos"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></div>
+    <div class="cg-passos-rot">3 de 5 · Mensagem</div>
+    <div class="card">
+      <div class="step"><span class="n">3</span><h2>O que o vendedor vai mandar</h2></div>
+      <p class="fieldnote" style="margin-top:0">Vale só para esta lista. Com duas ou três versões, os cinco números não disparam o mesmo texto no mesmo dia.</p>
+      <div id="cg-versoes"></div>
+      <div class="cg-chips">
+        <button class="cg-chipbtn" data-campo="{{nome}}">+ nome do cliente</button>
+        <button class="cg-chipbtn" data-campo="{{vendedor}}">+ nome do vendedor</button>
+        <button class="cg-chipbtn" data-campo="{{saudacao}}">+ bom dia / boa tarde</button>
+        <button class="cg-chipbtn" id="cg-add-v">+ versão 3</button>
+      </div>
+      <p class="fieldnote" id="cg-previa-rot">Como chega no WhatsApp</p>
+      <div class="cg-previa" id="cg-previa"></div>
+      <div class="cart-aviso erro" id="cg-aviso-campo"></div>
+      <div class="cart-aviso" id="cg-aviso-saida"></div>
+      <div class="cg-linha-btn">
+        <button class="cart-btn sec" data-cg="p2">Voltar</button>
+        <button class="cart-btn" id="cg-btn-p4">Continuar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- 4 distribuir ---- -->
+  <section class="cg-tela" id="cg-p4">
+    <div class="cg-passos"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></div>
+    <div class="cg-passos-rot" id="cg-p4-rot">4 de 5 · Distribuir</div>
+    <div class="card">
+      <div class="cg-disp">
+        <div><div class="lbl">Leads para distribuir</div><b id="cg-d-total">0</b></div>
+        <span id="cg-d-nome"></span>
+      </div>
+      <div class="cg-medidor"><i id="cg-d-barra" style="width:0%"></i></div>
+      <div class="cg-med-rot"><span><b id="cg-d-dist">0</b> distribuídos</span><span id="cg-d-sobra"></span></div>
+      <div class="cg-atalhos">
+        <button class="cart-btn sec cg-mini" id="cg-igual">Dividir igual</button>
+        <button class="cart-btn sec cg-mini" id="cg-zerar">Zerar</button>
+      </div>
+      <div class="cart-aviso erro" id="cg-d-passou" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <div class="lbl" style="margin-bottom:4px">Quanto vai para cada um</div>
+      <div id="cg-vendedores"></div>
+    </div>
+
+    <div class="card">
+      <p class="fieldnote" style="margin:0">
+        <b>Quem recebe o quê:</b> a lista é embaralhada antes de dividir, então cada um recebe uma mistura (nada de “o primeiro fica com os mais novos”).<br>
+        <b>Ritmo/dia</b> é o limite diário do vendedor em todas as listas. Mudar aqui muda lá.<br>
+        <b>A sobra</b> fica guardada nesta lista, sem dono, e só sai quando você distribuir de novo.
+      </p>
+      <div class="cg-linha-btn">
+        <button class="cart-btn sec" id="cg-p4-voltar">Voltar</button>
+        <button class="cart-btn" id="cg-btn-revisar">Revisar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- 5 confirmar ---- -->
+  <section class="cg-tela" id="cg-p5">
+    <div class="cg-passos"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div>
+    <div class="cg-passos-rot">5 de 5 · Confirmar</div>
+    <div class="card">
+      <div class="step"><span class="n">5</span><h2>Confere?</h2></div>
+      <div id="cg-resumo"></div>
+      <div class="cart-aviso on">Começa a aparecer na Carteira do Dia <b>amanhã, 09:00</b>, depois dos leads que cada um já tem na fila.</div>
+      <div class="cart-aviso erro" id="cg-erro-p5"></div>
+      <div class="cg-linha-btn">
+        <button class="cart-btn sec" id="cg-p5-voltar">Ajustar</button>
+        <button class="cart-btn" id="cg-btn-enviar">Distribuir</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- conclusao ---- -->
+  <section class="cg-tela" id="cg-fim">
+    <div class="card cart-fim">
+      <div class="ok">✓</div>
+      <h2 id="cg-fim-titulo">Lista distribuída</h2>
+      <p id="cg-fim-texto"></p>
+      <div style="margin-top:20px"><button class="cart-btn sec" id="cg-fim-voltar">Voltar ao painel</button></div>
+    </div>
+  </section>
+
+  <!-- ---- acompanhar ---- -->
+  <section class="cg-tela" id="cg-acompanhar">
+    <div class="card">
+      <div class="cg-lista-top">
+        <span class="cg-lista-nome" id="cg-a-nome" style="font-size:16px">—</span>
+        <span class="cg-pill" id="cg-a-pill">—</span>
+      </div>
+      <p class="fieldnote" style="margin-top:4px" id="cg-a-sub"></p>
+      <div class="cg-kpis">
+        <div class="cart-kpi"><b id="cg-a-abord">0</b><span>Abordados</span></div>
+        <div class="cart-kpi"><b id="cg-a-resp">0</b><span>Respostas</span></div>
+        <div class="cart-kpi"><b id="cg-a-out">0</b><span>Opt-out</span></div>
+        <div class="cart-kpi"><b id="cg-a-fila">0</b><span>Na fila</span></div>
+      </div>
+      <table class="cg-tab" style="margin-top:14px">
+        <thead><tr><th>Vendedor</th><th>Recebeu</th><th>Abordou</th><th>Resp.</th><th>Fila</th></tr></thead>
+        <tbody id="cg-a-vend"></tbody>
+      </table>
+      <p class="fieldnote" id="cg-a-versoes"></p>
+      <div class="cart-aviso" id="cg-erro-a"></div>
+      <div class="cg-linha-btn">
+        <button class="cart-btn sec" id="cg-a-pausar">Pausar lista</button>
+        <button class="cart-btn" id="cg-a-sobra">Distribuir sobra</button>
+      </div>
+      <p class="fieldnote">Pausar tira os leads desta lista da Carteira do Dia a partir da próxima busca. O que já foi registrado continua valendo.</p>
+      <div style="margin-top:14px"><button class="cart-btn sec" id="cg-a-voltar">Voltar ao painel</button></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
+    <div class="inst">Quem fala com o cliente é o vendedor, do próprio número. Aqui só se organiza a fila.</div>
+  </footer>
+</main>
+</section>
+
 <!-- ==================== CONTRATOS PARA ASSINAR (19/09/2026) ==================== -->
 <section class="view" id="view-contratos">
 <header>
@@ -1943,7 +2296,8 @@ input.an-plain{padding-left:14px; font-size:16px}
           <button data-q="M-19" aria-pressed="false">M-19</button>
           <button data-q="M-20" aria-pressed="false">M-20</button>
           <button data-q="M-21" aria-pressed="false">M-21</button>
-          <button data-q="Retomada" aria-pressed="false">Retomada</button>
+          <!-- (22/09) Retomada saiu: venda suspensa. Para reabrir, devolver
+               <button data-q="Retomada">Retomada</button> aqui e 'Retomada' em QUADRAS_ORDEM. -->
         </div>
       </div>
       <div class="field">
@@ -2216,6 +2570,8 @@ function escJSONP(params){
 }
 
 const state = {
+  // meioAV: fixo em 'pix' desde 22/09 — o à vista no cartão saiu. Não vira constante porque
+  // é ele que alimenta os rótulos do resumo, do WhatsApp, da carta e do Anúncio.
   produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false, descOn:false,
   valor:0, entrada:0, prazo:60, dia:0,
   // seletor de jazigo (12/09): jaz = {quadra, jazigo, valor} escolhido na lista do Cofre;
@@ -2292,7 +2648,9 @@ seg('#segForma','forma','forma', v=>{
   $('#blocoAvista').hidden = v!=='avista';
 });
 seg('#segMeio','meio','meio', ()=>clampPrazo());
-seg('#segMeioAV','meioav','meioAV');
+// (22/09) O seg('#segMeioAV',…) saiu junto com o seletor: seg() faz $(id).addEventListener,
+// e com o elemento fora do HTML isso seria um TypeError no carregamento — o app inteiro morria.
+// state.meioAV fica fixo em 'pix' (ver o estado inicial).
 $('#coordChk').addEventListener('change', e=>{ state.coord = e.target.checked; render(); });
 $('#descChk').addEventListener('change', e=>{ state.descOn = e.target.checked; render(); });
 
@@ -2440,7 +2798,10 @@ const pctTxt = p => Math.round(p*1000)/10 + '%';
 // A RESERVA não vira botão de quadra (13/09): é produto de valor fixo, qualquer jazigo, e o
 // jazigo só é escolhido no fim (Playbook §2.3). A lista dela serve para uma coisa só — trazer
 // o valor quando o vendedor toca o produto Reserva.
-const QUADRAS_ORDEM = ['M-19','M-20','M-21','Reserva','Retomada'];
+// (22/09) 'Retomada' saiu da lista: venda suspensa, e a quadra também saiu da chave
+// estoque.quadras_publicas da Config. Tirar daqui é o cinto: mesmo o aparelho que já tem
+// pocket_estoque_lista_retomada guardado não ganha o botão de volta.
+const QUADRAS_ORDEM = ['M-19','M-20','M-21','Reserva'];
 const QUADRA_ROTULO = {'M-21':'M-21 (Mista)'};
 const QUADRA_MISTA = 'M-21';          // paga em 2 etapas: a rota dá o TOTAL, simula-se 50%
 const ETAPA_MISTA = 0.5;
@@ -2712,7 +3073,7 @@ function bandExtra(){ return state.valor>=24000 && state.valor<26000; }
 // desconto aplicado (teto automático por meio) + o adicional da faixa 24–25k
 // teto de desconto do meio escolhido (alçada máxima) — NÃO aplicado por padrão
 function descTetoMeio(){
-  if(state.forma==='avista') return (state.meioAV==='pix') ? 0.03 : 0.02;
+  if(state.forma==='avista') return 0.03;      // (22/09) só Pix; o teto de 2% do cartão à vista saiu
   return (state.prazo<=21) ? 0.01 : 0;           // parcelado até 21x: 1%; 22–72x: sem desconto
 }
 function descInfo(){
@@ -2728,7 +3089,7 @@ function descInfo(){
 function descLabelText(d){
   if(d.camp) return d.camp.nome;
   const p=[];
-  if(d.base>0) p.push(state.forma==='avista' ? (state.meioAV==='pix'?'Pix 3%':'cartão à vista 2%') : 'parcelado 1%');
+  if(d.base>0) p.push(state.forma==='avista' ? 'Pix 3%' : 'parcelado 1%');
   if(d.extraOn) p.push('adicional 3%');   // sem citar a faixa: este rótulo vai ao cliente
   return p.join(' + ');
 }
@@ -2821,7 +3182,7 @@ function render(){
   if(df){
     if(_teto>0){
       df.hidden=false;
-      const lbl = state.forma==='avista' ? (state.meioAV==='pix'?'Pix à vista: até 3%':'cartão à vista: até 2%') : 'parcelado até 21x: até 1%';
+      const lbl = state.forma==='avista' ? 'Pix à vista: até 3%' : 'parcelado até 21x: até 1%';
       $('#descTeto').textContent = cs.aplica ? '— não soma com a '+cs.nome : '— '+lbl;
       $('#descChk').checked=state.descOn;
     } else { df.hidden=true; }
@@ -3267,6 +3628,7 @@ function go(view, push){
   if(view==='escala' && typeof renderEscala==='function') renderEscala();
   if(view==='iq' && typeof iqRender==='function') iqRender();
   if(view==='carteira' && typeof cartAoEntrar==='function') cartAoEntrar();
+  if(view==='carteira-gestao' && typeof cgAoEntrar==='function') cgAoEntrar();
   if(view==='anuncio' && typeof anAoEntrar==='function') anAoEntrar();
   if(view==='evento' && typeof evAoEntrar==='function') evAoEntrar();
   if(view==='contratos' && typeof ctAoEntrar==='function') ctAoEntrar();
@@ -3550,17 +3912,18 @@ function homeSaudar(){
 }
 homeSaudar();
 
-/* Barra de estoque: M-19 e Retomada (12/09). Le a rota publica do Cofre (sem token, so
-   contagem) pelo cofreLer, que tenta de novo quando o Google responde HTML no lugar do JSON.
+/* Barra de estoque: so M-19 (12/09). Le a rota publica do Cofre (sem token, so contagem)
+   pelo cofreLer, que tenta de novo quando o Google responde HTML no lugar do JSON.
    Pinta primeiro o que estiver guardado no aparelho — o app e offline-first e a barra nao
    pode piscar vazia — e depois substitui pelo numero da rede.
-   Na Retomada, as 42 ainda nao liberadas no Facilita chegam em `outros` (situacao
-   reserved-permanetly, que a contagem nao classifica): aqui elas somam no laranja, de
-   reservado, e o title diz quantas sao — do contrario a quadra apareceria 0 · 0 · 0. */
+   (22/09) A Retomada saiu daqui: a venda esta suspensa. Nao bastava tirar a quadra da
+   Config: quando a rota responde "quadra desconhecida" este codigo MANTEM o que ja estava
+   pintado da copia do aparelho (ver o `return` logo abaixo), e o celular que ja tinha visto
+   a Retomada seguiria mostrando os numeros velhos para sempre. Por isso ela sai da lista. */
 (function(){
   var el = document.getElementById('barraEstoque');
   if (!el) return;
-  ['M-19', 'Retomada'].forEach(function(q){
+  ['M-19'].forEach(function(q){
     var g = el.querySelector('.be-grupo[data-q="' + q + '"]');
     if (!g) return;
     var CHAVE = q === 'M-19' ? 'pocket_estoque_m19' : 'pocket_estoque_' + q.toLowerCase();
@@ -3820,7 +4183,12 @@ const CARTEIRA_API = 'https://script.google.com/macros/s/AKfycbydLmUEX3g6FeojFGA
 
 // Precisa bater com a coluna vendedor da aba Config_Carteira do cofre.
 // O servidor compara ignorando maiúsculas e acentos, mas não adivinha apelido.
-const CARTEIRA_VENDEDORES = ['Ana Luiza','Ana Maria','Guilherme','Wanderson','Felipe','Jaime','Ricardo'];
+/* Esta lista existe SO para o seletor do login, que precisa funcionar antes de
+   haver sessao. Ela nao decide mais quem recebe lead: isso vem da Config_Carteira,
+   pelo lista_painel (22/09/2026). A Ana Maria saiu daqui na mesma data — ela ja
+   tinha deixado a equipe, e o nome seguia no seletor porque constante de front
+   envelhece calada. Nome novo na Config_Carteira precisa ser acrescentado aqui. */
+const CARTEIRA_VENDEDORES = ['Ana Luiza','Guilherme','Wanderson','Felipe','Jaime','Ricardo'];
 
 // Texto padrão, usado enquanto não houver @msg_v1..@msg_v4 no Config_Carteira.
 const CARTEIRA_MSG_PADRAO = [
@@ -3981,10 +4349,14 @@ function cartMesAno(iso){
 }
 
 function cartTextoDe(lead){
+  /* O servidor manda o texto pronto desde 22/09/2026 (lead.msg_texto): lista de
+     mailing tem mensagens PROPRIAS, que este app nem conhece. O caminho de baixo
+     continua aqui porque o Pocket e um PWA — um celular com o JS novo pode falar
+     com um /exec que ainda nao subiu, e ai o lead vem sem msg_texto. */
   const lista = (cartSes && cartSes.mensagens && cartSes.mensagens.length)
     ? cartSes.mensagens.map(m => m.texto)
     : CARTEIRA_MSG_PADRAO;
-  const bruto = lista[(lead.msg_versao || 0) % lista.length] || lista[0];
+  const bruto = lead.msg_texto || lista[(lead.msg_versao || 0) % lista.length] || lista[0];
   return bruto
     .replace(/\{\{saudacao\}\}/g, cartSaudacao())
     .replace(/\{\{nome\}\}/g, cartPrimeiro(lead.nome))
@@ -4017,6 +4389,15 @@ function cartAoEntrar(){
     return;
   }
   if(!cartSes || !cartSes.token){ cartVer('login'); return; }
+
+  /* Gestao abre o painel, e nao a lista do dia. `cgVerCarteira` e o que deixa o
+     Ricardo abrir a propria carteira pelo botao do painel sem cair de volta aqui
+     num vaivem — o pedido explicito dele vale uma vez e se apaga. */
+  if(cartSes.papel === 'gestao' && !window.cgVerCarteira && typeof cgAoEntrar === 'function'){
+    go('carteira-gestao');
+    return;
+  }
+  window.cgVerCarteira = false;
 
   cartPintarFila();
   cartSubirFila();
@@ -4081,7 +4462,10 @@ async function cartEntrar(){
     });
     inp.value = '';
     cartAvisar('cart-erro-login','');
-    cartAoEntrar();
+    /* Quem entra com o PIN de gestao cai no painel da carteira, nao no "Pegar minha
+       lista de hoje" — o login e o mesmo, a porta e que muda. Ele volta para a
+       carteira dele pelo botao do painel. */
+    if(r.papel === 'gestao') go('carteira-gestao'); else cartAoEntrar();
     // A fila de anúncios vive em outra IIFE e ficava presa até o app ser
     // reaberto. Quem acabou de digitar o PIN tem o token AGORA.
     try{ if(window.anuncioSubirFila) window.anuncioSubirFila(); }catch(e){}
@@ -4148,6 +4532,9 @@ function cartMostrar(){
   const l = cartLote[cartPos];
   document.getElementById('cart-lead-nome').textContent = cartNomeBonito(l.nome) || '(sem nome)';
   document.getElementById('cart-lead-fone').textContent = cartFoneBonito(l.telefone);
+  /* Lead de lista mostra o NOME DA LISTA no chip: para o vendedor, "Panfletagem
+     Centro" diz de onde a pessoa veio, e "Disparo WhatsApp" (a origem de todas
+     elas) nao diz nada. Lead antigo continua mostrando a origem. */
   document.getElementById('cart-c-origem').textContent = l.origem || 'origem não informada';
 
   const data = cartMesAno(l.data_captacao);
@@ -4956,7 +5343,7 @@ function cartConcluir(texto){
   const EV_K_FILA = 'evento50_fila';
   const EV_K_MEUS = 'evento50_meus';          // histórico do aparelho: aviso de telefone repetido + lista do dia
   const EV_MEUS_DIAS = 7;                      // nome e telefone de visitante não ficam no celular além disso
-  const EV_JANELA_CARD = ['2026-09-16', '2026-09-23'];   // começo antecipado de 19/09 para hoje (Ricardo, 16/09): treino da equipe até sexta
+  const EV_JANELA_CARD = ['2026-09-16', '2026-09-23'];   // registro: a janela do card na home, retirado em 22/09 (o evento foi 20/09)
   const EV_LOTE = 25;
   // (16/09, 2º tempo) "Como soube" = a lista de ORIGEM do Anúncio de Venda, que espelha o CRM
   // Facilita caractere a caractere, com o mesmo detalhe e o mesmo texto de apoio. Cópia das
@@ -4993,11 +5380,11 @@ function cartConcluir(texto){
   let evErroSessao = '';     // msg do servidor quando a sessão caiu — o aviso fica até entrar de novo
   let evErroEnvio = '';      // outra recusa do lote inteiro (ex.: ERRO_INTERNO) — a fila fica e o aviso diz
 
-  // ---- card sazonal da home ----
-  try{
-    const hoje = escHojeISO();
-    $ev('evCardHome').hidden = !(hoje >= EV_JANELA_CARD[0] && hoje <= EV_JANELA_CARD[1]);
-  }catch(e){}
+  // ---- card sazonal da home (22/09/2026: retirado) ----
+  // O evento acabou em 20/09 e o Ricardo pediu o card fora da home. A TELA #evento e a fila
+  // offline continuam aqui — elas guardam o cadastro dos visitantes e o que ainda não subiu —,
+  // mas a home não tem mais porta para ela. Para reabrir: devolver o <button id="evCardHome">
+  // na faixa "Agora" e o toggle pela janela EV_JANELA_CARD que ficava aqui.
 
   // ---- sessão da Carteira (a mesma do anúncio) ----
   function evSessao(){
@@ -5516,6 +5903,726 @@ function cartConcluir(texto){
   ctBuscar();
 })();
 
+// ==================== GESTAO DA CARTEIRA (22/09/2026) ====================
+/*
+ * A tela que o Ricardo usa para subir um mailing e dividi-lo entre a equipe.
+ * Backend: CarteiraGestao.gs no Cofre, acoes lista_* — todas exigem papel = gestao,
+ * e o papel sai da SESSAO, nunca daqui.
+ *
+ * Tres regras desta tela:
+ *
+ * 1. NADA de lista de cliente em localStorage. O arquivo que o Ricardo escolhe vive
+ *    na memoria da pagina e some quando ela fecha. Sao nomes e telefones de gente
+ *    que nunca falou com a gente; eles nao tem por que sobreviver a um refresh no
+ *    celular dele.
+ * 2. Gestao exige rede. Sem conexao a tela diz isso e nao tenta — ao contrario da
+ *    carteira do vendedor, que e feita para funcionar na rua, sem sinal.
+ * 3. Quem decide quem recebe lead e a Config_Carteira, que vem no lista_painel.
+ *    A constante CARTEIRA_VENDEDORES do login nao manda aqui: em 22/09 ela ainda
+ *    trazia a Ana Maria, que ja tinha saido da equipe.
+ */
+
+let cgEstado = null;
+let cgOcupado = false;
+
+function cgZerar(){
+  cgEstado = {
+    nomeArquivo: '', tipo: '',
+    cabecalho: [], linhas: [],       // linhas cruas do arquivo
+    colFone: -1, colNome: -1,
+    conta: null,                     // resposta do lista_previa
+    versoes: ['', ''],
+    equipe: [],                      // [{vendedor, ritmo, na_fila, incluso, qtd}]
+    importacaoId: cgUuid(),
+    lista: null,                     // a lista aberta em Acompanhar
+    detalhe: null,
+    modoSobra: false
+  };
+}
+
+function cgUuid(){
+  try{ if(crypto && crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
+  return 'imp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+}
+
+function cgVer(tela){
+  document.querySelectorAll('#view-carteira-gestao .cg-tela').forEach(s => s.classList.remove('on'));
+  const el = document.getElementById('cg-' + tela);
+  if(el) el.classList.add('on');
+  const passo = /^p[1-5]$/.test(tela);
+  document.getElementById('cg-titulo').textContent = passo ? 'Novo mailing'
+    : (tela === 'acompanhar' ? 'Acompanhar lista' : 'Gest\u00e3o da Carteira');
+  document.getElementById('cg-lead').textContent = passo
+    ? 'Suba a lista, confira a contagem e diga quanto vai para cada um.'
+    : (tela === 'acompanhar' ? 'Quem recebeu, quem j\u00e1 abordou e o que voltou.'
+                            : cartSaudacao() + ', ' + cartPrimeiro(cartSes && cartSes.vendedor) + '. Suba listas, divida entre a equipe e acompanhe.');
+  document.getElementById('cg-voltar-rot').textContent = (tela === 'painel') ? 'Ferramentas' : 'Painel';
+  window.scrollTo(0,0);
+}
+
+function cgAvisar(id, texto, erro){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = texto || '';
+  el.className = 'cart-aviso' + (texto ? ' on' : '') + (erro ? ' erro' : '');
+}
+
+/** Chama o Cofre e trata os dois erros que tiram o Ricardo da tela. */
+async function cgAPI(payload, idErro){
+  try{
+    const r = await cartAPI(Object.assign({ token: cartSes && cartSes.token }, payload));
+    if(!r.ok){
+      if(r.erro === 'TOKEN_INVALIDO' || r.erro === 'VENDEDOR_INATIVO'){ go('carteira'); cartSessaoCaiu(r.msg); return null; }
+      if(r.erro === 'SEM_PERMISSAO'){ go('carteira'); toast('Esta tela \u00e9 da gest\u00e3o.'); return null; }
+      if(idErro) cgAvisar(idErro, r.msg || 'N\u00e3o deu certo.', true);
+      return null;
+    }
+    if(idErro) cgAvisar(idErro, '');
+    return r;
+  }catch(e){
+    if(idErro) cgAvisar(idErro, e.message === 'sem_url'
+      ? 'A carteira ainda n\u00e3o est\u00e1 conectada ao servidor.'
+      : 'Esta tela precisa de internet. Conecte e tente de novo.', true);
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------- painel
+
+function cgAoEntrar(){
+  if(!cartSes || !cartSes.token || cartSes.papel !== 'gestao'){ go('carteira'); return; }
+  if(!cgEstado) cgZerar();
+  cgVer('painel');
+  cgCarregarPainel();
+}
+
+async function cgCarregarPainel(){
+  const r = await cgAPI({ acao:'lista_painel' }, 'cg-erro-painel');
+  if(!r) return;
+
+  const box = document.getElementById('cg-listas');
+  box.innerHTML = '';
+  const vivas = (r.listas || []).filter(l => l.status !== 'encerrada');
+  if(!vivas.length){
+    box.innerHTML = '<p class="fieldnote" style="margin:4px 2px 0">Nenhuma lista ainda. Suba a primeira abaixo.</p>';
+  }
+  vivas.forEach(l => {
+    const pct = l.distribuidos ? Math.round(l.abordados / l.distribuidos * 100) : 0;
+    const d = document.createElement('div');
+    d.className = 'cg-lista';
+    d.innerHTML =
+      '<div class="cg-lista-top"><span class="cg-lista-nome"></span>' +
+      '<span class="cg-pill ' + l.status + '">' + (l.status === 'ativa' ? 'Ativa' : 'Pausada') + '</span></div>' +
+      '<div class="cart-barra" style="margin:8px 0 5px"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="cg-num"><span><b>' + l.abordados + '</b> de ' + l.distribuidos + ' abordados</span>' +
+      '<span>' + l.respostas + ' resposta' + (l.respostas === 1 ? '' : 's') + ' \u00b7 ' + l.optout + ' opt-out</span></div>' +
+      '<div style="margin-top:6px"><button class="cg-link">Abrir</button></div>';
+    d.querySelector('.cg-lista-nome').textContent = l.nome || l.id;
+    d.querySelector('.cg-link').addEventListener('click', () => cgAbrirLista(l.id));
+    box.appendChild(d);
+  });
+
+  const tb = document.getElementById('cg-equipe');
+  tb.innerHTML = '';
+  cgEstado.equipe = (r.equipe || []).map(v => ({
+    vendedor: v.vendedor, ritmo: v.ritmo || 0, na_fila: v.na_fila || 0, incluso: true, qtd: 0
+  }));
+  (r.equipe || []).forEach(v => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td></td><td>' + v.ritmo + '</td><td>' + v.hoje_feitos + '/' + v.hoje_limite + '</td><td>' + v.na_fila + '</td>';
+    tr.querySelector('td').textContent = cartNomeBonito(v.vendedor);
+    tb.appendChild(tr);
+  });
+  if(!(r.equipe || []).length){
+    tb.innerHTML = '<tr><td colspan="4" style="text-align:left; font-weight:500">Nenhum vendedor ativo na Config_Carteira.</td></tr>';
+  }
+}
+
+// ---------------------------------------------------------------- 1. o arquivo
+
+/**
+ * CSV e texto colado. Acentos: o Sheets exporta UTF-8 e o Excel do Windows exporta
+ * windows-1252 — lendo tudo como UTF-8, "Jos\u00e9" chega como "Jos\u00c3\u00a9" e o cliente recebe uma
+ * mensagem com o nome quebrado. Le como UTF-8 e, se aparecer o rastro tipico,
+ * rele como 1252.
+ */
+function cgLerTexto(buf){
+  let txt = new TextDecoder('utf-8').decode(buf);
+  if(/\uFFFD|\u00c3[\u00a3\u00a9\u00ad\u00b5\u00a7\u00a1\u00b3]/.test(txt)){
+    try{ txt = new TextDecoder('windows-1252').decode(buf); }catch(e){}
+  }
+  return txt.replace(/^\uFEFF/, '');
+}
+
+/** Separador por contagem fora das aspas, na primeira linha com conteudo. */
+function cgSeparador(txt){
+  const linha = (txt.split(/\r?\n/).find(l => l.trim() !== '') || '');
+  const conta = c => (linha.split(c).length - 1);
+  const cand = [[';', conta(';')], [String.fromCharCode(9), conta(String.fromCharCode(9))], [',', conta(',')]];
+  cand.sort((a,b) => b[1] - a[1]);
+  return cand[0][1] ? cand[0][0] : ';';
+}
+
+/** CSV com aspas: "Silva, Jos\u00e9" e um campo so, e "" e uma aspa dentro do campo. */
+function cgParseCSV(txt, sep){
+  const linhas = [];
+  let campo = '', linha = [], aspas = false;
+  for(let i = 0; i < txt.length; i++){
+    const c = txt[i];
+    if(aspas){
+      if(c === '"'){ if(txt[i+1] === '"'){ campo += '"'; i++; } else aspas = false; }
+      else campo += c;
+      continue;
+    }
+    if(c === '"'){ aspas = true; continue; }
+    if(c === sep){ linha.push(campo); campo = ''; continue; }
+    if(c === '\n'){ linha.push(campo); linhas.push(linha); linha = []; campo = ''; continue; }
+    if(c === '\r') continue;
+    campo += c;
+  }
+  if(campo !== '' || linha.length){ linha.push(campo); linhas.push(linha); }
+  return linhas.filter(l => l.some(c => String(c).trim() !== ''));
+}
+
+/** SheetJS sob demanda: so quando o Ricardo escolhe um .xlsx. Nunca no cache do sw. */
+function cgCarregarSheetJS(){
+  if(window.XLSX) return Promise.resolve();
+  return new Promise((ok, falha) => {
+    const t = document.createElement('script');
+    t.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    t.onload = ok;
+    t.onerror = () => falha(new Error('xlsx'));
+    document.head.appendChild(t);
+  });
+}
+
+async function cgArquivoEscolhido(file){
+  if(!file) return;
+  cgAvisar('cg-erro-p1', '');
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  try{
+    let linhas;
+    if(ext === 'xlsx' || ext === 'xls'){
+      await cgCarregarSheetJS();
+      const wb = XLSX.read(await file.arrayBuffer(), { type:'array' });
+      const aba = wb.Sheets[wb.SheetNames[0]];
+      linhas = XLSX.utils.sheet_to_json(aba, { header:1, blankrows:false, raw:false });
+    }else{
+      const txt = cgLerTexto(await file.arrayBuffer());
+      linhas = cgParseCSV(txt, cgSeparador(txt));
+    }
+    cgUsarLinhas(linhas, file.name, ext === 'csv' ? 'CSV' : 'XLSX');
+  }catch(e){
+    cgAvisar('cg-erro-p1', e.message === 'xlsx'
+      ? 'N\u00e3o consegui carregar o leitor de .xlsx (precisa de internet). Exporte como .csv e tente de novo.'
+      : 'N\u00e3o consegui ler este arquivo. Exporte de novo como .xlsx ou .csv.', true);
+  }
+}
+
+function cgUsarLinhas(linhas, nome, tipo){
+  linhas = (linhas || []).filter(l => l && l.some(c => String(c == null ? '' : c).trim() !== ''));
+  if(linhas.length < 2){
+    cgAvisar('cg-erro-p1', 'O arquivo precisa de um cabe\u00e7alho e pelo menos uma linha.', true);
+    return;
+  }
+  cgEstado.cabecalho = linhas[0].map(c => String(c == null ? '' : c).trim());
+  cgEstado.linhas = linhas.slice(1);
+  cgEstado.nomeArquivo = nome;
+  cgEstado.tipo = tipo;
+  cgEstado.conta = null;
+  cgEstado.importacaoId = cgUuid();   // arquivo novo, importacao nova
+
+  document.getElementById('cg-solta').hidden = true;
+  document.getElementById('cg-arq').hidden = false;
+  document.getElementById('cg-arq-tipo').textContent = tipo;
+  document.getElementById('cg-arq-nome').textContent = nome;
+  document.getElementById('cg-arq-sub').textContent =
+    cgEstado.linhas.length + ' linha' + (cgEstado.linhas.length === 1 ? '' : 's') + ' \u00b7 ' + cgEstado.cabecalho.length + ' colunas';
+  document.getElementById('cg-colar-box').hidden = true;
+  cgMontarMapa();
+}
+
+/** Adivinha as colunas pelo cabecalho. O Ricardo so troca se errar. */
+function cgMontarMapa(){
+  const h = cgEstado.cabecalho;
+  const acha = re => h.findIndex(c => re.test(c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')));
+  cgEstado.colFone = acha(/cel|fone|telefone|whats|contato/);
+  cgEstado.colNome = acha(/nome|cliente/);
+  if(cgEstado.colFone < 0) cgEstado.colFone = 0;
+
+  const rotulo = (c, i) => 'Coluna ' + String.fromCharCode(65 + i) + (c ? ' \u00b7 ' + c : '');
+  const selF = document.getElementById('cg-col-fone');
+  const selN = document.getElementById('cg-col-nome');
+  selF.innerHTML = ''; selN.innerHTML = '<option value="-1">(sem nome)</option>';
+  h.forEach((c, i) => {
+    const o = document.createElement('option'); o.value = i; o.textContent = rotulo(c, i); selF.appendChild(o);
+    const o2 = document.createElement('option'); o2.value = i; o2.textContent = rotulo(c, i); selN.appendChild(o2);
+  });
+  selF.value = String(cgEstado.colFone);
+  selN.value = String(cgEstado.colNome);
+  document.getElementById('cg-mapa-box').hidden = false;
+  document.getElementById('cg-btn-contar').disabled = false;
+  cgPintarAmostra();
+}
+
+function cgPintarAmostra(){
+  const tb = document.getElementById('cg-amostra');
+  tb.innerHTML = '';
+  cgEstado.linhas.slice(0, 3).forEach(l => {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    const td2 = document.createElement('td');
+    td1.textContent = cgEstado.colNome >= 0 ? String(l[cgEstado.colNome] == null ? '' : l[cgEstado.colNome]) : '\u2014';
+    td2.textContent = String(l[cgEstado.colFone] == null ? '' : l[cgEstado.colFone]);
+    tr.appendChild(td1); tr.appendChild(td2); tb.appendChild(tr);
+  });
+}
+
+/** As linhas no formato que o Cofre espera. `linha` e o numero NO ARQUIVO do Ricardo. */
+function cgLinhasParaEnvio(){
+  return cgEstado.linhas.map((l, i) => ({
+    linha: i + 2,                                  // +2: a linha 1 e o cabecalho
+    telefone: String(l[cgEstado.colFone] == null ? '' : l[cgEstado.colFone]),
+    nome: cgEstado.colNome >= 0 ? String(l[cgEstado.colNome] == null ? '' : l[cgEstado.colNome]) : ''
+  }));
+}
+
+// ---------------------------------------------------------------- 2. contagem
+
+async function cgContar(){
+  if(cgOcupado) return;
+  const nome = document.getElementById('cg-nome').value.trim();
+  if(!nome){ cgAvisar('cg-erro-p1', 'D\u00ea um nome \u00e0 lista \u2014 ele aparece para o vendedor no card do lead.', true); return; }
+  if(!cgEstado.linhas.length){ cgAvisar('cg-erro-p1', 'Escolha um arquivo ou cole a lista.', true); return; }
+
+  const btn = document.getElementById('cg-btn-contar');
+  cgOcupado = true; btn.disabled = true; btn.textContent = 'Contando\u2026';
+  try{
+    const r = await cgAPI({ acao:'lista_previa', linhas: cgLinhasParaEnvio() }, 'cg-erro-p1');
+    if(!r) return;
+    cgEstado.conta = r;
+    cgPintarContagem();
+    cgVer('p2');
+  }finally{
+    cgOcupado = false; btn.disabled = false; btn.textContent = 'Contar leads';
+  }
+}
+
+function cgPintarContagem(){
+  const c = cgEstado.conta;
+  document.getElementById('cg-c-total').textContent = c.linhas_arquivo;
+  const d = c.descartes || {};
+  const faixas = [
+    ['Telefone que n\u00e3o d\u00e1 para usar', d.invalido],
+    ['Repetidos dentro da pr\u00f3pria lista', d.repetido_lista],
+    ['J\u00e1 est\u00e3o no mailing (outra lista)', d.ja_no_mailing],
+    ['J\u00e1 s\u00e3o clientes do Parque', d.ja_cliente],
+    ['Pediram para n\u00e3o receber', d.optout]
+  ];
+  document.getElementById('cg-funil').innerHTML =
+    faixas.map(f => '<div class="menos"><span>' + f[0] + '</span><b>\u2212' + (f[1] || 0) + '</b></div>').join('') +
+    '<div class="total"><span>Leads para distribuir</span><b>' + c.disponiveis + '</b></div>';
+
+  const fora = c.linhas_arquivo - c.disponiveis;
+  const btn = document.getElementById('cg-ver-desc');
+  btn.textContent = 'Ver os ' + fora + ' descartados';
+  btn.hidden = !fora;
+
+  const tb = document.getElementById('cg-desc-corpo');
+  tb.innerHTML = '';
+  (c.descartados || []).forEach(x => {
+    const tr = document.createElement('tr');
+    ['linha','telefone','motivo'].forEach(k => {
+      const td = document.createElement('td'); td.textContent = x[k]; tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  if(c.descartados_truncados){
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 3;
+    td.textContent = '\u2026 e mais ' + c.descartados_truncados + ' (a contagem acima \u00e9 do total)';
+    tr.appendChild(td); tb.appendChild(tr);
+  }
+  document.getElementById('cg-descartes').hidden = true;
+}
+
+// ---------------------------------------------------------------- 3. mensagem
+
+function cgPintarVersoes(){
+  const box = document.getElementById('cg-versoes');
+  box.innerHTML = '';
+  cgEstado.versoes.forEach((txt, i) => {
+    const d = document.createElement('div');
+    d.className = 'cg-msgv';
+    d.innerHTML = '<div class="topo"><label for="cg-v' + i + '">Vers\u00e3o ' + (i+1) + '</label><span id="cg-v' + i + '-conta"></span></div>' +
+      '<textarea class="cart-msg cg-msg" id="cg-v' + i + '" style="min-height:118px" placeholder="Escreva a mensagem desta vers\u00e3o"></textarea>';
+    box.appendChild(d);
+    const ta = d.querySelector('textarea');
+    ta.value = txt;
+    ta.addEventListener('input', () => { cgEstado.versoes[i] = ta.value; cgFoco = ta; cgRenderMsg(); });
+    ta.addEventListener('focus', () => { cgFoco = ta; cgRenderMsg(); });
+  });
+  document.getElementById('cg-add-v').hidden = cgEstado.versoes.length >= 3;
+  cgFoco = document.getElementById('cg-v0');
+  cgRenderMsg();
+}
+
+let cgFoco = null;
+
+function cgRenderMsg(){
+  const eq = cgEstado.equipe.filter(v => v.incluso);
+  const exemploVend = cartPrimeiro((eq[0] || cgEstado.equipe[0] || {}).vendedor || 'Jaime');
+  const txt = (cgFoco && cgFoco.value) || cgEstado.versoes[0] || '';
+  document.getElementById('cg-previa').textContent = txt
+    .replace(/\{\{saudacao\}\}/g, cartSaudacao())
+    .replace(/\{\{nome\}\}/g, 'Maria')
+    .replace(/\{\{vendedor\}\}/g, exemploVend);
+  document.getElementById('cg-previa-rot').textContent =
+    'Como chega no WhatsApp (Maria \u00b7 ' + exemploVend + ' \u00b7 ' + cartSaudacao().toLowerCase() + ')';
+
+  cgEstado.versoes.forEach((t, i) => {
+    const c = document.getElementById('cg-v' + i + '-conta');
+    if(c) c.textContent = t.length + ' caracteres';
+  });
+
+  // campo que o servidor nao conhece chegaria literal ao cliente
+  const ruins = [];
+  cgEstado.versoes.forEach((t, i) => {
+    (t.match(/\{+\s*[^{}]*\s*\}+/g) || []).forEach(x => {
+      if(!/^\{\{(nome|vendedor|saudacao)\}\}$/.test(x)) ruins.push('Vers\u00e3o ' + (i+1) + ': ' + x);
+    });
+  });
+  cgAvisar('cg-aviso-campo', ruins.length ? 'Campo que o app n\u00e3o conhece: ' + ruins.join(' \u00b7 ') + '. Use os bot\u00f5es acima.' : '', true);
+
+  const preenchidas = cgEstado.versoes.filter(t => t.trim() !== '');
+  const semSaida = preenchidas.filter(t => !/n[a\u00e3]o (receber|te procuro|for o caso|quiser)|me avisa|me diz|\u00e9 s\u00f3 (me )?(avisar|falar|dizer)|encerro/i.test(t));
+  cgAvisar('cg-aviso-saida', semSaida.length
+    ? 'Falta a porta de sa\u00edda ("se preferir n\u00e3o receber\u2026"). A Cad\u00eancia exige em toda primeira mensagem.' : '');
+
+  document.getElementById('cg-btn-p4').disabled = !preenchidas.length || ruins.length > 0 || semSaida.length > 0;
+}
+
+// ---------------------------------------------------------------- 4. distribuir
+
+function cgPintarDistribuir(){
+  const disp = cgDisponiveis();
+  document.getElementById('cg-d-total').textContent = disp;
+  document.getElementById('cg-d-nome').textContent = cgEstado.modoSobra
+    ? ((cgEstado.lista && cgEstado.lista.nome) || '') + ' \u00b7 sobra'
+    : document.getElementById('cg-nome').value.trim();
+  document.getElementById('cg-p4-rot').textContent = cgEstado.modoSobra ? 'Distribuir a sobra' : '4 de 5 \u00b7 Distribuir';
+  document.getElementById('cg-btn-revisar').textContent = cgEstado.modoSobra ? 'Distribuir sobra' : 'Revisar';
+
+  const box = document.getElementById('cg-vendedores');
+  box.innerHTML = '';
+  cgEstado.equipe.forEach((v, i) => {
+    const d = document.createElement('div');
+    d.className = 'cg-vend';
+    d.id = 'cg-vend-' + i;
+    d.innerHTML =
+      '<input type="checkbox" id="cg-on-' + i + '"' + (v.incluso ? ' checked' : '') + '>' +
+      '<label class="nm" for="cg-on-' + i + '"></label>' +
+      '<div class="cg-stepper" id="cg-st-' + i + '">' +
+        '<button type="button" data-d="-5" aria-label="menos 5">\u2212</button>' +
+        '<input id="cg-q-' + i + '" inputmode="numeric" value="' + v.qtd + '">' +
+        '<button type="button" data-d="5" aria-label="mais 5">+</button>' +
+      '</div>' +
+      '<div class="sub" id="cg-sub-' + i + '"></div>';
+    d.querySelector('.nm').textContent = cartNomeBonito(v.vendedor);
+    box.appendChild(d);
+
+    d.querySelector('#cg-on-' + i).addEventListener('change', e => {
+      v.incluso = e.target.checked; if(!v.incluso) v.qtd = 0; cgPintarQtd();
+    });
+    d.querySelectorAll('.cg-stepper button').forEach(b => b.addEventListener('click', () => {
+      v.qtd = Math.max(0, v.qtd + Number(b.dataset.d)); cgPintarQtd();
+    }));
+    d.querySelector('#cg-q-' + i).addEventListener('input', e => {
+      v.qtd = Math.max(0, parseInt(e.target.value.replace(/\D/g,''), 10) || 0); cgPintarQtd(true);
+    });
+  });
+  cgPintarQtd();
+}
+
+function cgDisponiveis(){
+  if(cgEstado.modoSobra) return (cgEstado.detalhe && cgEstado.detalhe.total.sobra) || 0;
+  return (cgEstado.conta && cgEstado.conta.disponiveis) || 0;
+}
+
+const cgDiasUteis = (n, ritmo) => Math.ceil(n / Math.max(1, ritmo));
+
+function cgPintarQtd(digitando){
+  const disp = cgDisponiveis();
+  let soma = 0;
+  cgEstado.equipe.forEach((v, i) => {
+    soma += v.qtd;
+    const linha = document.getElementById('cg-vend-' + i);
+    if(!linha) return;
+    linha.classList.toggle('fora', !v.incluso);
+    document.getElementById('cg-st-' + i).classList.toggle('off', !v.incluso);
+    const inp = document.getElementById('cg-q-' + i);
+    if(!digitando || document.activeElement !== inp) inp.value = v.qtd;
+
+    const sub = document.getElementById('cg-sub-' + i);
+    if(document.activeElement && sub.contains(document.activeElement)) return;  // nao apaga o que esta sendo digitado
+    sub.innerHTML = 'j\u00e1 tem ' + v.na_fila + ' na fila \u00b7 ritmo <span class="cg-ritmo"><input value="' + v.ritmo + '" inputmode="numeric" aria-label="Ritmo di\u00e1rio"></span>/dia \u00b7 ' +
+      (v.incluso ? 'termina em ~' + cgDiasUteis(v.na_fila + v.qtd, v.ritmo) + ' dias \u00fateis' : 'fora desta lista');
+    sub.querySelector('input').addEventListener('input', e => {
+      v.ritmo = Math.max(1, parseInt(e.target.value.replace(/\D/g,''), 10) || 1);
+    });
+    sub.querySelector('input').addEventListener('blur', () => cgPintarQtd());
+  });
+
+  const passou = soma > disp;
+  const barra = document.getElementById('cg-d-barra');
+  barra.style.width = (disp ? Math.min(100, soma / disp * 100) : 0) + '%';
+  barra.classList.toggle('passou', passou);
+  document.getElementById('cg-d-dist').textContent = soma;
+  document.getElementById('cg-d-sobra').textContent = passou ? 'passou ' + (soma - disp) : 'sobram ' + (disp - soma);
+  cgAvisar('cg-d-passou', passou
+    ? 'Voc\u00ea distribuiu ' + soma + ', mas a lista tem ' + disp + '. Tire ' + (soma - disp) + ' de algu\u00e9m para continuar.' : '', true);
+  document.getElementById('cg-btn-revisar').disabled = passou || soma === 0;
+}
+
+function cgDividirIgual(){
+  const disp = cgDisponiveis();
+  const dentro = cgEstado.equipe.filter(v => v.incluso);
+  if(!dentro.length) return;
+  const base = Math.floor(disp / dentro.length);
+  let resto = disp - base * dentro.length;
+  cgEstado.equipe.forEach(v => { v.qtd = v.incluso ? base + (resto-- > 0 ? 1 : 0) : 0; });
+  cgPintarQtd();
+}
+
+// ---------------------------------------------------------------- 5. confirmar
+
+function cgPintarResumo(){
+  const versoes = cgEstado.versoes.filter(t => t.trim() !== '');
+  const soma = cgEstado.equipe.reduce((a,v) => a + v.qtd, 0);
+  const linhas = [
+    ['Lista', document.getElementById('cg-nome').value.trim()],
+    ['Leads que entram', cgDisponiveis()],
+    ['Mensagens', versoes.length + ' vers' + (versoes.length === 1 ? '\u00e3o' : '\u00f5es')]
+  ];
+  cgEstado.equipe.filter(v => v.qtd > 0).forEach(v => {
+    linhas.push([cartNomeBonito(v.vendedor), v.qtd + ' leads \u00b7 ~' + cgDiasUteis(v.na_fila + v.qtd, v.ritmo) + ' dias \u00fateis']);
+  });
+  linhas.push(['Sobra guardada', cgDisponiveis() - soma]);
+
+  const box = document.getElementById('cg-resumo');
+  box.innerHTML = '';
+  linhas.forEach(l => {
+    const d = document.createElement('div');
+    d.className = 'cg-res';
+    const sp = document.createElement('span'); sp.textContent = l[0];
+    const b = document.createElement('b'); b.textContent = l[1];
+    d.appendChild(sp); d.appendChild(b); box.appendChild(d);
+  });
+  cgAvisar('cg-erro-p5', '');
+}
+
+async function cgEnviar(){
+  if(cgOcupado) return;
+  const btn = document.getElementById('cg-btn-enviar');
+  cgOcupado = true; btn.disabled = true; btn.textContent = 'Distribuindo\u2026';
+  try{
+    const divisao = cgEstado.equipe.filter(v => v.incluso && v.qtd > 0)
+      .map(v => ({ vendedor: v.vendedor, qtd: v.qtd, ritmo: v.ritmo }));
+
+    const r = await cgAPI({
+      acao: 'lista_confirmar',
+      importacao_id: cgEstado.importacaoId,
+      lista: { nome: document.getElementById('cg-nome').value.trim(), mensagens: cgEstado.versoes.filter(t => t.trim() !== '') },
+      linhas: cgLinhasParaEnvio(),
+      distribuicao: divisao
+    }, 'cg-erro-p5');
+    if(!r) return;
+
+    const total = (r.por_vendedor || []).reduce((a,v) => a + v.qtd, 0);
+    document.getElementById('cg-fim-titulo').textContent = r.repetido ? 'Esta lista j\u00e1 tinha sido distribu\u00edda' : 'Lista distribu\u00edda';
+    document.getElementById('cg-fim-texto').textContent =
+      total + ' leads entregues a ' + (r.por_vendedor || []).filter(v => v.qtd > 0).length + ' vendedores. ' +
+      r.sobra + ' ficaram guardados na lista.' +
+      (r.cortado ? ' A base mudou entre a contagem e o envio, e a divis\u00e3o foi cortada proporcionalmente \u2014 os n\u00fameros acima s\u00e3o os finais.' : '');
+    cgVer('fim');
+  }finally{
+    cgOcupado = false; btn.disabled = false; btn.textContent = 'Distribuir';
+  }
+}
+
+// ---------------------------------------------------------------- acompanhar
+
+async function cgAbrirLista(id){
+  const r = await cgAPI({ acao:'lista_detalhe', lista_id: id }, 'cg-erro-painel');
+  if(!r) return;
+  cgEstado.lista = r.lista;
+  cgEstado.detalhe = r;
+
+  document.getElementById('cg-a-nome').textContent = r.lista.nome || r.lista.id;
+  const pill = document.getElementById('cg-a-pill');
+  pill.className = 'cg-pill ' + r.lista.status;
+  pill.textContent = r.lista.status.charAt(0).toUpperCase() + r.lista.status.slice(1);
+  document.getElementById('cg-a-sub').textContent =
+    'Subida em ' + (r.lista.criada_em || '\u2014') + ' \u00b7 ' + (r.total.total - r.total.sobra) + ' distribu\u00eddos \u00b7 sobra guardada: ' + r.total.sobra;
+  document.getElementById('cg-a-abord').textContent = r.total.abordados;
+  document.getElementById('cg-a-resp').textContent = r.total.respostas;
+  document.getElementById('cg-a-out').textContent = r.total.optout;
+  document.getElementById('cg-a-fila').textContent = r.total.na_fila;
+
+  const tb = document.getElementById('cg-a-vend');
+  tb.innerHTML = '';
+  (r.vendedores || []).forEach(v => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td></td><td>' + v.recebeu + '</td><td>' + v.abordou + '</td><td>' + v.respostas + '</td><td>' + v.na_fila + '</td>';
+    tr.querySelector('td').textContent = cartNomeBonito(v.vendedor);
+    tb.appendChild(tr);
+  });
+
+  const vs = (r.versoes || []).filter(v => v.abordagens > 0);
+  document.getElementById('cg-a-versoes').textContent = vs.length
+    ? 'Respostas por vers\u00e3o: ' + vs.map(v => 'v' + v.versao + ' ' + v.respostas + ' de ' + v.abordagens).join(' \u00b7 ')
+    : 'Ainda sem abordagem registrada nesta lista.';
+
+  document.getElementById('cg-a-pausar').textContent = r.lista.status === 'ativa' ? 'Pausar lista' : 'Reativar lista';
+  document.getElementById('cg-a-sobra').disabled = !r.total.sobra;
+  cgAvisar('cg-erro-a', '');
+  cgVer('acompanhar');
+}
+
+async function cgAlternarPausa(){
+  if(!cgEstado.lista) return;
+  const novo = cgEstado.lista.status === 'ativa' ? 'pausada' : 'ativa';
+  const r = await cgAPI({ acao:'lista_status', lista_id: cgEstado.lista.id, status: novo }, 'cg-erro-a');
+  if(!r) return;
+  toast(novo === 'pausada' ? 'Lista pausada.' : 'Lista reativada.');
+  cgAbrirLista(cgEstado.lista.id);
+}
+
+/** Reabre o passo 4 sobre a sobra da lista aberta. */
+function cgDistribuirSobra(){
+  if(!cgEstado.lista || !cgEstado.detalhe) return;
+  cgEstado.modoSobra = true;
+  cgEstado.equipe.forEach(v => { v.qtd = 0; v.incluso = true; });
+  cgPintarDistribuir();
+  cgVer('p4');
+}
+
+async function cgEnviarSobra(){
+  const divisao = cgEstado.equipe.filter(v => v.incluso && v.qtd > 0)
+    .map(v => ({ vendedor: v.vendedor, qtd: v.qtd, ritmo: v.ritmo }));
+  const r = await cgAPI({ acao:'lista_sobra', lista_id: cgEstado.lista.id, distribuicao: divisao }, 'cg-d-passou');
+  if(!r) return;
+  cgEstado.modoSobra = false;
+  toast('Sobra distribu\u00edda.');
+  cgAbrirLista(cgEstado.lista.id);
+}
+
+// ---------------------------------------------------------------- ligacoes
+
+(function cgLigar(){
+  const on = (id, ev, fn) => { const el = document.getElementById(id); if(el) el.addEventListener(ev, fn); };
+
+  document.querySelectorAll('#view-carteira-gestao [data-cg]').forEach(b =>
+    b.addEventListener('click', () => cgVer(b.dataset.cg)));
+
+  on('cg-voltar', 'click', () => {
+    const painel = document.getElementById('cg-painel').classList.contains('on');
+    if(painel) go('home'); else { cgEstado.modoSobra = false; cgVer('painel'); cgCarregarPainel(); }
+  });
+  on('cg-btn-carteira', 'click', () => { window.cgVerCarteira = true; go('carteira'); });
+
+  on('cg-btn-nova', 'click', () => {
+    cgZerar();
+    document.getElementById('cg-nome').value = '';
+    document.getElementById('cg-solta').hidden = false;
+    document.getElementById('cg-arq').hidden = true;
+    document.getElementById('cg-mapa-box').hidden = true;
+    document.getElementById('cg-colar-box').hidden = true;
+    document.getElementById('cg-colar').value = '';
+    document.getElementById('cg-btn-contar').disabled = true;
+    cgAvisar('cg-erro-p1', '');
+    cgCarregarPainel();          // reequipe: ritmo e fila de hoje
+    cgVer('p1');
+  });
+
+  on('cg-solta', 'click', () => document.getElementById('cg-file').click());
+  on('cg-trocar', 'click', () => {
+    document.getElementById('cg-file').value = '';
+    document.getElementById('cg-arq').hidden = true;
+    document.getElementById('cg-solta').hidden = false;
+    document.getElementById('cg-mapa-box').hidden = true;
+    document.getElementById('cg-btn-contar').disabled = true;
+  });
+  on('cg-file', 'change', e => cgArquivoEscolhido(e.target.files && e.target.files[0]));
+
+  on('cg-btn-colar', 'click', () => {
+    const box = document.getElementById('cg-colar-box');
+    box.hidden = !box.hidden;
+    if(!box.hidden) document.getElementById('cg-colar').focus();
+  });
+  on('cg-colar-usar', 'click', () => {
+    const txt = document.getElementById('cg-colar').value;
+    if(!txt.trim()){ cgAvisar('cg-erro-p1', 'Cole a lista na caixa acima.', true); return; }
+    cgUsarLinhas(cgParseCSV(txt, cgSeparador(txt)), 'colado da planilha', 'CSV');
+  });
+
+  on('cg-col-fone', 'change', e => { cgEstado.colFone = parseInt(e.target.value, 10); cgPintarAmostra(); });
+  on('cg-col-nome', 'change', e => { cgEstado.colNome = parseInt(e.target.value, 10); cgPintarAmostra(); });
+  on('cg-btn-contar', 'click', cgContar);
+  on('cg-ver-desc', 'click', () => {
+    const d = document.getElementById('cg-descartes'); d.hidden = !d.hidden;
+  });
+
+  document.querySelectorAll('#cg-p3 .cg-chipbtn[data-campo]').forEach(ch => ch.addEventListener('click', () => {
+    const t = cgFoco || document.getElementById('cg-v0');
+    if(!t) return;
+    const a = t.selectionStart == null ? t.value.length : t.selectionStart;
+    const b = t.selectionEnd == null ? a : t.selectionEnd;
+    t.value = t.value.slice(0, a) + ch.dataset.campo + t.value.slice(b);
+    const i = Number(t.id.replace('cg-v',''));
+    cgEstado.versoes[i] = t.value;
+    t.focus(); t.setSelectionRange(a + ch.dataset.campo.length, a + ch.dataset.campo.length);
+    cgRenderMsg();
+  }));
+  on('cg-add-v', 'click', () => {
+    if(cgEstado.versoes.length >= 3) return;
+    cgEstado.versoes.push('');
+    cgPintarVersoes();
+  });
+  on('cg-btn-p4', 'click', () => {
+    cgEstado.versoes = cgEstado.versoes.filter(t => t.trim() !== '');
+    if(!cgEstado.versoes.length) return;
+    cgEstado.modoSobra = false;
+    cgPintarDistribuir();
+    cgVer('p4');
+  });
+
+  on('cg-igual', 'click', cgDividirIgual);
+  on('cg-zerar', 'click', () => { cgEstado.equipe.forEach(v => v.qtd = 0); cgPintarQtd(); });
+  on('cg-p4-voltar', 'click', () => {
+    if(cgEstado.modoSobra){ cgEstado.modoSobra = false; cgVer('acompanhar'); } else cgVer('p3');
+  });
+  on('cg-btn-revisar', 'click', () => {
+    if(cgEstado.modoSobra){ cgEnviarSobra(); return; }
+    cgPintarResumo();
+    cgVer('p5');
+  });
+  on('cg-p5-voltar', 'click', () => cgVer('p4'));
+  on('cg-btn-enviar', 'click', cgEnviar);
+  on('cg-fim-voltar', 'click', () => { cgVer('painel'); cgCarregarPainel(); });
+
+  on('cg-a-pausar', 'click', cgAlternarPausa);
+  on('cg-a-sobra', 'click', cgDistribuirSobra);
+  on('cg-a-voltar', 'click', () => { cgVer('painel'); cgCarregarPainel(); });
+
+  // o passo 3 so monta quando a tela abre pela primeira vez
+  const p3 = document.getElementById('cg-p3');
+  if(p3) new MutationObserver(() => {
+    if(p3.classList.contains('on') && !document.getElementById('cg-v0')) cgPintarVersoes();
+  }).observe(p3, { attributes:true, attributeFilter:['class'] });
+})();
+
 // ==================== ROTA INICIAL POR HASH ====================
 // Roda no FIM do script de propósito. Quando isto ficava lá em cima, junto do
 // router, abrir o app em #carteira (ou #escala) chamava go() antes de as
@@ -5527,7 +6634,7 @@ function cartConcluir(texto){
 // Se mudar de lugar, tem que continuar depois da última declaração do arquivo.
 (function rotaInicial(){
   var rotas = { '#sim':'sim', '#escala':'escala', '#tabelas':'tabelas', '#faq':'faq',
-                '#carteira':'carteira', '#anuncio':'anuncio', '#evento':'evento', '#contratos':'contratos', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
+                '#carteira':'carteira', '#carteira-gestao':'carteira-gestao', '#anuncio':'anuncio', '#evento':'evento', '#contratos':'contratos', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
   var destino = rotas[location.hash];
   if(!destino) return;
   try{
