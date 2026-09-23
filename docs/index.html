@@ -5968,9 +5968,40 @@ function cgAvisar(id, texto, erro){
 }
 
 /** Chama o Cofre e trata os dois erros que tiram o Ricardo da tela. */
+/**
+ * POST no Cofre com RETRY. O `/exec` do Apps Script devolve, de vez em quando, a
+ * p\u00e1gina HTML "N\u00e3o foi poss\u00edvel abrir o arquivo" em vez do JSON \u2014 em 12/09 uma rota
+ * p\u00fablica falhou 5 de 8 chamadas seguidas. N\u00e3o \u00e9 deploy quebrado e n\u00e3o adianta
+ * avisar o usu\u00e1rio: adianta tentar de novo, que \u00e9 o que o `cofreLer()` do Simulador
+ * j\u00e1 fazia desde 12/09. A Gest\u00e3o da Carteira nasceu sem isso e **foi exatamente o
+ * que travou o Ricardo em 23/09**: o `lista_painel` falhou calado, a equipe ficou
+ * vazia, e o passo 4 virou um cart\u00e3o em branco com o bot\u00e3o morto.
+ *
+ * Espera crescente entre as tentativas, porque as chamadas desta tela levam 7-8 s
+ * e duas em voo ao mesmo tempo enfileiram no Apps Script.
+ */
+async function cgPost(payload, tentativas){
+  const n = tentativas || 3;
+  let ultimo = null;
+  for(let i = 0; i < n; i++){
+    try{
+      if(!CARTEIRA_API) throw new Error('sem_url');
+      const r = await fetch(CARTEIRA_API, { method:'POST', body: JSON.stringify(payload) });
+      const t = await r.text();
+      try{ return JSON.parse(t); }
+      catch(e){ ultimo = new Error('resposta_nao_json'); }
+    }catch(e){
+      if(e.message === 'sem_url') throw e;
+      ultimo = e;
+    }
+    if(i < n - 1) await new Promise(ok => setTimeout(ok, 900 * (i + 1)));
+  }
+  throw ultimo || new Error('falhou');
+}
+
 async function cgAPI(payload, idErro){
   try{
-    const r = await cartAPI(Object.assign({ token: cartSes && cartSes.token }, payload));
+    const r = await cgPost(Object.assign({ token: cartSes && cartSes.token }, payload));
     if(!r.ok){
       if(r.erro === 'TOKEN_INVALIDO' || r.erro === 'VENDEDOR_INATIVO'){ go('carteira'); cartSessaoCaiu(r.msg); return null; }
       if(r.erro === 'SEM_PERMISSAO'){ go('carteira'); toast('Esta tela \u00e9 da gest\u00e3o.'); return null; }
@@ -6316,6 +6347,30 @@ function cgPintarDistribuir(){
 
   const box = document.getElementById('cg-vendedores');
   box.innerHTML = '';
+
+  /* Cart\u00e3o vazio com bot\u00e3o morto n\u00e3o \u00e9 estado: \u00e9 uma tela que n\u00e3o conta o que houve.
+     Foi o que o Ricardo viu em 23/09 \u2014 "Quanto vai para cada um" em branco, Revisar
+     apagado, e o aviso do erro no PAINEL, que ele n\u00e3o estava vendo. */
+  if(!cgEstado.equipe.length){
+    const aviso = document.createElement('div');
+    aviso.className = 'cart-aviso on erro';
+    aviso.style.margin = '8px 2px 12px';
+    aviso.textContent = 'N\u00e3o consegui carregar a equipe do servidor, ent\u00e3o n\u00e3o d\u00e1 para dividir a lista. ' +
+      'O seu arquivo e as mensagens continuam aqui \u2014 nada se perdeu.';
+    box.appendChild(aviso);
+    const btn = document.createElement('button');
+    btn.className = 'cart-btn sec';
+    btn.textContent = 'Tentar de novo';
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = 'Buscando\u2026';
+      await cgCarregarPainel();
+      cgPintarDistribuir();
+    });
+    box.appendChild(btn);
+    document.getElementById('cg-btn-revisar').disabled = true;
+    return;
+  }
+
   cgEstado.equipe.forEach((v, i) => {
     const d = document.createElement('div');
     d.className = 'cg-vend';
@@ -6380,8 +6435,13 @@ function cgPintarQtd(digitando){
   barra.classList.toggle('passou', passou);
   document.getElementById('cg-d-dist').textContent = soma;
   document.getElementById('cg-d-sobra').textContent = passou ? 'passou ' + (soma - disp) : 'sobram ' + (disp - soma);
-  cgAvisar('cg-d-passou', passou
-    ? 'Voc\u00ea distribuiu ' + soma + ', mas a lista tem ' + disp + '. Tire ' + (soma - disp) + ' de algu\u00e9m para continuar.' : '', true);
+  /* Bot\u00e3o apagado tem de dizer por qu\u00ea. Quando a soma \u00e9 zero, a tela ficava muda e
+     parecia travada \u2014 e a pessoa n\u00e3o tem como adivinhar que falta apertar "Dividir
+     igual" ou digitar uma quantidade. */
+  cgAvisar('cg-d-passou',
+    passou ? 'Voc\u00ea distribuiu ' + soma + ', mas a lista tem ' + disp + '. Tire ' + (soma - disp) + ' de algu\u00e9m para continuar.'
+    : (soma === 0 ? 'Ningu\u00e9m vai receber nada ainda. Toque em \u201cDividir igual\u201d, ou digite quanto vai para cada um.' : ''),
+    passou);
   document.getElementById('cg-btn-revisar').disabled = passou || soma === 0;
 }
 
@@ -6590,10 +6650,19 @@ async function cgEnviarSobra(){
     cgEstado.versoes.push('');
     cgPintarVersoes();
   });
-  on('cg-btn-p4', 'click', () => {
+  on('cg-btn-p4', 'click', async () => {
     cgEstado.versoes = cgEstado.versoes.filter(t => t.trim() !== '');
     if(!cgEstado.versoes.length) return;
     cgEstado.modoSobra = false;
+    /* Sem equipe n\u00e3o h\u00e1 o que dividir. Ela vem do lista_painel, que pode ter
+       falhado l\u00e1 atr\u00e1s \u2014 ent\u00e3o o passo 4 busca por conta pr\u00f3pria em vez de abrir
+       vazio. Com `await`, e n\u00e3o "dispara e torce": a chamada leva 7-8 s. */
+    const btn = document.getElementById('cg-btn-p4');
+    if(!cgEstado.equipe.length){
+      btn.disabled = true; btn.textContent = 'Buscando a equipe\u2026';
+      await cgCarregarPainel();
+      btn.disabled = false; btn.textContent = 'Continuar';
+    }
     cgPintarDistribuir();
     cgVer('p4');
   });
