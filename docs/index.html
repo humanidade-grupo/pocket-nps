@@ -4,6 +4,23 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 24/09/2026 (Ricardo) — M-20 EM PRÉ-VENDA, M-21 MISTA PROVISÓRIA, TEMPORÁRIO SÓ NA
+       M-19. A M-20 é pré-venda, com entrega prevista a partir de outubro/2027, e o uso começa
+       na entrega em qualquer forma de pagamento. A M-21 é a quadra mista PROVISÓRIA, entrega a
+       partir de dezembro/2026, e a 2ª etapa vence na entrega; o local definitivo da quadra
+       mista não tem local nem data, e por isso nada aqui cita data para ele. Uso imediato e
+       Temporário, só na M-19. Só texto e uma regra de tela — nenhum preço, fórmula, régua de
+       desconto ou chave do Cofre mudou. (1) Tabela de Preços: o card da M-20 deixa de dizer
+       "Perpétuo e Temporário"; as observações da M-19 e da M-20 viram dois cartões (a da M-20
+       com o boleto "após a entrega e a quitação integral", como a tabela nova); a M-21 troca
+       julho/2027 por dezembro/2026. (2) Simulador: o Temporário se desliga também na M-20
+       (antes só na M-21), com a razão escrita embaixo do botão (#notaProdQuadra). A nota do
+       cartão "uso imediato liberado" (resumo e carta) segue na M-19 e no valor à mão; na M-20
+       e na M-21 ela diz que o uso começa na entrega da quadra (ENTREGA_QUADRA, notaCartao()),
+       e na Reserva deixa de prometer uso. (3) FAQ da Quadra Mista: sai a previsão de
+       agosto/2027, o Regulamento vira "versão em revisão", entram três perguntas (o bloqueio
+       depois do pet, a taxa própria do sepultamento, as duas etapas de uma vez) e a Retomada
+       ganha o processo de inspeção para quando a venda voltar — a venda segue suspensa.
      Rev. 22/09/2026 (Ricardo) — CAMPANHA 50 ANOS ENCERRADA, RETOMADA SUSPENSA, À VISTA
        É PIX. A campanha acabou em 20/09; do escopo sobra só o SALDO dos 50 jazigos do
        Lote 50 Anos na M-19, aberto para repescagem de quem visitou o Parque no dia 20,
@@ -1147,6 +1164,10 @@ input.an-plain{padding-left:14px; font-size:16px}
       <button data-produto="reserva" aria-pressed="false">Reserva<span class="s">até 60x</span></button>
       <button data-produto="temporario" aria-pressed="false">Temporário<span class="s">até 21x</span></button>
     </div>
+    <!-- 24/09 (Ricardo): Temporário é uso imediato, e uso imediato só existe na M-19. Aparece
+         quando a quadra escolhida desliga o botão (simSyncProdutos) — a razão escrita junto do
+         botão, como a da campanha ao lado do interruptor quando o produto está fora dela. -->
+    <p class="fieldnote" id="notaProdQuadra" hidden><b>Temporário é uso imediato — só na M-19.</b></p>
   </section>
 
   <!-- STEP 2: valor -->
@@ -1438,8 +1459,8 @@ input.an-plain{padding-left:14px; font-size:16px}
       <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>
       <span class="tx">
         <span class="t">Quadra M-20</span>
-        <span class="d">Perpétuo e Temporário &middot; à vista R$ 15.999 e R$ 15.699.</span>
-        <span class="tabmeta"><span>31 jazigos</span><span>2 faixas</span><span>21x &middot; 72x</span><span>Temp. 20%</span></span>
+        <span class="d">Perpétuo em pré-venda, entrega prevista a partir de outubro/2027 &middot; à vista R$ 15.999 e R$ 15.699.</span>
+        <span class="tabmeta"><span>pré-venda</span><span>31 jazigos</span><span>2 faixas</span><span>21x &middot; 72x</span></span>
       </span>
       <span class="arw">&rsaquo;</span>
     </a>
@@ -1448,7 +1469,7 @@ input.an-plain{padding-left:14px; font-size:16px}
       <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>
       <span class="tx">
         <span class="t">Quadra M-21 &middot; Mista</span>
-        <span class="d">Pagamento em 2 etapas &mdash; 50% no ato e 50% na entrega, prevista para julho/2027.</span>
+        <span class="d">Pagamento em 2 etapas &mdash; 50% no ato e 50% na entrega, prevista a partir de dezembro/2026 (quadra mista provisória).</span>
         <span class="tabmeta"><span>148 jazigos</span><span>8 faixas</span><span>valores da 1ª etapa</span></span>
       </span>
       <span class="arw">&rsaquo;</span>
@@ -1466,7 +1487,7 @@ input.an-plain{padding-left:14px; font-size:16px}
   </div>
 
   <div class="notecard">
-    <div class="lbl">M-19 e M-20 &middot; observações</div>
+    <div class="lbl">M-19 &middot; observações</div>
     <ol>
       <li><b>Jazigo Perpétuo (uso imediato):</b> à vista <b>somente via Pix</b>, ou parcelado em até 21x sem juros no cartão de crédito.</li>
       <li><b>Jazigo Temporário (uso imediato):</b> mesmas condições. O valor do Uso Temporário corresponde a <b>20%</b> do valor do Uso Perpétuo.</li>
@@ -1475,9 +1496,18 @@ input.an-plain{padding-left:14px; font-size:16px}
   </div>
 
   <div class="notecard">
+    <div class="lbl">M-20 &middot; observações</div>
+    <ol>
+      <li><b>Jazigo Perpétuo em pré-venda:</b> entrega prevista a partir de <b>outubro/2027</b>; o uso começa na entrega, em qualquer forma de pagamento. À vista <b>somente via Pix</b>, ou até 21x sem juros no cartão de crédito.</li>
+      <li><b>Não há Uso Temporário na M-20.</b></li>
+      <li><b>Boleto até 72x (com juros):</b> o jazigo poderá ser utilizado somente após a entrega e a quitação integral.</li>
+    </ol>
+  </div>
+
+  <div class="notecard">
     <div class="lbl">M-21 (Mista) &middot; observações</div>
     <ol>
-      <li><b>Duas etapas:</b> 50% no ato e os 50% restantes na entrega do jazigo, prevista para julho/2027.</li>
+      <li><b>Duas etapas:</b> 50% no ato e os 50% restantes na entrega do jazigo, prevista a partir de dezembro/2026 (quadra mista provisória).</li>
       <li>Os valores da tabela referem-se à <b>1ª etapa</b>, que pode ser paga à vista <b>somente via Pix</b>, ou parcelada em até 21x sem juros ou 72x com juros. A 2ª etapa é paga na entrega, nas mesmas condições.</li>
     </ol>
   </div>
@@ -1700,13 +1730,13 @@ input.an-plain{padding-left:14px; font-size:16px}
 </header>
 
 <main class="wrap">
-  <div class="faq-note"><b>Base normativa.</b> Lei Municipal nº 15.417, de 29/05/2026 (Juiz de Fora/MG) e Regulamento Interno para Sepultamento de Animais Domésticos de Estimação — Modelo Quadra Mista (v3.0, julho/2026). Este FAQ é um material de apoio; em caso de divergência, prevalece o texto do Regulamento e da Lei.</div>
+  <div class="faq-note"><b>Base normativa.</b> Lei Municipal nº 15.417, de 29/05/2026 (Juiz de Fora/MG) e Regulamento Interno para Sepultamento de Animais Domésticos (versão em revisão). Este FAQ é um material de apoio; em caso de divergência, prevalece o texto do Regulamento e da Lei.</div>
   <section class="faq-sec">
     <h2><span class="num">1</span>Conceitos básicos</h2>
     <details class="faq"><summary><span class="q">O que é a Quadra Mista?</span><span class="chev">›</span></summary><div class="a"><p>É uma área física exclusiva e delimitada do Parque da Saudade, destinada ao sepultamento conjunto de seres humanos e de animais domésticos de estimação no mesmo espaço. Só nela é permitido sepultar pets — em nenhum outro ponto do cemitério.</p></div></details>
     <details class="faq"><summary><span class="q">O que é um Jazigo Misto?</span><span class="chev">›</span></summary><div class="a"><p>É o espaço funerário localizado na Quadra Mista, com aptidão expressa, registrada e contratual para receber tanto restos mortais humanos quanto de animais de estimação. Existem dois tipos: o <strong>Jazigo Misto Definitivo</strong> e o <strong>Jazigo Transitório</strong>.</p></div></details>
-    <details class="faq"><summary><span class="q">Qual a diferença entre Quadra Mista Definitiva e Provisória?</span><span class="chev">›</span></summary><div class="a"><p>A <strong>Definitiva</strong> é a área permanente, com previsão de disponibilização ao público até o <strong>final de agosto de 2027</strong>. A <strong>Provisória (Transitória)</strong> é uma área temporária que funciona <em>durante o Período de Transição</em> — ou seja, até a Definitiva ficar pronta — para atender quem já quer comprar ou migrar agora.</p></div></details>
-    <details class="faq"><summary><span class="q">O que é o "Período de Transição"?</span><span class="chev">›</span></summary><div class="a"><p>É o intervalo entre a entrada em vigor do Regulamento e a efetiva disponibilização da Quadra Mista Definitiva (previsão: final de agosto de 2027). Nesse período valem regras especiais do Capítulo III, e as vendas/migrações são feitas na Quadra Mista Provisória.</p></div></details>
+    <details class="faq"><summary><span class="q">Qual a diferença entre Quadra Mista Definitiva e Provisória?</span><span class="chev">›</span></summary><div class="a"><p>A <strong>Definitiva</strong> é a área permanente, que <strong>ainda não tem local nem previsão</strong>. A <strong>Provisória (Transitória)</strong> é a <strong>quadra M-21</strong>, com entrega prevista a partir de <strong>dezembro/2026</strong>: uma área temporária que funciona <em>durante o Período de Transição</em> — ou seja, até a Definitiva ficar pronta — para atender quem já quer comprar ou migrar agora.</p></div></details>
+    <details class="faq"><summary><span class="q">O que é o "Período de Transição"?</span><span class="chev">›</span></summary><div class="a"><p>É o intervalo entre a entrada em vigor do Regulamento e a efetiva disponibilização da Quadra Mista Definitiva, que ainda não tem local nem previsão. Nesse período valem regras especiais do Capítulo III, e as vendas/migrações são feitas na Quadra Mista Provisória — a <strong>M-21</strong>.</p></div></details>
   </section>
   <section class="faq-sec">
     <h2><span class="num">2</span>Quem pode comprar e sepultar</h2>
@@ -1757,14 +1787,17 @@ input.an-plain{padding-left:14px; font-size:16px}
   </section>
   <section class="faq-sec">
     <h2><span class="num">9</span>Prazos, bloqueios e carência</h2>
+    <details class="faq"><summary><span class="q">O jazigo fica bloqueado depois do sepultamento do pet?</span><span class="chev">›</span></summary><div class="a"><p>Na <strong>M-21</strong> (provisória), o jazigo <strong>inteiro</strong> fica <strong>12 meses</strong> sem novo sepultamento — inclusive humano. No Jazigo Misto <strong>Definitivo</strong>, a gaveta do pet fica <strong>3 anos</strong> sem novo uso.</p></div></details>
     <details class="faq"><summary><span class="q">Por quanto tempo a gaveta fica ocupada num Jazigo Misto Definitivo?</span><span class="chev">›</span></summary><div class="a"><p>O sepultamento do pet ocupa integralmente a gaveta e a impede de nova utilização pelo prazo mínimo de <strong>3 anos</strong> (mesma regra dos sepultamentos humanos), contados da data do sepultamento. Nesse período a gaveta não pode ser reaberta para nenhuma finalidade.</p></div></details>
     <details class="faq"><summary><span class="q">E no Jazigo Transitório, qual o prazo?</span><span class="chev">›</span></summary><div class="a"><p>O Jazigo Transitório fica bloqueado para novos sepultamentos por prazo mínimo de <strong>12 meses</strong>, contados do sepultamento do animal. Esse bloqueio é autônomo e <strong>não se confunde</strong> com a carência de 3 anos, que só passa a valer após a transferência para o Jazigo Misto Definitivo.</p></div></details>
     <details class="faq"><summary><span class="q">Quando ocorre a transferência do Transitório para o Definitivo?</span><span class="chev">›</span></summary><div class="a"><p>Depende de <strong>duas condições cumulativas</strong>: ter decorrido o prazo mínimo de 12 meses <strong>e</strong> já existir Jazigo Misto Definitivo disponível. Cumpridas ambas, o Parque faz a transferência de ofício, sem novo pagamento, transferindo em conjunto e no mesmo ato os restos humanos e do animal (vedada a separação). O titular é avisado por escrito com no mínimo <strong>15 dias</strong> de antecedência e pode acompanhar o ato.</p></div></details>
     <details class="faq"><summary><span class="q">O que acontece ao fim da carência de 3 anos?</span><span class="chev">›</span></summary><div class="a"><p>O titular é comunicado com pelo menos <strong>30 dias</strong> de antecedência para decidir entre renovar a concessão ou realizar a exumação. Sem manifestação, há renovação automática por mais 1 ano e nova tentativa de contato antes de qualquer medida administrativa. Findo o prazo, é autorizada a exumação, com acondicionamento dos restos em caixa específica; eles podem permanecer no jazigo, ser transladados para outro Jazigo Misto ou retirados pela família.</p></div></details>
-    <details class="faq"><summary><span class="q">A data de agosto/2027 é garantida?</span><span class="chev">›</span></summary><div class="a"><p>É uma <strong>estimativa de planejamento</strong>. Pode ser prorrogada por caso fortuito, força maior, exigência de órgãos públicos ou fatores técnicos, hipótese em que a Administração comunica os titulares por escrito em até 30 dias, mantendo integralmente os direitos e a ordem cronológica já constituídos.</p></div></details>
+    <details class="faq"><summary><span class="q">Quando fica pronta a Quadra Mista Definitiva?</span><span class="chev">›</span></summary><div class="a"><p>Ainda <strong>não há local nem previsão</strong>. Enquanto isso, a quadra mista é a <strong>M-21</strong>, provisória, com entrega prevista a partir de <strong>dezembro/2026</strong>. A transferência para a Definitiva, quando houver, é <strong>sem custo</strong> e segue a <strong>ordem de contrato</strong>.</p></div></details>
   </section>
   <section class="faq-sec">
     <h2><span class="num">10</span>Valores e responsabilidades financeiras</h2>
+    <details class="faq"><summary><span class="q">Posso pagar as duas etapas de uma vez?</span><span class="chev">›</span></summary><div class="a"><p><strong>Sim.</strong> A M-21 é paga em 2 etapas — 50% no ato e 50% na entrega da quadra, prevista a partir de dezembro/2026 —, mas o cliente pode pagar as duas de uma vez. No Simulador, escolha o jazigo da M-21 e toque em <strong>As duas etapas</strong> (100% agora).</p></div></details>
+    <details class="faq"><summary><span class="q">O sepultamento do pet está incluso no preço do jazigo?</span><span class="chev">›</span></summary><div class="a"><p><strong>Não.</strong> O sepultamento do pet tem <strong>taxa própria</strong>; urna, invólucro e placa são <strong>opcionais pagos</strong>.</p></div></details>
     <details class="faq"><summary><span class="q">Quem paga as despesas do sepultamento do pet?</span><span class="chev">›</span></summary><div class="a"><p>Todas as despesas do sepultamento do animal são de responsabilidade exclusiva do tutor/responsável, ressalvadas as gratuidades expressamente previstas (como o procedimento de transição e a migração).</p></div></details>
     <details class="faq"><summary><span class="q">O que está incluído na taxa básica de sepultamento?</span><span class="chev">›</span></summary><div class="a"><p>Análise e processamento da documentação; emissão da Guia de Autorização; abertura e fechamento do Jazigo Misto; mão de obra operacional; registro interno; e emissão do Comprovante de Sepultamento.</p></div></details>
     <details class="faq"><summary><span class="q">Quais serviços são opcionais (custo adicional)?</span><span class="chev">›</span></summary><div class="a"><p>Fornecimento de urna funerária; fornecimento de invólucro hermético; preparação e acondicionamento do animal pelo Parque; placa de identificação personalizada; serviço de translado; e ornamentação do jazigo.</p></div></details>
@@ -1787,9 +1820,9 @@ input.an-plain{padding-left:14px; font-size:16px}
   <section class="faq-sec">
     <h2><span class="num">14</span>Campanha e quadras</h2>
     <details class="faq"><summary><span class="q">O desconto da campanha soma com o meu desconto?</span><span class="chev">›</span></summary><div class="a"><p><strong>Não.</strong> A campanha substitui o desconto de alçada; os dois não se somam.</p></div></details>
-    <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p><p><strong>A venda de retomada está suspensa desde 22/09/2026.</strong> Os jazigos saíram do estoque no Facilita e a quadra saiu do Simulador e do Anúncio de Venda. A tabela de preços continua na tela Tabela de Preços, só para consulta.</p></div></details>
+    <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p><p><strong>A venda de retomada está suspensa desde 22/09/2026.</strong> Os jazigos saíram do estoque no Facilita e a quadra saiu do Simulador e do Anúncio de Venda. A tabela de preços continua na tela Tabela de Preços, só para consulta.</p><p><strong>Quando a venda voltar:</strong> antes de liberar o contrato, a equipe abre o jazigo para conferir tampa e laterais (procedimento padrão — ficou muito tempo fechado). Vendeu, avise o Pedro, que aciona os sepultadores. Dia calmo, é rápido; dia cheio, pode ficar para o dia seguinte. <strong>O cliente precisa saber a origem do jazigo antes de assinar.</strong></p></div></details>
   </section>
-  <div class="faq-foot">Material de apoio elaborado a partir do Regulamento Interno v3.0 (julho/2026). Para situações não previstas aqui, consultar a Administração do Parque da Saudade, que resolve os casos omissos com base na legislação aplicável.</div>
+  <div class="faq-foot">Material de apoio elaborado a partir do Regulamento Interno para Sepultamento de Animais Domésticos (versão em revisão). Para situações não previstas aqui, consultar a Administração do Parque da Saudade, que resolve os casos omissos com base na legislação aplicável.</div>
 </main>
 </section>
 
@@ -2628,7 +2661,9 @@ function seg(id, attr, key, cb){
     cb && cb(v); render();
   });
 }
-seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); simAplicarValor(); simPintarJazigos(); syncProduto(); });
+// simSyncProdutos depois do simAplicarValor: a Reserva solta o jazigo, e sem quadra o Temporário
+// volta a valer (antes ficava desligado até o vendedor tocar em outra quadra).
+seg('#segProduto','produto','produto', ()=>{ clampPrazo(); buildChips(); simAplicarValor(); simSyncProdutos(); simPintarJazigos(); syncProduto(); });
 seg('#segDia','dia','dia', v=>{ state.dia = parseInt(v,10); });
 state.dia = diaSugerido(); syncDia();
 
@@ -2805,6 +2840,11 @@ const QUADRAS_ORDEM = ['M-19','M-20','M-21','Reserva'];
 const QUADRA_ROTULO = {'M-21':'M-21 (Mista)'};
 const QUADRA_MISTA = 'M-21';          // paga em 2 etapas: a rota dá o TOTAL, simula-se 50%
 const ETAPA_MISTA = 0.5;
+// Quadras sem uso imediato (Ricardo, 24/09/2026): a M-20 é pré-venda e a M-21 é a quadra mista
+// provisória — nas duas o uso começa na entrega da quadra, em qualquer forma de pagamento, e por
+// isso nenhuma tem Temporário. A data é texto da decisão, a mesma da tela Tabela de Preços: a rota
+// do estoque não a traz. Quadra entregue sai daqui.
+const ENTREGA_QUADRA = {'M-20':'outubro/2027', 'M-21':'dezembro/2026'};
 const TEMP_FRACAO = 0.2;              // Uso Temporário = 20% do Perpétuo (mesma regra do texto da tela)
 const EST_K = q => 'pocket_estoque_lista_'+q;
 const estListas = {};                 // quadra -> {d: resposta, deCache: bool}
@@ -2889,19 +2929,21 @@ function simAplicarValor(){
   congChave = '';
   setMoney($('#valor'),'valor', simValorDoJazigo());
 }
-// Produto × quadra: a M-21 (Mista) não tem Temporário. Reserva fica sempre disponível —
-// tocar nela solta o jazigo (ver simAplicarValor). Sem quadra (valor à mão), tudo livre.
+// Produto × quadra: Temporário é uso imediato — só na M-19. A M-20 (pré-venda) e a M-21 (mista
+// provisória, e Quadra Mista é só Perpétuo) não o têm. Reserva fica sempre disponível — tocar
+// nela solta o jazigo (ver simAplicarValor). Sem quadra (valor à mão), tudo livre.
 function simProdutosPermitidos(){
   if(!simModoJazigo()) return null;
   const q = state.jaz ? state.jaz.quadra : state.quadraSel;
   if(!q) return null;
-  if(ehMista(q)) return ['perpetuo','reserva'];
+  if(ehMista(q) || ENTREGA_QUADRA[q]) return ['perpetuo','reserva'];
   return ['perpetuo','temporario','reserva'];
 }
 function simSyncProdutos(){
   const ok = simProdutosPermitidos();
   const bs = [...document.querySelectorAll('#segProduto button')];
   bs.forEach(b=>{ b.disabled = !!ok && ok.indexOf(b.dataset.produto)<0; });
+  const np = $('#notaProdQuadra'); if(np) np.hidden = !(ok && ok.indexOf('temporario')<0);
   if(ok && ok.indexOf(state.produto)<0){
     state.produto = ok[0];
     bs.forEach(b=> b.setAttribute('aria-pressed', b.dataset.produto===state.produto));
@@ -3415,10 +3457,25 @@ function checaEntrada(depois){
   return false;
 }
 
+// A nota do cartão onde NÃO há uso imediato — a MESMA frase no resumo e na carta. Uso imediato
+// só na M-19 (Ricardo, 24/09/2026): na M-20 e na M-21 o cartão quita, mas o uso começa na entrega
+// da quadra; na M-21 só com a 1ª etapa, o que fica quitado no ato é a etapa — a 2ª vence na
+// entrega. Reserva é compra na planta, sem jazigo físico: também não promete uso.
+// '' = M-19, ou valor à mão sem quadra: segue a nota do uso imediato.
+function notaCartao(){
+  if(state.produto==='reserva') return 'No cartão, a Reserva fica quitada no ato.';
+  const entrega = state.jaz ? ENTREGA_QUADRA[state.jaz.quadra] : '';
+  if(!entrega) return '';
+  const quitado = (ehMista(state.jaz.quadra) && state.m21Etapas!==2) ? 'a 1ª etapa fica quitada' : 'o jazigo fica quitado';
+  return 'No cartão, '+quitado+' no ato; o uso começa na entrega da quadra, prevista a partir de '+entrega+'.';
+}
 function useNote(r){
   if(r.forma!=='prazo') return '';
-  if(r.meio==='cartao')
+  if(r.meio==='cartao'){
+    const n = notaCartao();
+    if(n) return `<div class="usenote"><span class="i">◦</span><span>${n}</span></div>`;
     return `<div class="usenote ok"><span class="i">✓</span><span>No cartão, o jazigo já fica <b>quitado</b> — uso imediato liberado, se a família precisar.</span></div>`;
+  }
   return `<div class="usenote"><span class="i">◦</span><span>No boleto, para uso antes da quitação o saldo precisa ser quitado (à vista ou no cartão).</span></div>`;
 }
 function vpBlock(r){
@@ -3565,7 +3622,7 @@ function cartaPropostaHTML(r){
     const cr = cronoLinhas(r, false);
     if(cr.length) notas.push('Cronograma: '+cr.join(' · '));
     notas.push(r.meio==='cartao'
-      ? 'No cartão de crédito, o jazigo fica quitado no ato — uso imediato liberado, caso a família precise.'
+      ? (notaCartao() || 'No cartão de crédito, o jazigo fica quitado no ato — uso imediato liberado, caso a família precise.')
       : 'No boleto, o uso do jazigo é liberado após a quitação integral do parcelamento.');
   }
   if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
