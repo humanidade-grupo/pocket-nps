@@ -4,6 +4,11 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/09/2026, madrugada (Ricardo) — TIRAR DÚVIDA (Assistente do Parque, Fase 2). Tela nova
+       #assistente: pergunta de regra ao Claude, pela sessão do PIN, via Worker parque-assistente
+       (cofre/assistente-worker). O perfil, o limite do dia e o teto do mês são do SERVIDOR. Nasce
+       visível só para quem entra com PIN de gestão (@assistente_liberado no Cofre); precisa de
+       internet; o aviso de não colar dado de cliente fica fixo na tela.
      Rev. 24/09/2026, noite (Ricardo) — AS DUAS PENDÊNCIAS DA REVISÃO DA TARDE. (1) Onde não há
        uso imediato, a nota do boleto deixa de sugerir uso depois da quitação: na M-20 e na M-21,
        "o jazigo poderá ser utilizado somente após a entrega da quadra, prevista a partir de …,
@@ -1065,6 +1070,24 @@ input.an-plain{padding-left:14px; font-size:16px}
 .hm-tile .d{font-size:11.5px; color:var(--muted); line-height:1.3; margin-top:-4px}
 .hm-tile .bd{position:absolute; top:10px; right:10px; min-width:22px; height:22px; border-radius:11px; background:var(--dourado); color:#fff; font-size:12px; font-weight:700; display:grid; place-items:center; padding:0 6px}
 .hm-tile .bd[hidden]{display:none}
+/* (24/09) Tirar dúvida: o 7º cartão ocupa a linha inteira — a grade segue 2×3 para quem não o vê. */
+.hm-tile[hidden]{display:none}
+#asTile{grid-column:1/-1; flex-direction:row; align-items:center; min-height:0; gap:12px}
+#asTile .d{margin-top:0}
+#view-assistente [hidden]{display:none!important}
+.as-aviso{background:rgba(204,144,11,.10); border:1px solid rgba(204,144,11,.30); border-radius:var(--radius-sm); padding:10px 13px; font-size:12.5px; line-height:1.45; margin:4px 2px 12px; font-weight:600}
+.as-msgs{display:flex; flex-direction:column; gap:10px; margin:0 0 12px}
+.as-msg{max-width:92%; padding:11px 13px; border-radius:14px; font-size:14.5px; line-height:1.5; white-space:pre-wrap; word-wrap:break-word}
+.as-eu{align-self:flex-end; background:var(--marrom); color:var(--off-white); border-bottom-right-radius:5px}
+.as-bot{align-self:flex-start; background:var(--card); border:1px solid var(--border); border-bottom-left-radius:5px}
+.as-erro{align-self:flex-start; background:rgba(154,59,42,.10); border:1px solid rgba(154,59,42,.30); color:var(--danger); font-weight:600}
+.as-dica{font-size:13px; color:var(--muted); line-height:1.5; margin:2px 2px 12px}
+.as-caixa{display:flex; gap:8px; align-items:flex-end}
+.as-caixa textarea{flex:1; min-height:48px; max-height:140px; resize:none; border:1.5px solid var(--border-strong); border-radius:12px; padding:12px 13px; font:inherit; font-size:15px; color:var(--marrom); background:#fff; outline:none}
+.as-caixa textarea:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.16)}
+.as-caixa .cart-btn{width:auto; padding:14px 16px}
+.as-rodape{font-size:11.5px; color:var(--muted); margin:8px 2px 0; display:flex; justify-content:space-between; gap:8px}
+.as-rodape button{border:0; background:none; color:var(--dourado); font:inherit; font-weight:700; cursor:pointer; padding:0}
 .hm-rodape{text-align:center; font-size:10.5px; color:var(--muted); line-height:1.35; padding-top:2px}
 </style>
 </head>
@@ -1124,6 +1147,12 @@ input.an-plain{padding-left:14px; font-size:16px}
       <button class="hm-tile" data-go="faq">
         <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.7 2.7 0 1 1 3.4 2.6c-.85.28-1.2.9-1.2 1.75"/><line x1="12" y1="16.8" x2="12" y2="16.81"/></svg></span>
         <span class="t">FAQ Mistos</span><span class="d">Humano + pet</span>
+      </button>
+      <!-- (24/09) Tirar dúvida — escondido até a sessão ter papel gestão (fase de teste). Quem
+           manda de verdade é o servidor (@assistente_liberado); isto só evita um botão que diria "não". -->
+      <button class="hm-tile" data-go="assistente" id="asTile" hidden>
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M20 14.5a2 2 0 0 1-2 2H8l-4 4V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9.6 8.4a2.4 2.4 0 1 1 3 2.3c-.7.2-1 .7-1 1.4"/><line x1="11.6" y1="14" x2="11.6" y2="14.01"/></svg></span>
+        <span><span class="t">Tirar dúvida</span><br><span class="d">Regra, frase pronta e a fonte</span></span>
       </button>
     </div>
 
@@ -1706,6 +1735,56 @@ input.an-plain{padding-left:14px; font-size:16px}
   <div class="modal" id="modalEnt"></div>
 </div>
 
+
+<!-- ==================== TIRAR DÚVIDA (Assistente do Parque, 24/09) ==================== -->
+<section class="view" id="view-assistente">
+<header>
+  <div class="deco"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="841.2131" height="910.218" viewBox="0 0 841.2131 910.218">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M539.3936 84.74298H1380.6067V994.961H539.3936Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M0 1080H1920V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,450.565,8)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0 39.455-2.633C61.893-4.131 83.315-5.447 105.486-10.131 111.29-11.357 166.219-41.418 157.827-61.496L146.269-89.144C131.02-125.624 102.772-162.096 129.505-198.98 136.188-208.201 141.169-221.389 151.2-227.426 165.82-236.224 185.306-239.266 202.379-239.124 227.095-238.918 249.814-240.622 273.885-244.55 311.902-250.754 301.477-273.252 327.468-281.478 346.204-287.407 363.741-291.099 382.648-298.884 350.667-299.915 332.522-290.925 300.013-303.691 257.192-320.506 220.098-328.385 182.035-354.84 177.871-360.255 178.284-369.867 177.167-376.312 169.849-418.538 190.961-439.82 222.392-462.144 237.094-472.586 251.073-483.241 264.88-494.492 273.333-501.38 274.309-510.595 273.047-520.843 270.195-544.003 265.849-565.771 260.744-588.691 254.373-617.292 223.033-658.015 205.757-682.235L148.385-762.668C114.531-810.131 46.061-872.147-7.337-893.475-9.198-894.218-13.887-894.002-13.65-893.067-13.415-892.139-12.861-889.431-12.266-888.562L18.183-844.164C39.188-813.535 67.443-720.838 80.434-681.673L92.654-644.832C96.349-633.693 101.356-623.503 106.007-612.557 109.763-603.717 107.718-592.309 118.558-586.37 114.525-576.881 111.718-568.263 107.249-559.243 95.11-534.739 64.168-510.128 45.543-488.538 33.208-474.239 15.298-438.638 8.667-420.308 7.029-415.779 1.862-410.643-4.443-412.774-26.31-420.163-50.823-420.37-72.801-429.176L-408.043-595.624C-419.411-601.268-429.321-605.469-442.565-607.204-432.425-595.965-421.025-586.917-407.767-580.269L-300.965-526.711C-295.829-524.135-289.703-520.776-285.378-517.485L-225.259-471.73C-251.787-478.146-274.937-483.541-298.41-492.729L-382.242-525.545C-392.651-529.619-402.372-533.223-415.031-532.096-399.52-518.871-382.099-511.863-363.619-504.17L-180.964-428.141C-156.325-417.885-134.406-404.577-111.419-391.26-79.046-372.504-50.426-349.557-25.492-322.018-13.253-308.5-24.651-276.461-24.868-268.069L-25.665-237.32C-26.092-220.837-23.532-202.922-18.587-187.216L.804-125.621-4.837-99.897C-15.247-101.327-19.566-94.486-26.155-91.343L-52.34-78.85C-66.665-72.016-81.418-67.622-96.66-63.116-109.996-59.174-122.582-53.707-136.214-50.758-154.613-46.778-173.118-44.396-191.986-43.043-207.544-41.927-221.81-45.471-239.071-42.484-185.262-15.717-127.614-5.808-69.832 0H0Z"/>
+</g>
+</g>
+</svg>
+</div>
+  <div class="hwrap">
+    <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
+    <div class="brandrow" style="margin-top:12px">
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    </div>
+    <span class="apptag">Pocket NPS · Tirar dúvida</span>
+    <h1>Tirar dúvida</h1>
+    <p class="lead">Pergunte uma regra de venda. A resposta vem da base do Parque, com a fonte. Preço, parcela e estoque continuam no Simulador.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="as-aviso">Não cole nome, CPF ou telefone do cliente.</div>
+  <!-- portão: sem sessão do PIN não há pergunta -->
+  <div class="card" id="asPortao" hidden>
+    <p style="margin:0 0 12px; font-size:14.5px; line-height:1.5">Entre com o seu PIN para tirar dúvidas.</p>
+    <button class="cart-btn" id="asBtnPin" type="button">Entrar com meu PIN</button>
+    <p class="fieldnote">É o mesmo PIN da Carteira do Dia. Depois de entrar, o app volta para cá.</p>
+  </div>
+  <div id="asConversa" hidden>
+    <p class="as-dica" id="asDica">Exemplos: "72x libera o uso na hora?" · "Posso vender Temporário na M-20?" · "Como respondo quando o cliente diz que está caro?"</p>
+    <div class="as-msgs" id="asMsgs" aria-live="polite"></div>
+    <div class="as-caixa">
+      <textarea id="asCampo" rows="1" maxlength="1000" placeholder="Sua pergunta…"></textarea>
+      <button class="cart-btn" id="asEnviar" type="button">Enviar</button>
+    </div>
+    <div class="as-rodape"><span id="asStatus"></span><button type="button" id="asLimpar">Nova conversa</button></div>
+  </div>
+</main>
+</section>
 
 <!-- ==================== FAQ — QUADRA MISTA ==================== -->
 <section class="view" id="view-faq">
@@ -3719,6 +3798,8 @@ function go(view, push){
   if(view==='anuncio' && typeof anAoEntrar==='function') anAoEntrar();
   if(view==='evento' && typeof evAoEntrar==='function') evAoEntrar();
   if(view==='contratos' && typeof ctAoEntrar==='function') ctAoEntrar();
+  if(view==='assistente' && typeof asAoEntrar==='function') asAoEntrar();
+  if(view==='home' && typeof asPintarTile==='function') asPintarTile();
   if(view==='home' && typeof ctPintarCard==='function') ctPintarCard();
   if(view==='home' && typeof homeSaudar==='function') homeSaudar();
   if(view==='sim') estBuscar();
@@ -4563,6 +4644,9 @@ async function cartEntrar(){
     // Contratos para assinar: o card da home ganha o número com o token novo; quem veio do portão volta para a tela.
     try{ if(window.ctBuscar) window.ctBuscar(); }catch(e){}
     try{ if(sessionStorage.getItem('contratos_voltar')){ sessionStorage.removeItem('contratos_voltar'); go('contratos'); } }catch(e){}
+    // Tirar dúvida: quem veio do portão volta para a conversa; o cartão da home acende para a gestão.
+    try{ if(window.asPintarTile) window.asPintarTile(); }catch(e){}
+    try{ if(sessionStorage.getItem('assistente_voltar')){ sessionStorage.removeItem('assistente_voltar'); go('assistente'); } }catch(e){}
   }catch(e){
     cartAvisar('cart-erro-login', e.message === 'sem_url'
       ? 'A carteira ainda não está conectada ao servidor.'
@@ -6788,9 +6872,133 @@ async function cgEnviarSobra(){
 // dados. Aconteceu em produção em 13/08/2026. Quem entrava pela home não via
 // nada disso, porque aí o clique acontece com o script já carregado inteiro.
 // Se mudar de lugar, tem que continuar depois da última declaração do arquivo.
+/* ==================== TIRAR DÚVIDA — Assistente do Parque (24/09/2026) ====================
+   Pergunta de regra ao Claude pelo Worker parque-assistente (código em cofre/assistente-worker).
+   O Pocket manda só o token da sessão do PIN, a pergunta e as últimas mensagens. Quem é a pessoa,
+   o perfil, o limite do dia e o teto do mês saem do SERVIDOR — o Worker confere a sessão no Cofre
+   a cada pergunta. Nenhuma chave de API mora aqui. Precisa de internet (o resto do app segue offline).
+   Fase de teste: o cartão da home só aparece para papel gestão; o servidor recusa os demais até
+   @assistente_liberado = SIM na Config_Carteira. */
+(function(){
+  const AS_WORKER = 'https://parque-assistente.ricardocandrade.workers.dev';
+  const $as = id => document.getElementById(id);
+  let asHist = [];        // [{role, content}] da conversa desta tela
+  let asOcupado = false;
+
+  function asSessao(){
+    try{ const s = JSON.parse(localStorage.getItem('carteira_sessao')||'null'); return (s && s.token) ? s : null; }catch(e){ return null; }
+  }
+  function asPintarTile(){
+    const t = $as('asTile'); if(!t) return;
+    const s = asSessao();
+    t.hidden = !(s && s.papel === 'gestao');
+  }
+  window.asPintarTile = asPintarTile;
+
+  function asBolha(classe, texto){
+    const d = $as('asDica'); if(d) d.hidden = true;
+    const el = document.createElement('div');
+    el.className = 'as-msg ' + classe;
+    el.textContent = texto;
+    $as('asMsgs').appendChild(el);
+    try{ el.scrollIntoView({block:'end', behavior:'smooth'}); }catch(e){}
+    return el;
+  }
+  function asStatus(t){ const el = $as('asStatus'); if(el) el.textContent = t || ''; }
+
+  function asAoEntrar(){
+    const s = asSessao();
+    $as('asPortao').hidden = !!s;
+    $as('asConversa').hidden = !s;
+    if(s && navigator.onLine === false) asStatus('Sem internet: o Tirar dúvida precisa de conexão.');
+    else if(s && !asOcupado) asStatus('');
+  }
+  window.asAoEntrar = asAoEntrar;
+
+  async function asPerguntar(){
+    const campo = $as('asCampo');
+    const pergunta = campo.value.trim();
+    if(!pergunta || asOcupado) return;
+    const s = asSessao();
+    if(!s){ asAoEntrar(); return; }
+    if(navigator.onLine === false){ asStatus('Sem internet: o Tirar dúvida precisa de conexão.'); return; }
+
+    asOcupado = true; $as('asEnviar').disabled = true;
+    campo.value = ''; campo.style.height = '';
+    asBolha('as-eu', pergunta);
+    const saida = asBolha('as-bot', '…');
+    asStatus('Consultando a base…');
+    let resposta = '';
+    try{
+      const req = await fetch(AS_WORKER, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ token: s.token, pergunta: pergunta, historico: asHist.slice(-6) })
+      });
+      if(!req.ok){
+        let j = null; try{ j = await req.json(); }catch(e){}
+        const msg = (j && j.msg) || ('Não foi possível perguntar agora (' + req.status + ').');
+        saida.className = 'as-msg as-erro'; saida.textContent = msg;
+        if(j && (j.erro === 'TOKEN_INVALIDO' || j.erro === 'VENDEDOR_INATIVO')){
+          try{ localStorage.removeItem('carteira_sessao'); }catch(e){}
+          asPintarTile();
+        }
+        asStatus('');
+        return;
+      }
+      const rest = req.headers.get('X-Assistente-Restantes');
+      const leitor = req.body.getReader(), dec = new TextDecoder();
+      let sobra = '', recusa = false;
+      for(;;){
+        const passo = await leitor.read();
+        if(passo.done) break;
+        sobra += dec.decode(passo.value, {stream:true});
+        const linhas = sobra.split('\n'); sobra = linhas.pop();
+        for(const linha of linhas){
+          if(linha.indexOf('data: ') !== 0) continue;
+          let ev; try{ ev = JSON.parse(linha.slice(6)); }catch(e){ continue; }
+          if(ev.type === 'content_block_delta' && ev.delta && ev.delta.type === 'text_delta'){
+            resposta += ev.delta.text; saida.textContent = resposta;
+          }
+          if(ev.type === 'message_delta' && ev.delta && ev.delta.stop_reason === 'refusal') recusa = true;
+        }
+      }
+      if(resposta && !recusa){
+        asHist.push({role:'user', content: pergunta}, {role:'assistant', content: resposta});
+        asStatus(rest !== null && rest !== '' ? ('Perguntas restantes hoje: ' + rest) : '');
+      }else{
+        saida.className = 'as-msg as-erro';
+        saida.textContent = recusa ? 'O Assistente não respondeu a esta pergunta. Reformule, ou fale com o Ricardo.' : 'O Assistente não devolveu resposta. Tente reformular.';
+        asStatus('');
+      }
+    }catch(e){
+      saida.className = 'as-msg as-erro';
+      saida.textContent = navigator.onLine === false ? 'Sem internet: o Tirar dúvida precisa de conexão.' : 'Falha na conexão com o Assistente. Tente de novo.';
+      asStatus('');
+    }finally{
+      asOcupado = false; $as('asEnviar').disabled = false;
+    }
+  }
+
+  $as('asEnviar').addEventListener('click', asPerguntar);
+  $as('asCampo').addEventListener('keydown', ev => { if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); asPerguntar(); } });
+  $as('asCampo').addEventListener('input', function(){ this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 140) + 'px'; });
+  $as('asLimpar').addEventListener('click', () => {
+    if(asOcupado) return;
+    asHist = []; $as('asMsgs').textContent = ''; const d = $as('asDica'); if(d) d.hidden = false; asStatus('');
+  });
+  $as('asBtnPin').addEventListener('click', () => {
+    try{ sessionStorage.setItem('assistente_voltar', '1'); }catch(e){}
+    go('carteira');
+  });
+  const asRever = () => { const v = $as('view-assistente'); if(v && v.classList.contains('active')) asAoEntrar(); };
+  window.addEventListener('online', asRever);
+  window.addEventListener('offline', asRever);
+  asPintarTile();
+})();
+
 (function rotaInicial(){
   var rotas = { '#sim':'sim', '#escala':'escala', '#tabelas':'tabelas', '#faq':'faq',
-                '#carteira':'carteira', '#carteira-gestao':'carteira-gestao', '#anuncio':'anuncio', '#evento':'evento', '#contratos':'contratos', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
+                '#carteira':'carteira', '#carteira-gestao':'carteira-gestao', '#anuncio':'anuncio', '#evento':'evento', '#contratos':'contratos', '#assistente':'assistente', '#iq':'home' };   // IQ desabilitado: link antigo cai na home
   var destino = rotas[location.hash];
   if(!destino) return;
   try{
