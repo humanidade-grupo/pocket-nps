@@ -4,9 +4,10 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
-     Rev. 25/09/2026, noite, 2ª (Ricardo) — GESTÃO NOVA NO LOGIN. Rodrigo, Fabrícia e Aline entram no
-       seletor do PIN (CARTEIRA_GESTAO, só o login) — NÃO no "Quem vendeu?" do Anúncio, que segue na
-       lista dos vendedores. O papel e o PIN são da Config_Carteira.
+     Rev. 25/09/2026, noite, 2ª (Ricardo) — PIN SÓ PARA O TIRAR DÚVIDA. Rodrigo, Fabrícia e Aline entram
+       no seletor do PIN (CARTEIRA_CONSULTA, só o login — NÃO no "Quem vendeu?" do Anúncio) com o papel
+       novo `consulta` da Config_Carteira: o login e a tela Carteira levam direto ao Tirar dúvida; sem
+       lista do dia, sem lead, sem o painel da gestão (o Cofre recusa com SO_CONSULTA).
      Rev. 25/09/2026, noite (Ricardo) — TIRAR DÚVIDA PARA O TIME. O botão deixa de acender só para papel
        gestão (fixo no código): o Pocket pergunta ao Cofre (acao assistente_estado) e segue a resposta —
        @assistente_liberado = SIM passa a mostrar o botão aos vendedores. Guardado por token no aparelho.
@@ -4392,10 +4393,10 @@ const CARTEIRA_API = 'https://script.google.com/macros/s/AKfycbydLmUEX3g6FeojFGA
    tinha deixado a equipe, e o nome seguia no seletor porque constante de front
    envelhece calada. Nome novo na Config_Carteira precisa ser acrescentado aqui. */
 const CARTEIRA_VENDEDORES = ['Ana Luiza','Guilherme','Wanderson','Felipe','Jaime','Ricardo'];
-/* (25/09) Quem entra com PIN de GESTÃO e não vende: aparece só no seletor do login — nunca no
-   "Quem vendeu?" do Anúncio, que usa CARTEIRA_VENDEDORES. O papel vem da Config_Carteira. */
-const CARTEIRA_GESTAO = ['Rodrigo','Fabrícia','Aline'];
-const CARTEIRA_LOGIN = CARTEIRA_VENDEDORES.concat(CARTEIRA_GESTAO);
+/* (25/09) Quem entra com PIN só para o Tirar dúvida (papel `consulta` na Config_Carteira): aparece
+   só no seletor do login — nunca no "Quem vendeu?" do Anúncio, que usa CARTEIRA_VENDEDORES. */
+const CARTEIRA_CONSULTA = ['Rodrigo','Fabrícia','Aline'];
+const CARTEIRA_LOGIN = CARTEIRA_VENDEDORES.concat(CARTEIRA_CONSULTA);
 
 // Texto padrão, usado enquanto não houver @msg_v1..@msg_v4 no Config_Carteira.
 const CARTEIRA_MSG_PADRAO = [
@@ -4597,6 +4598,9 @@ function cartAoEntrar(){
   }
   if(!cartSes || !cartSes.token){ cartVer('login'); return; }
 
+  /* (25/09) Papel consulta: o PIN serve só para o Tirar dúvida — sem lista do dia. */
+  if(cartSes.papel === 'consulta'){ go('assistente'); return; }
+
   /* Gestao abre o painel, e nao a lista do dia. `cgVerCarteira` e o que deixa o
      Ricardo abrir a propria carteira pelo botao do painel sem cair de volta aqui
      num vaivem — o pedido explicito dele vale uma vez e se apaga. */
@@ -4672,7 +4676,9 @@ async function cartEntrar(){
     /* Quem entra com o PIN de gestao cai no painel da carteira, nao no "Pegar minha
        lista de hoje" — o login e o mesmo, a porta e que muda. Ele volta para a
        carteira dele pelo botao do painel. */
-    if(r.papel === 'gestao') go('carteira-gestao'); else cartAoEntrar();
+    if(r.papel === 'gestao') go('carteira-gestao');
+    else if(r.papel === 'consulta') go('assistente');   // (25/09) PIN só para o Tirar dúvida
+    else cartAoEntrar();
     // A fila de anúncios vive em outra IIFE e ficava presa até o app ser
     // reaberto. Quem acabou de digitar o PIN tem o token AGORA.
     try{ if(window.anuncioSubirFila) window.anuncioSubirFila(); }catch(e){}
