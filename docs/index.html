@@ -4,6 +4,9 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/09/2026, tarde (Ricardo) — TIRAR DÚVIDA EM DESTAQUE. O cartão sobe para o topo da grade,
+       escuro e com o ícone dourado; e um balão flutuante (#asFab) no canto de todas as telas leva à
+       conversa (some na própria conversa). Os dois seguem só para a sessão de gestão.
      Rev. 25/09/2026, madrugada (Ricardo) — TIRAR DÚVIDA (Assistente do Parque, Fase 2). Tela nova
        #assistente: pergunta de regra ao Claude, pela sessão do PIN, via Worker parque-assistente
        (cofre/assistente-worker). O perfil, o limite do dia e o teto do mês são do SERVIDOR. Nasce
@@ -1072,8 +1075,25 @@ input.an-plain{padding-left:14px; font-size:16px}
 .hm-tile .bd[hidden]{display:none}
 /* (24/09) Tirar dúvida: o 7º cartão ocupa a linha inteira — a grade segue 2×3 para quem não o vê. */
 .hm-tile[hidden]{display:none}
-#asTile{grid-column:1/-1; flex-direction:row; align-items:center; min-height:0; gap:12px}
-#asTile .d{margin-top:0}
+/* (25/09) em destaque: primeiro da grade (order), escuro, ícone dourado, seta à direita. */
+#asTile{grid-column:1/-1; order:-1; flex-direction:row; align-items:center; min-height:0; gap:14px; padding:14px 14px 14px 13px;
+  background:linear-gradient(135deg,#42270C 0%,#5C3A14 100%); border-color:transparent; color:var(--off-white);
+  box-shadow:0 2px 4px rgba(66,39,12,.18), 0 10px 26px rgba(66,39,12,.22)}
+#asTile .ic{width:42px; height:42px; border-radius:13px; background:var(--dourado); flex:0 0 auto}
+#asTile .ic svg{stroke:#fff; width:23px; height:23px}
+#asTile .t{color:var(--off-white); font-size:18px}
+#asTile .d{margin-top:2px; color:var(--muted-on-dark); font-size:12.5px}
+#asTile .as-txt{flex:1; text-align:left}
+#asTile .as-seta{font-size:24px; line-height:1; color:var(--amarelo); margin-left:auto}
+/* (25/09) balão flutuante em todas as telas — abaixo das máscaras (z 60), acima do conteúdo. */
+.as-fab{position:fixed; right:16px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:55; width:58px; height:58px; border-radius:50%;
+  border:0; cursor:pointer; background:var(--marrom); display:grid; place-items:center;
+  box-shadow:0 3px 8px rgba(53,31,9,.30), 0 10px 24px rgba(53,31,9,.28)}
+.as-fab:active{transform:scale(.95)}
+.as-fab svg{width:27px; height:27px; stroke:var(--amarelo); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.as-fab[hidden]{display:none}
+/* com o balão à mostra, o fim de cada tela ganha folga para o balão não cobrir o último botão */
+body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
 #view-assistente [hidden]{display:none!important}
 .as-aviso{background:rgba(204,144,11,.10); border:1px solid rgba(204,144,11,.30); border-radius:var(--radius-sm); padding:10px 13px; font-size:12.5px; line-height:1.45; margin:4px 2px 12px; font-weight:600}
 .as-msgs{display:flex; flex-direction:column; gap:10px; margin:0 0 12px}
@@ -1152,7 +1172,8 @@ input.an-plain{padding-left:14px; font-size:16px}
            manda de verdade é o servidor (@assistente_liberado); isto só evita um botão que diria "não". -->
       <button class="hm-tile" data-go="assistente" id="asTile" hidden>
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M20 14.5a2 2 0 0 1-2 2H8l-4 4V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9.6 8.4a2.4 2.4 0 1 1 3 2.3c-.7.2-1 .7-1 1.4"/><line x1="11.6" y1="14" x2="11.6" y2="14.01"/></svg></span>
-        <span><span class="t">Tirar dúvida</span><br><span class="d">Regra, frase pronta e a fonte</span></span>
+        <span class="as-txt"><span class="t">Tirar dúvida</span><br><span class="d">Pergunte uma regra de venda — a resposta vem com a fonte</span></span>
+        <span class="as-seta" aria-hidden="true">&rsaquo;</span>
       </button>
     </div>
 
@@ -1729,6 +1750,8 @@ input.an-plain{padding-left:14px; font-size:16px}
 </section>
 
 <div class="toast" id="toast"></div>
+<!-- (25/09) Tirar dúvida: balão flutuante em todas as telas (só sessão de gestão, some na conversa). -->
+<button class="as-fab" id="asFab" type="button" aria-label="Tirar dúvida" hidden><svg viewBox="0 0 24 24"><path d="M20 14.5a2 2 0 0 1-2 2H8l-4 4V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9.6 8.4a2.4 2.4 0 1 1 3 2.3c-.7.2-1 .7-1 1.4"/><line x1="11.6" y1="14" x2="11.6" y2="14.01"/></svg></button>
 
 <!-- Confirmação da entrada adicional — conteúdo montado por abrirConfirmaEntrada() -->
 <div class="mask" id="maskEnt" role="dialog" aria-modal="true" aria-labelledby="entConfTit" hidden>
@@ -3799,7 +3822,7 @@ function go(view, push){
   if(view==='evento' && typeof evAoEntrar==='function') evAoEntrar();
   if(view==='contratos' && typeof ctAoEntrar==='function') ctAoEntrar();
   if(view==='assistente' && typeof asAoEntrar==='function') asAoEntrar();
-  if(view==='home' && typeof asPintarTile==='function') asPintarTile();
+  if(typeof asPintarTile==='function') asPintarTile();   // cartão da home + balão flutuante
   if(view==='home' && typeof ctPintarCard==='function') ctPintarCard();
   if(view==='home' && typeof homeSaudar==='function') homeSaudar();
   if(view==='sim') estBuscar();
@@ -6889,9 +6912,16 @@ async function cgEnviarSobra(){
     try{ const s = JSON.parse(localStorage.getItem('carteira_sessao')||'null'); return (s && s.token) ? s : null; }catch(e){ return null; }
   }
   function asPintarTile(){
-    const t = $as('asTile'); if(!t) return;
     const s = asSessao();
-    t.hidden = !(s && s.papel === 'gestao');
+    const pode = !!(s && s.papel === 'gestao');
+    const t = $as('asTile'); if(t) t.hidden = !pode;
+    const f = $as('asFab');
+    if(f){
+      const ativa = document.querySelector('.view.active');
+      const naConversa = !!(ativa && ativa.id === 'view-assistente');
+      f.hidden = !pode || naConversa;
+      document.body.classList.toggle('as-fab-on', !f.hidden);
+    }
   }
   window.asPintarTile = asPintarTile;
 
@@ -6979,6 +7009,7 @@ async function cgEnviarSobra(){
     }
   }
 
+  $as('asFab').addEventListener('click', () => go('assistente'));
   $as('asEnviar').addEventListener('click', asPerguntar);
   $as('asCampo').addEventListener('keydown', ev => { if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); asPerguntar(); } });
   $as('asCampo').addEventListener('input', function(){ this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 140) + 'px'; });
