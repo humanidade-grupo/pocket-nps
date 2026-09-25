@@ -4,6 +4,9 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/09/2026, noite (Ricardo) — TIRAR DÚVIDA PARA O TIME. O botão deixa de acender só para papel
+       gestão (fixo no código): o Pocket pergunta ao Cofre (acao assistente_estado) e segue a resposta —
+       @assistente_liberado = SIM passa a mostrar o botão aos vendedores. Guardado por token no aparelho.
      Rev. 25/09/2026, fim da tarde (Ricardo) — TEXTOS DA RECICLAGEM. Tabela de Preços da M-20: a trava da
        pré-venda (entrega + quitado no boleto/recorrente). FAQ da Mista: pet no jazigo de outra quadra —
        a lei permite, o consultor explica o risco; "o lugar do Parque feito para sepultar pet"; a troca
@@ -1173,8 +1176,8 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
         <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.7 2.7 0 1 1 3.4 2.6c-.85.28-1.2.9-1.2 1.75"/><line x1="12" y1="16.8" x2="12" y2="16.81"/></svg></span>
         <span class="t">FAQ Mistos</span><span class="d">Humano + pet</span>
       </button>
-      <!-- (24/09) Tirar dúvida — escondido até a sessão ter papel gestão (fase de teste). Quem
-           manda de verdade é o servidor (@assistente_liberado); isto só evita um botão que diria "não". -->
+      <!-- (24/09) Tirar dúvida — escondido até o Cofre dizer que a pessoa pode (assistente_estado, 25/09).
+           Quem manda de verdade é o servidor a cada pergunta; isto só evita um botão que diria "não". -->
       <button class="hm-tile" data-go="assistente" id="asTile" hidden>
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M20 14.5a2 2 0 0 1-2 2H8l-4 4V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9.6 8.4a2.4 2.4 0 1 1 3 2.3c-.7.2-1 .7-1 1.4"/><line x1="11.6" y1="14" x2="11.6" y2="14.01"/></svg></span>
         <span class="as-txt"><span class="t">Tirar dúvida</span><br><span class="d">Pergunte uma regra de venda — a resposta vem com a fonte</span></span>
@@ -4673,8 +4676,9 @@ async function cartEntrar(){
     // Contratos para assinar: o card da home ganha o número com o token novo; quem veio do portão volta para a tela.
     try{ if(window.ctBuscar) window.ctBuscar(); }catch(e){}
     try{ if(sessionStorage.getItem('contratos_voltar')){ sessionStorage.removeItem('contratos_voltar'); go('contratos'); } }catch(e){}
-    // Tirar dúvida: quem veio do portão volta para a conversa; o cartão da home acende para a gestão.
+    // Tirar dúvida: quem veio do portão volta para a conversa; o cartão da home acende conforme o Cofre (assistente_estado).
     try{ if(window.asPintarTile) window.asPintarTile(); }catch(e){}
+    try{ if(window.asConsultarEstado) window.asConsultarEstado(); }catch(e){}
     try{ if(sessionStorage.getItem('assistente_voltar')){ sessionStorage.removeItem('assistente_voltar'); go('assistente'); } }catch(e){}
   }catch(e){
     cartAvisar('cart-erro-login', e.message === 'sem_url'
@@ -6906,8 +6910,10 @@ async function cgEnviarSobra(){
    O Pocket manda só o token da sessão do PIN, a pergunta e as últimas mensagens. Quem é a pessoa,
    o perfil, o limite do dia e o teto do mês saem do SERVIDOR — o Worker confere a sessão no Cofre
    a cada pergunta. Nenhuma chave de API mora aqui. Precisa de internet (o resto do app segue offline).
-   Fase de teste: o cartão da home só aparece para papel gestão; o servidor recusa os demais até
-   @assistente_liberado = SIM na Config_Carteira. */
+   Quem vê o botão: o Cofre responde (acao assistente_estado, 25/09) — gestão sempre, o time quando
+   @assistente_liberado = SIM, ninguém com @assistente_ativo = NAO. A resposta fica guardada por token
+   (assistente_estado) e é refeita ao abrir o app e a cada login; sem resposta ainda, vale papel gestão.
+   Quem manda de verdade continua sendo o servidor a cada pergunta. */
 (function(){
   const AS_WORKER = 'https://parque-assistente.ricardocandrade.workers.dev';
   const $as = id => document.getElementById(id);
@@ -6917,9 +6923,30 @@ async function cgEnviarSobra(){
   function asSessao(){
     try{ const s = JSON.parse(localStorage.getItem('carteira_sessao')||'null'); return (s && s.token) ? s : null; }catch(e){ return null; }
   }
+  const AS_K_ESTADO = 'assistente_estado';
+  function asPode(s){
+    if(!s) return false;
+    try{
+      const e = JSON.parse(localStorage.getItem(AS_K_ESTADO)||'null');
+      if(e && e.token === s.token && typeof e.disponivel === 'boolean') return e.disponivel;
+    }catch(e){}
+    return s.papel === 'gestao';
+  }
+  async function asConsultarEstado(){
+    const s = asSessao();
+    if(!s || typeof cartAPI !== 'function') return;
+    try{
+      const r = await cartAPI({ acao:'assistente_estado', token: s.token });
+      if(r && r.ok) localStorage.setItem(AS_K_ESTADO, JSON.stringify({ token: s.token, disponivel: !!r.disponivel }));
+      else if(r && (r.erro === 'TOKEN_INVALIDO' || r.erro === 'VENDEDOR_INATIVO')) localStorage.setItem(AS_K_ESTADO, JSON.stringify({ token: s.token, disponivel: false }));
+    }catch(e){ return; }   // sem internet: fica o que estava guardado
+    asPintarTile();
+  }
+  window.asConsultarEstado = asConsultarEstado;
+
   function asPintarTile(){
     const s = asSessao();
-    const pode = !!(s && s.papel === 'gestao');
+    const pode = asPode(s);
     const t = $as('asTile'); if(t) t.hidden = !pode;
     const f = $as('asFab');
     if(f){
@@ -7031,6 +7058,7 @@ async function cgEnviarSobra(){
   window.addEventListener('online', asRever);
   window.addEventListener('offline', asRever);
   asPintarTile();
+  asConsultarEstado();
 })();
 
 (function rotaInicial(){
