@@ -4,6 +4,9 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/09/2026, noite, 2ª (Ricardo) — GESTÃO NOVA NO LOGIN. Rodrigo, Fabrícia e Aline entram no
+       seletor do PIN (CARTEIRA_GESTAO, só o login) — NÃO no "Quem vendeu?" do Anúncio, que segue na
+       lista dos vendedores. O papel e o PIN são da Config_Carteira.
      Rev. 25/09/2026, noite (Ricardo) — TIRAR DÚVIDA PARA O TIME. O botão deixa de acender só para papel
        gestão (fixo no código): o Pocket pergunta ao Cofre (acao assistente_estado) e segue a resposta —
        @assistente_liberado = SIM passa a mostrar o botão aos vendedores. Guardado por token no aparelho.
@@ -4389,6 +4392,10 @@ const CARTEIRA_API = 'https://script.google.com/macros/s/AKfycbydLmUEX3g6FeojFGA
    tinha deixado a equipe, e o nome seguia no seletor porque constante de front
    envelhece calada. Nome novo na Config_Carteira precisa ser acrescentado aqui. */
 const CARTEIRA_VENDEDORES = ['Ana Luiza','Guilherme','Wanderson','Felipe','Jaime','Ricardo'];
+/* (25/09) Quem entra com PIN de GESTÃO e não vende: aparece só no seletor do login — nunca no
+   "Quem vendeu?" do Anúncio, que usa CARTEIRA_VENDEDORES. O papel vem da Config_Carteira. */
+const CARTEIRA_GESTAO = ['Rodrigo','Fabrícia','Aline'];
+const CARTEIRA_LOGIN = CARTEIRA_VENDEDORES.concat(CARTEIRA_GESTAO);
 
 // Texto padrão, usado enquanto não houver @msg_v1..@msg_v4 no Config_Carteira.
 const CARTEIRA_MSG_PADRAO = [
@@ -4577,11 +4584,11 @@ const cartPendente = l => !cartDesfechoDe(l) && String(l.status||'').toLowerCase
 function cartAoEntrar(){
   const sel = document.getElementById('cart-vendedor');
   if(sel && !sel.options.length){
-    CARTEIRA_VENDEDORES.forEach(function(n){
+    CARTEIRA_LOGIN.forEach(function(n){
       const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o);
     });
     let ultimo = ''; try{ ultimo = localStorage.getItem('pocket_escEu') || ''; }catch(e){}
-    if(ultimo && CARTEIRA_VENDEDORES.indexOf(ultimo) >= 0) sel.value = ultimo;
+    if(ultimo && CARTEIRA_LOGIN.indexOf(ultimo) >= 0) sel.value = ultimo;
   }
   if(!CARTEIRA_API){
     cartVer('login');
