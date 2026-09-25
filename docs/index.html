@@ -4,6 +4,14 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 24/09/2026, noite (Ricardo) — AS DUAS PENDÊNCIAS DA REVISÃO DA TARDE. (1) Onde não há
+       uso imediato, a nota do boleto deixa de sugerir uso depois da quitação: na M-20 e na M-21,
+       "o jazigo poderá ser utilizado somente após a entrega da quadra, prevista a partir de …,
+       e a quitação integral" (o texto das tabelas novas), a mesma frase no resumo, no WhatsApp
+       e na carta (notaBoleto()); na Reserva, "a Reserva fica quitada ao fim do parcelamento",
+       como a nota do cartão. (2) A proposta de WhatsApp da M-20 e da M-21 diz a entrega logo
+       abaixo da quadra e do jazigo, e a carta à vista também (fraseEntrega()) — a prazo, a nota
+       do cartão ou do boleto já diz. M-19 e valor à mão: sem mudança.
      Rev. 24/09/2026 (Ricardo) — M-20 EM PRÉ-VENDA, M-21 MISTA PROVISÓRIA, TEMPORÁRIO SÓ NA
        M-19. A M-20 é pré-venda, com entrega prevista a partir de outubro/2027, e o uso começa
        na entrega em qualquer forma de pagamento. A M-21 é a quadra mista PROVISÓRIA, entrega a
@@ -3469,6 +3477,23 @@ function notaCartao(){
   const quitado = (ehMista(state.jaz.quadra) && state.m21Etapas!==2) ? 'a 1ª etapa fica quitada' : 'o jazigo fica quitado';
   return 'No cartão, '+quitado+' no ato; o uso começa na entrega da quadra, prevista a partir de '+entrega+'.';
 }
+// A nota do boleto onde NÃO há uso imediato — a MESMA frase no resumo, no WhatsApp e na carta
+// (Ricardo, 24/09/2026, noite). Na M-20 e na M-21, quitar antes não antecipa o uso: é o texto do
+// boleto das tabelas novas, com a entrega. A Reserva não promete uso, como na nota do cartão.
+// '' = M-19, ou valor à mão sem quadra: segue a nota de sempre.
+function notaBoleto(){
+  if(state.produto==='reserva') return 'No boleto, a Reserva fica quitada ao fim do parcelamento.';
+  const entrega = state.jaz ? ENTREGA_QUADRA[state.jaz.quadra] : '';
+  if(!entrega) return '';
+  return 'No boleto, o jazigo poderá ser utilizado somente após a entrega da quadra, prevista a partir de '+entrega+', e a quitação integral.';
+}
+// A entrega da quadra ainda não entregue, na proposta de WhatsApp (logo abaixo da quadra e do
+// jazigo) e na carta à vista — a prazo, a nota do cartão ou do boleto já diz. '' = M-19, Reserva
+// ou valor à mão.
+function fraseEntrega(){
+  const entrega = state.jaz ? ENTREGA_QUADRA[state.jaz.quadra] : '';
+  return entrega ? 'Entrega da quadra prevista a partir de '+entrega+'; o uso começa na entrega.' : '';
+}
 function useNote(r){
   if(r.forma!=='prazo') return '';
   if(r.meio==='cartao'){
@@ -3476,6 +3501,8 @@ function useNote(r){
     if(n) return `<div class="usenote"><span class="i">◦</span><span>${n}</span></div>`;
     return `<div class="usenote ok"><span class="i">✓</span><span>No cartão, o jazigo já fica <b>quitado</b> — uso imediato liberado, se a família precisar.</span></div>`;
   }
+  const nb = notaBoleto();
+  if(nb) return `<div class="usenote"><span class="i">◦</span><span>${nb}</span></div>`;
   return `<div class="usenote"><span class="i">◦</span><span>No boleto, para uso antes da quitação o saldo precisa ser quitado (à vista ou no cartão).</span></div>`;
 }
 function vpBlock(r){
@@ -3545,6 +3572,7 @@ function propostaTexto(){
   L.push(produtoLabel());
   if(state.jaz){
     L.push('Quadra '+state.jaz.quadra+' · jazigo '+normJazigo(state.jaz.jazigo));
+    if(fraseEntrega()) L.push(fraseEntrega());
     if(ehMista(state.jaz.quadra)) L.push(state.m21Etapas===2
       ? 'Jazigo pago em 2 etapas; nesta proposta as duas etapas são pagas agora (100%).'
       : 'Valor total do jazigo: '+brl(state.jaz.valor)+' — pago em 2 etapas; esta proposta é da 1ª etapa (50%).');
@@ -3573,7 +3601,7 @@ function propostaTexto(){
   if(state.produto==='temporario'){
     L.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
   } else if(r.forma==='prazo' && r.meio==='boleto' && !r.semJuros){
-    L.push('No boleto parcelado, o jazigo é liberado para uso após a quitação integral.');
+    L.push(notaBoleto() || 'No boleto parcelado, o jazigo é liberado para uso após a quitação integral.');
   }
   L.push('Simulação sujeita a confirmação. Parque da Saudade.');
   return L.join('\n');
@@ -3623,7 +3651,9 @@ function cartaPropostaHTML(r){
     if(cr.length) notas.push('Cronograma: '+cr.join(' · '));
     notas.push(r.meio==='cartao'
       ? (notaCartao() || 'No cartão de crédito, o jazigo fica quitado no ato — uso imediato liberado, caso a família precise.')
-      : 'No boleto, o uso do jazigo é liberado após a quitação integral do parcelamento.');
+      : (notaBoleto() || 'No boleto, o uso do jazigo é liberado após a quitação integral do parcelamento.'));
+  } else if(fraseEntrega()){
+    notas.push(fraseEntrega());
   }
   if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
   if(state.produto==='perpetuo') notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
