@@ -4,6 +4,11 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 25/09/2026, fim da tarde (Ricardo) — TEXTOS DA RECICLAGEM. Tabela de Preços da M-20: a trava da
+       pré-venda (entrega + quitado no boleto/recorrente). FAQ da Mista: pet no jazigo de outra quadra —
+       a lei permite, o consultor explica o risco; "o lugar do Parque feito para sepultar pet"; a troca
+       para a Mista só com pet para sepultar; pergunta nova (comprei na Mista e não tenho pet). Reserva
+       no Simulador: inclusive Retomadas, exceto os mistos. "Até 12 vezes" da migração NÃO mudou (B3).
      Rev. 25/09/2026, tarde (Ricardo) — TIRAR DÚVIDA EM DESTAQUE. O cartão sobe para o topo da grade,
        escuro e com o ícone dourado; e um balão flutuante (#asFab) no canto de todas as telas leva à
        conversa (some na própria conversa). Os dois seguem só para a sessão de gestão.
@@ -1556,7 +1561,7 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
   <div class="notecard">
     <div class="lbl">M-20 &middot; observações</div>
     <ol>
-      <li><b>Jazigo Perpétuo em pré-venda:</b> entrega prevista a partir de <b>outubro/2027</b>; o uso começa na entrega, em qualquer forma de pagamento. À vista <b>somente via Pix</b>, ou até 21x sem juros no cartão de crédito.</li>
+      <li><b>Jazigo Perpétuo em pré-venda:</b> entrega prevista a partir de <b>outubro/2027</b>; o uso começa na entrega da quadra — à vista ou no cartão de crédito, a partir da entrega; no boleto ou cartão recorrente, a partir da entrega e depois de quitado. À vista <b>somente via Pix</b>, ou até 21x sem juros no cartão de crédito.</li>
       <li><b>Não há Uso Temporário na M-20.</b></li>
       <li><b>Boleto até 72x (com juros):</b> o jazigo poderá ser utilizado somente após a entrega e a quitação integral.</li>
     </ol>
@@ -1843,7 +1848,7 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
   <div class="faq-note"><b>Base normativa.</b> Lei Municipal nº 15.417, de 29/05/2026 (Juiz de Fora/MG) e Regulamento Interno para Sepultamento de Animais Domésticos (versão em revisão). Este FAQ é um material de apoio; em caso de divergência, prevalece o texto do Regulamento e da Lei.</div>
   <section class="faq-sec">
     <h2><span class="num">1</span>Conceitos básicos</h2>
-    <details class="faq"><summary><span class="q">O que é a Quadra Mista?</span><span class="chev">›</span></summary><div class="a"><p>É uma área física exclusiva e delimitada do Parque da Saudade, destinada ao sepultamento conjunto de seres humanos e de animais domésticos de estimação no mesmo espaço. Só nela é permitido sepultar pets — em nenhum outro ponto do cemitério.</p></div></details>
+    <details class="faq"><summary><span class="q">O que é a Quadra Mista?</span><span class="chev">›</span></summary><div class="a"><p>É uma área física exclusiva e delimitada do Parque da Saudade, destinada ao sepultamento conjunto de seres humanos e de animais domésticos de estimação no mesmo espaço. É o lugar do Parque feito para sepultar pet. Se o titular quiser sepultar o pet no próprio jazigo, em outra quadra, a lei permite — fale com o consultor, que explica os riscos.</p></div></details>
     <details class="faq"><summary><span class="q">O que é um Jazigo Misto?</span><span class="chev">›</span></summary><div class="a"><p>É o espaço funerário localizado na Quadra Mista, com aptidão expressa, registrada e contratual para receber tanto restos mortais humanos quanto de animais de estimação. Existem dois tipos: o <strong>Jazigo Misto Definitivo</strong> e o <strong>Jazigo Transitório</strong>.</p></div></details>
     <details class="faq"><summary><span class="q">Qual a diferença entre Quadra Mista Definitiva e Provisória?</span><span class="chev">›</span></summary><div class="a"><p>A <strong>Definitiva</strong> é a área permanente, que <strong>ainda não tem local nem previsão</strong>. A <strong>Provisória (Transitória)</strong> é a <strong>quadra M-21</strong>, com entrega prevista a partir de <strong>dezembro/2026</strong>: uma área temporária que funciona <em>durante o Período de Transição</em> — ou seja, até a Definitiva ficar pronta — para atender quem já quer comprar ou migrar agora.</p></div></details>
     <details class="faq"><summary><span class="q">O que é o "Período de Transição"?</span><span class="chev">›</span></summary><div class="a"><p>É o intervalo entre a entrada em vigor do Regulamento e a efetiva disponibilização da Quadra Mista Definitiva, que ainda não tem local nem previsão. Nesse período valem regras especiais do Capítulo III, e as vendas/migrações são feitas na Quadra Mista Provisória — a <strong>M-21</strong>.</p></div></details>
@@ -1852,7 +1857,7 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
     <h2><span class="num">2</span>Quem pode comprar e sepultar</h2>
     <details class="faq"><summary><span class="q">Quem pode solicitar o sepultamento de um pet na Quadra Mista?</span><span class="chev">›</span></summary><div class="a"><p>Podem solicitar: o tutor do animal que também seja titular do Jazigo Misto; o tutor que apresente autorização escrita do titular; o responsável legal (no caso de menores ou incapazes); ou um familiar do titular que comprove o vínculo e apresente autorização.</p></div></details>
     <details class="faq"><summary><span class="q">Como o Regulamento define "família"?</span><span class="chev">›</span></summary><div class="a"><p>De forma abrangente: cônjuge, companheiro(a) em união estável, descendentes, ascendentes e colaterais até o 2º grau. O conceito contempla arranjos contemporâneos, incluindo uniões homoafetivas e famílias recompostas, desde que comprovado o vínculo.</p></div></details>
-    <details class="faq"><summary><span class="q">Preciso já ter um jazigo para sepultar meu pet?</span><span class="chev">›</span></summary><div class="a"><p>Sim — o sepultamento do pet só ocorre em um Jazigo Misto (Definitivo ou Transitório). Quem não tem jazigo misto tem duas saídas: <strong>migrar</strong> um jazigo existente para a Quadra Mista, ou <strong>adquirir</strong> um novo jazigo misto.</p></div></details>
+    <details class="faq"><summary><span class="q">Preciso já ter um jazigo para sepultar meu pet?</span><span class="chev">›</span></summary><div class="a"><p>Para sepultar na Quadra Mista, sim — o pet vai para um Jazigo Misto (Definitivo ou Transitório). Quem não tem jazigo misto tem duas saídas: <strong>migrar</strong> um jazigo existente para a Quadra Mista, quando houver um pet para sepultar, ou <strong>adquirir</strong> um novo jazigo misto. Se o titular quiser sepultar o pet no próprio jazigo, em outra quadra, a lei permite — fale com o consultor, que explica os riscos.</p></div></details>
   </section>
   <section class="faq-sec">
     <h2><span class="num">3</span>Animais elegíveis</h2>
@@ -1863,14 +1868,15 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
   <section class="faq-sec">
     <h2><span class="num">4</span>Como adquirir ou migrar (durante o Período de Transição)</h2>
     <details class="faq"><summary><span class="q">Quero comprar um jazigo misto agora. Como funciona?</span><span class="chev">›</span></summary><div class="a"><p>Durante o Período de Transição, o cliente que adquire um jazigo misto escolhe diretamente um jazigo na <strong>Quadra Mista Provisória</strong> (Jazigo Transitório). O contrato indica expressamente essa condição e a futura transferência, sem custo adicional pelo procedimento, para o Jazigo Misto Definitivo correspondente quando ele estiver disponível.</p></div></details>
-    <details class="faq"><summary><span class="q">Já tenho um jazigo só de humanos e quero sepultar meu pet junto. É possível?</span><span class="chev">›</span></summary><div class="a"><p>Sim, por meio da <strong>migração</strong>. O titular adere ao processo, assina o <em>Termo de Adesão à Migração</em> (Anexo V) e o Parque da Saudade exuma os restos mortais humanos do jazigo de origem e os transfere para um Jazigo Transitório na Quadra Mista Provisória, onde também será sepultado o pet.</p></div></details>
+<details class="faq"><summary><span class="q">Comprei na Mista e não tenho pet. Preciso mudar?</span><span class="chev">›</span></summary><div class="a"><p>Não. Você pode ficar na M-21 com o contrato só humano. Se quiser ter a possibilidade de sepultar um pet no futuro, é preciso migrar para o jazigo misto definitivo.</p></div></details>
+    <details class="faq"><summary><span class="q">Já tenho um jazigo só de humanos e quero sepultar meu pet junto. É possível?</span><span class="chev">›</span></summary><div class="a"><p>Sim, por meio da <strong>migração</strong>. O titular adere ao processo, assina o <em>Termo de Adesão à Migração</em> (Anexo V) e o Parque da Saudade exuma os restos mortais humanos do jazigo de origem e os transfere para um Jazigo Transitório na Quadra Mista Provisória, onde também será sepultado o pet. A troca para a Mista vale quando houver um pet para sepultar.</p></div></details>
     <details class="faq"><summary><span class="q">A migração tem custo?</span><span class="chev">›</span></summary><div class="a"><p>O <strong>procedimento de transição em si</strong> (exumação, translado e nova inumação dos restos humanos) <strong>não gera cobrança adicional</strong> — corre por conta do Parque da Saudade. Permanecem devidas apenas as taxas ordinárias do sepultamento do animal (Capítulo XII).</p></div></details>
     <details class="faq"><summary><span class="q">Preciso da concordância de outras pessoas para migrar?</span><span class="chev">›</span></summary><div class="a"><p>Sim. A adesão exige anuência expressa e por escrito de <strong>todos os cotitulares</strong> do jazigo de origem, além de declaração do titular de que não há oposição conhecida de familiares diretos das pessoas sepultadas. Havendo controvérsia, o pedido fica suspenso até solução consensual ou judicial.</p></div></details>
     <details class="faq"><summary><span class="q">Como funciona a ordem de escolha dos jazigos definitivos?</span><span class="chev">›</span></summary><div class="a"><p>Vale rigorosamente a <strong>ordem cronológica</strong> dos pedidos, pela data e hora de protocolo do Termo de Adesão (migração) ou da assinatura do contrato e pagamento inicial (aquisição). No ato, o titular recebe um comprovante com o número de ordem. Empates no mesmo dia são resolvidos pelo horário de protocolo registrado em sistema.</p></div></details>
   </section>
   <section class="faq-sec">
     <h2><span class="num">5</span>Migração ordinária (após o Período de Transição)</h2>
-    <details class="faq"><summary><span class="q">E depois que a Quadra Mista Definitiva estiver pronta, ainda dá para migrar?</span><span class="chev">›</span></summary><div class="a"><p>Sim. Encerrado o Período de Transição, a família titular de jazigo fora da Quadra Mista pode solicitar a migração direta para um Jazigo Misto Definitivo, mediante formulário próprio.</p></div></details>
+    <details class="faq"><summary><span class="q">E depois que a Quadra Mista Definitiva estiver pronta, ainda dá para migrar?</span><span class="chev">›</span></summary><div class="a"><p>Sim. Encerrado o Período de Transição, a família titular de jazigo fora da Quadra Mista pode solicitar a migração direta para um Jazigo Misto Definitivo, mediante formulário próprio. A troca para a Mista vale quando houver um pet para sepultar.</p></div></details>
     <details class="faq"><summary><span class="q">Quais as condições da migração ordinária?</span><span class="chev">›</span></summary><div class="a"><p>Os custos de exumação, translado interno e nova inumação dos restos humanos são <strong>integralmente custeados pelo Parque da Saudade</strong>. A família devolve os direitos sobre o jazigo de origem. Se o jazigo de destino tiver valor de mercado maior, a diferença pode ser parcelada em até <strong>12 vezes</strong>; se for menor, o titular recebe <strong>crédito</strong> da diferença, utilizável em serviços do Parque. Tudo sujeito ao estoque disponível.</p></div></details>
     <details class="faq"><summary><span class="q">A gratuidade vale para transferências de outros cemitérios?</span><span class="chev">›</span></summary><div class="a"><p>Não. A gratuidade dos custos de transferência aplica-se <strong>exclusivamente</strong> a jazigos dentro do próprio Parque da Saudade — não abrange traslados vindos de outros cemitérios ou localidades.</p></div></details>
   </section>
@@ -1916,7 +1922,7 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
   </section>
   <section class="faq-sec">
     <h2><span class="num">11</span>Regras e vedações importantes (resumo rápido)</h2>
-    <details class="faq"><summary><span class="q">Ver o resumo rápido</span><span class="chev">›</span></summary><div class="a"><ul><li>Pet só pode ser sepultado <strong>na Quadra Mista</strong>, em Jazigo Misto — nunca em qualquer outro espaço, mesmo com autorização de todos os titulares ou se as cinzas estiverem cremadas.</li><li>Capelas são <strong>exclusivamente humanas</strong>.</li><li><strong>Sem contato direto</strong> entre o corpo do animal e os restos humanos.</li><li><strong>Peso máximo do animal: 120 kg.</strong></li><li>É <strong>vedado</strong> plantar flores/vegetação ou colocar flores artificiais e adornos externos ao jazigo, a qualquer tempo.</li><li>Invólucro <strong>hermético obrigatório</strong> — nada de sacos plásticos ou papelão.</li></ul></div></details>
+    <details class="faq"><summary><span class="q">Ver o resumo rápido</span><span class="chev">›</span></summary><div class="a"><ul><li>O lugar do pet é <strong>a Quadra Mista</strong>. Se o titular quiser sepultar o pet no próprio jazigo, em outra quadra, a lei permite — fale com o consultor, que explica os riscos.</li><li>Capelas são <strong>exclusivamente humanas</strong>.</li><li><strong>Sem contato direto</strong> entre o corpo do animal e os restos humanos.</li><li><strong>Peso máximo do animal: 120 kg.</strong></li><li>É <strong>vedado</strong> plantar flores/vegetação ou colocar flores artificiais e adornos externos ao jazigo, a qualquer tempo.</li><li>Invólucro <strong>hermético obrigatório</strong> — nada de sacos plásticos ou papelão.</li></ul></div></details>
   </section>
   <section class="faq-sec">
     <h2><span class="num">12</span>Indeferimento e recurso</h2>
@@ -2951,7 +2957,7 @@ const QUADRA_ROTULO = {'M-21':'M-21 (Mista)'};
 const QUADRA_MISTA = 'M-21';          // paga em 2 etapas: a rota dá o TOTAL, simula-se 50%
 const ETAPA_MISTA = 0.5;
 // Quadras sem uso imediato (Ricardo, 24/09/2026): a M-20 é pré-venda e a M-21 é a quadra mista
-// provisória — nas duas o uso começa na entrega da quadra, em qualquer forma de pagamento, e por
+// provisória — nas duas o uso começa na entrega da quadra (no boleto/recorrente, depois de quitado), e por
 // isso nenhuma tem Temporário. A data é texto da decisão, a mesma da tela Tabela de Preços: a rota
 // do estoque não a traz. Quadra entregue sai daqui.
 const ENTREGA_QUADRA = {'M-20':'outubro/2027', 'M-21':'dezembro/2026'};
@@ -3140,7 +3146,7 @@ function simSyncValorCampo(){
   const j = state.jaz;
   let h;
   if(res) h = pr
-    ? `<b>Reserva:</b> valor fixo de ${brl(pr.valor)}, qualquer jazigo — o jazigo é escolhido no fim. Estoque de ${escH(carimboCurto(pr.d.atualizado_em))}${pr.deCache ? ' · cópia do aparelho' : ''}.`
+    ? `<b>Reserva:</b> valor fixo de ${brl(pr.valor)}; o jazigo é escolhido no fim, entre qualquer jazigo disponível, inclusive Retomadas — exceto os mistos (M-21). Estoque de ${escH(carimboCurto(pr.d.atualizado_em))}${pr.deCache ? ' · cópia do aparelho' : ''}.`
     : `<b>Reserva:</b> o Cofre não trouxe um valor único da Reserva agora. Digite o valor.`;
   else if(!j) h = 'O valor entra sozinho quando você escolher o jazigo.';
   else if(cong) h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)} é do lote da ${escH(campResp.nome)}:</b> a base do Uso Temporário não segue o preço novo. Digite o valor da coluna <b>Uso Temporário</b> da tabela.`;
