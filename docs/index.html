@@ -1141,6 +1141,9 @@ input.an-plain{padding-left:14px; font-size:16px}
 .mv-res.eqtit{margin-top:12px; padding-top:10px; border-top:1px solid var(--border)}
 .mv-res.eqtit b{font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
 .mv-res.eqlin{margin-top:4px}
+/* (28/09) gestão e consulta escolhem quem ver: as pílulas do .chips, a escolhida no marrom */
+.mv-chips{margin-top:10px}
+.mv-chips button[aria-pressed="true"]{background:var(--marrom); color:var(--off-white); border-color:var(--marrom)}
 /* (25/09) balão flutuante em todas as telas — abaixo das máscaras (z 60), acima do conteúdo. */
 .as-fab{position:fixed; right:16px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:55; width:58px; height:58px; border-radius:50%;
   border:0; cursor:pointer; background:var(--marrom); display:grid; place-items:center;
@@ -1198,7 +1201,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
          Sem PIN: apagado, toque leva ao PIN. Gestão/consulta: oculto. Toque abre a folha #maskMv. -->
     <button class="mv sem" type="button" id="mvCard" aria-label="Minhas vendas do mês — ver detalhe">
       <div class="mv-top">
-        <span class="mv-tit">Minhas vendas · <b id="mvMes">—</b></span>
+        <span class="mv-tit"><span id="mvQuem">Minhas vendas</span> · <b id="mvMes">—</b></span>
         <span class="mv-ver" id="mvVer">ver vendas</span>
         <span class="mv-nota" id="mvNota" hidden><span class="pt"></span><span>dado em conferência</span></span>
       </div>
@@ -1248,7 +1251,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
            e o PIN do papel consulta, que entra direto na conversa. -->
     </div>
 
-    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 27/09/2026 · 23:00</span></div>
+    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 28/09/2026 · 17:00</span></div>
   </main>
 </section>
 
@@ -4588,6 +4591,7 @@ function cartSair(){
     }
     // o que era da pessoa que saiu: os números do cartão Minhas vendas e o "pode perguntar"
     localStorage.removeItem('vendas_mes_ultimo');
+    localStorage.removeItem('vendas_mes_ver');
     localStorage.removeItem('assistente_estado');
   }catch(e){}
   cartGuardarSessao(null); cartLote = []; cartPos = 0;
@@ -4782,7 +4786,7 @@ async function cartEntrar(){
     try{ if(window.ctBuscar) window.ctBuscar(); }catch(e){}
     try{ if(sessionStorage.getItem('contratos_voltar')){ sessionStorage.removeItem('contratos_voltar'); go('contratos'); } }catch(e){}
     // (27/09) Minhas vendas: o cartão ganha os números com o token novo; quem veio do cartão volta para a home.
-    try{ if(sessionStorage.getItem('minhasvendas_voltar')){ sessionStorage.removeItem('minhasvendas_voltar'); if(r.papel !== 'gestao' && r.papel !== 'consulta') go('home'); } if(window.mvBuscar) window.mvBuscar(); }catch(e){}
+    try{ if(sessionStorage.getItem('minhasvendas_voltar')){ sessionStorage.removeItem('minhasvendas_voltar'); go('home'); } if(window.mvBuscar) window.mvBuscar(); }catch(e){}
     // Tirar dúvida: quem veio do portão volta para a conversa; o cartão da home acende conforme o Cofre (assistente_estado).
     try{ if(window.asPintarTile) window.asPintarTile(); }catch(e){}
     try{ if(window.asConsultarEstado) window.asConsultarEstado(); }catch(e){}
@@ -6215,19 +6219,30 @@ function cartConcluir(texto){
   const MV_MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   const MV_BARRA_MAX = 40;   // acima disso a célula fica menor que 6px: barra contínua
   let mvDados = null;        // a última resposta inteira (com a lista) — só na memória
-  let mvBuscando = false, mvErro = '';
+  let mvBuscando = false, mvErro = '', mvDeNovo = false;
 
   const mvEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function mvSessao(){ try{ return JSON.parse(localStorage.getItem('carteira_sessao')||'null'); }catch(e){ return null; } }
-  const mvDoTime = s => !!(s && s.token) && s.papel !== 'gestao' && s.papel !== 'consulta';
-  function mvLerCache(vend){
-    try{ const c = JSON.parse(localStorage.getItem(MV_K)||'null'); return (c && c.vendedor === vend) ? c : null; }catch(e){ return null; }
+  const mvTem = s => !!(s && s.token);
+  /* (28/09) Gestão e consulta (Ricardo, Rodrigo, Fabrícia, Aline) veem as vendas de qualquer vendedor, com o
+     cliente, igual ao que ele vê — decisão do Ricardo. A escolha ('' = a equipe) fica no aparelho; o servidor
+     só a aceita desses papéis, lidos da sessão. O vendedor segue vendo só o próprio mês. */
+  const mvEscolhe = s => mvTem(s) && (s.papel === 'gestao' || s.papel === 'consulta');
+  const MV_K_VER = 'vendas_mes_ver';
+  function mvVer(){ try{ return localStorage.getItem(MV_K_VER) || ''; }catch(e){ return ''; } }
+  function mvEscolher(n){ try{ n ? localStorage.setItem(MV_K_VER, n) : localStorage.removeItem(MV_K_VER); }catch(e){} }
+  const mvChave = s => (s && s.vendedor || '') + '|' + (mvEscolhe(s) ? mvVer() : '');
+  let mvLista = [];          // os nomes que a gestão pode escolher (a última resposta)
+  function mvLerCache(s){
+    try{ const c = JSON.parse(localStorage.getItem(MV_K)||'null'); return (c && c.chave === mvChave(s)) ? c : null; }catch(e){ return null; }
   }
+  // a resposta em memória só vale para a sessão e a escolha de agora
+  function mvAtual(){ const s = mvSessao(); return (mvDados && mvDados._chave === mvChave(s)) ? mvDados : null; }
   function mvGravarCache(d){
     try{
       if(!d){ localStorage.removeItem(MV_K); return; }
       // só números: nome de cliente nunca vai para o aparelho
-      localStorage.setItem(MV_K, JSON.stringify({ mes: d.mes, vendedor: d.vendedor, total: d.total, meta: d.meta,
+      localStorage.setItem(MV_K, JSON.stringify({ chave: d._chave, vista: d.vista || '', mes: d.mes, vendedor: d.vendedor, total: d.total, meta: d.meta,
         projecao: d.projecao, ticket: d.ticket, dia_hoje: d.dia_hoje, dias_no_mes: d.dias_no_mes,
         equipe: d.equipe ? { total: d.equipe.total, meta: d.equipe.meta, projecao: d.equipe.projecao, ticket: d.equipe.ticket } : null,
         saude: d.saude || null, atualizado_em: d.atualizado_em || '' }));
@@ -6289,10 +6304,10 @@ function cartConcluir(texto){
   function mvPintarCard(){
     const card = $mv('mvCard'); if(!card) return;
     const s = mvSessao();
-    if(s && s.token && !mvDoTime(s)){ card.hidden = true; return; }   // gestão e consulta: não é a tela deles
     card.hidden = false;
-    const tem = !!(s && s.token);
-    const d0 = tem ? ((mvDados && mvDados.vendedor === s.vendedor) ? mvDados : mvLerCache(s.vendedor)) : null;
+    const tem = mvTem(s);
+    $mv('mvQuem').textContent = mvEscolhe(s) ? 'Vendas · ' + (mvVer() || 'Equipe') : 'Minhas vendas';
+    const d0 = tem ? (mvAtual() || mvLerCache(s)) : null;
     // a cópia de outro mês não vale para o mês que virou
     const d = (d0 && d0.mes === mvMesAgora()) ? d0 : null;
     card.classList.toggle('sem', !d);
@@ -6318,8 +6333,11 @@ function cartConcluir(texto){
     $mv('mvN2').textContent = mvN(d.projecao);
     $mv('mvN3').textContent = mvRS(d.ticket);
     mvBarra(d);
-    $mv('mvEq').innerHTML = mvLinhaEquipe(d.equipe);
-    card.setAttribute('aria-label', 'Minhas vendas de ' + mvMesLongo(d.mes) + ': ' + d.total + ' — ver detalhe');
+    // na vista da equipe a linha de baixo repetiria os números de cima: vira o convite para ver um a um
+    $mv('mvEq').innerHTML = d.vista === 'equipe'
+      ? '<span>Equipe</span>toque para ver cada vendedor'
+      : mvLinhaEquipe(d.equipe);
+    card.setAttribute('aria-label', (mvEscolhe(s) ? 'Vendas de ' + (mvVer() || 'toda a equipe') : 'Minhas vendas') + ' em ' + mvMesLongo(d.mes) + ': ' + d.total + ' — ver detalhe');
   }
   window.mvPintarCard = mvPintarCard;
 
@@ -6327,7 +6345,7 @@ function cartConcluir(texto){
   function mvTextoVenda(v, d){
     const dia = String(v.data||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
     const jz = mvEhReserva(v) ? 'Reserva' : [v.quadra, v.jazigo, v.modalidade].filter(Boolean).join(' · ');
-    return '✅ Venda · ' + (d.vendedor || '') + (dia ? ' · ' + dia[3] + '/' + dia[2] + '/' + dia[1] : '') + '\n' +
+    return '✅ Venda · ' + (v.vendedor || d.vendedor || '') + (dia ? ' · ' + dia[3] + '/' + dia[2] + '/' + dia[1] : '') + '\n' +
       '👤 ' + mvNome(v.cliente) + '\n' +
       '🪦 ' + (jz || '—') + '\n' +
       '💰 ' + (Number(v.valor) === 0 ? 'R$ 0 (cortesia)' : mvRS(v.valor)) + '\n' +
@@ -6335,11 +6353,19 @@ function cartConcluir(texto){
   }
   function mvPintarFolha(){
     const box = $mv('modalMv'); if(!box) return;
-    const d = mvDados;
+    const s = mvSessao(), esc = mvEscolhe(s);
+    const d = mvAtual();
     const ico = '<svg viewBox="0 0 24 24"><path d="M20 14.5a2 2 0 0 1-2 2H8l-4 4V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>';
-    let h = '<div class="mtag" id="mvFolhaTit">Minhas vendas · ' + mvEsc(mvMesLongo(d ? d.mes : mvMesAgora())) + '</div>';
+    let h = '<div class="mtag" id="mvFolhaTit">' + (esc ? 'Vendas · ' + mvEsc(mvVer() || 'Equipe') : 'Minhas vendas') + ' · ' +
+            mvEsc(mvMesLongo(d ? d.mes : mvMesAgora())) + '</div>';
+    if(esc){
+      const ver = mvVer(), nomes = (d && d.vendedores) || mvLista;
+      h += '<div class="chips mv-chips" role="group" aria-label="Ver as vendas de">' +
+        ['', ...nomes].map(n => '<button type="button" data-mv-ver="' + mvEsc(n) + '" aria-pressed="' + (n === ver) + '">' +
+          mvEsc(n || 'Equipe') + '</button>').join('') + '</div>';
+    }
     if(!d){
-      h += '<h3>' + (mvBuscando ? 'Buscando as suas vendas…' : mvEsc(mvErro || 'Ainda sem resposta do servidor.')) + '</h3>';
+      h += '<h3>' + (mvBuscando ? (esc ? 'Buscando as vendas…' : 'Buscando as suas vendas…') : mvEsc(mvErro || 'Ainda sem resposta do servidor.')) + '</h3>';
     } else {
       const vendas = d.vendas || [];
       h += '<h3>' + mvN(d.total) + ' ' + (d.total === 1 ? 'venda' : 'vendas') + ' · ' + mvRS(d.valor_total) + ' contratados</h3>';
@@ -6353,17 +6379,18 @@ function cartConcluir(texto){
           const jz = mvJazigo(v);
           return '<li><span class="cli">' + mvEsc(mvNome(v.cliente)) + '</span>' +
             '<span class="val">' + (Number(v.valor) === 0 ? 'R$ 0 · cortesia' : mvEsc(mvRS(v.valor))) + '</span>' +
-            '<span class="meta"><span>deal <b>' + mvEsc(v.deal) + '</b></span>' +
+            '<span class="meta">' + (d.vista === 'equipe' && v.vendedor ? '<span><b>' + mvEsc(v.vendedor) + '</b></span>' : '') +
+            '<span>deal <b>' + mvEsc(v.deal) + '</b></span>' +
             (jz && !mvEhReserva(v) ? '<span>' + mvEsc(v.quadra) + (v.jazigo ? ' · <b>' + mvEsc(v.jazigo) + '</b>' : '') + '</span>' : '') +
             (v.modalidade ? '<span class="tag">' + mvEsc(v.modalidade) + '</span>' : '') +
             '<span>' + mvEsc(mvDiaBR(v.data)) + '</span></span>' +
             '<button class="mv-wa" type="button" data-mv-i="' + i + '" aria-label="Copiar esta venda e enviar no WhatsApp">' + ico + '</button></li>';
         }).join('') + '</ul>';
       } else {
-        h += '<div class="mv-lista"><div class="mv-vazio">Nenhuma venda sua neste mês, até agora.</div></div>';
+        h += '<div class="mv-lista"><div class="mv-vazio">' + (esc ? 'Nenhuma venda neste mês, até agora.' : 'Nenhuma venda sua neste mês, até agora.') + '</div></div>';
       }
       const eq = d.equipe;
-      if(eq){
+      if(eq && d.vista !== 'equipe'){
         h += '<div class="mv-res eqtit"><span><b>Equipe · ' + mvEsc(mvMesCurto(d.mes)) + '</b></span></div>' +
              '<div class="mv-res eqlin"><span>Vendas <b>' + mvN(eq.total) + '</b>' + (eq.meta ? ' / ' + mvN(eq.meta) + ' · <b>' + mvPct(eq.total, eq.meta) + '</b>' : '') + '</span>' +
              '<span>Projeção <b>' + mvN(eq.projecao) + '</b></span><span>Ticket <b>' + mvRS(eq.ticket) + '</b></span></div>';
@@ -6406,8 +6433,10 @@ function cartConcluir(texto){
   // ---- a busca ----
   async function mvBuscar(){
     const s = mvSessao();
-    if(!mvDoTime(s) || mvBuscando){ mvPintarCard(); return; }
-    mvBuscando = true;
+    if(!mvTem(s)){ mvPintarCard(); return; }
+    if(mvBuscando){ mvDeNovo = true; return; }   // trocou a escolha no meio da busca: busca de novo no fim
+    mvBuscando = true; mvDeNovo = false;
+    const chave = mvChave(s);
     const folhaAberta = () => { const m = $mv('maskMv'); return !!(m && !m.hidden); };
     if(folhaAberta()) mvPintarFolha();
     try{
@@ -6417,11 +6446,15 @@ function cartConcluir(texto){
       try{
         // sem Content-Type de propósito: header customizado dispara preflight que o GAS não responde
         const r = await fetch(CARTEIRA_API, { method:'POST', signal: ctl ? ctl.signal : undefined,
-          body: JSON.stringify({ acao:'vendas_mes', token: s.token }) });
+          body: JSON.stringify(mvEscolhe(s) ? { acao:'vendas_mes', token: s.token, vendedor: mvVer() }
+                                            : { acao:'vendas_mes', token: s.token }) });
         j = await r.json();
       } finally { if(timer) clearTimeout(timer); }
       if(j && j.ok === true){
-        mvDados = j; mvErro = ''; mvGravarCache(j);
+        j._chave = chave; if(j.vendedores) mvLista = j.vendedores;
+        if(chave === mvChave(mvSessao())){ mvDados = j; mvErro = ''; mvGravarCache(j); }
+      } else if(j && j.erro === 'VENDEDOR_DESCONHECIDO'){
+        mvEscolher(''); mvDeNovo = true;        // o nome saiu da equipe do mês: volta para a equipe
       } else if(j && MV_SESSAO_MORTA.indexOf(String(j.erro || '')) >= 0){
         mvDados = null; mvGravarCache(null);
         mvErro = j.msg || 'Sua sessão expirou. Entre de novo com o seu PIN.';
@@ -6435,6 +6468,7 @@ function cartConcluir(texto){
       mvBuscando = false;
       mvPintarCard();
       if(folhaAberta()) mvPintarFolha();
+      if(mvDeNovo) mvBuscar();
     }
   }
   window.mvBuscar = mvBuscar;
@@ -6452,11 +6486,14 @@ function cartConcluir(texto){
   });
   $mv('maskMv').addEventListener('click', e => {
     if(e.target === $mv('maskMv')){ mvFecharFolha(); return; }
+    const ch = e.target.closest && e.target.closest('[data-mv-ver]');
+    if(ch){ mvEscolher(ch.dataset.mvVer); mvErro = ''; mvPintarCard(); mvPintarFolha(); mvBuscar(); return; }
     const b = e.target.closest && e.target.closest('.mv-wa');
-    if(!b || !mvDados) return;
-    const v = (mvDados.vendas || [])[Number(b.dataset.mvI)];
+    const d = mvAtual();
+    if(!b || !d) return;
+    const v = (d.vendas || [])[Number(b.dataset.mvI)];
     if(!v) return;
-    const txt = mvTextoVenda(v, mvDados);
+    const txt = mvTextoVenda(v, d);
     mvCopiar(txt);
     // sem número: o vendedor escolhe o contato ou o grupo
     window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
