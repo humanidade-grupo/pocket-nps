@@ -1248,7 +1248,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
            e o PIN do papel consulta, que entra direto na conversa. -->
     </div>
 
-    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 27/09/2026 · 22:10</span></div>
+    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 27/09/2026 · 23:00</span></div>
   </main>
 </section>
 
@@ -1880,7 +1880,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       <textarea id="asCampo" rows="1" maxlength="1000" placeholder="Sua pergunta…"></textarea>
       <button class="cart-btn" id="asEnviar" type="button">Enviar</button>
     </div>
-    <div class="as-rodape"><span id="asStatus"></span><button type="button" id="asLimpar">Nova conversa</button></div>
+    <div class="as-rodape"><span id="asStatus"></span><span><button type="button" id="asLimpar">Nova conversa</button> · <button type="button" id="asSair">Sair desta conta</button></span></div>
   </div>
 </main>
 </section>
@@ -2199,6 +2199,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     </div>
 
     <div style="margin-top:14px"><button class="cart-btn sec" id="cg-btn-carteira">Ver minha carteira do dia</button></div>
+    <!-- (27/09) sem isto a gestão não tinha como trocar de PIN (ver cartSair) -->
+    <div style="margin-top:10px"><button class="cart-btn sec" id="cg-btn-sair">Sair desta conta</button></div>
   </section>
 
   <!-- ---- 1 subir o mailing ---- -->
@@ -4569,6 +4571,31 @@ async function cartAPI(payload){
   return await r.json();
 }
 
+/* Sair desta conta (13/08; função única desde 27/09). Até 27/09 o botão só existia na tela
+   inicial da Carteira do vendedor — e quem entrava com PIN de gestão (cai no painel) ou de
+   consulta (cai no Tirar dúvida) nunca chegava a ela: não havia como trocar de PIN para ver
+   o app como o vendedor vê. Agora a mesma saída mora também no painel da gestão e no rodapé
+   do Tirar dúvida. */
+function cartSair(){
+  // Sair tem que levar o lote junto: sem isso, o proximo a entrar neste
+  // aparelho veria a lista de quem saiu. A fila de desfechos NAO e apagada —
+  // ela guarda trabalho ja feito que ainda nao subiu.
+  if(cartFila.length && !confirm('Há ' + cartFila.length + ' registro(s) ainda não enviado(s). Sair mesmo assim?')) return;
+  try{
+    for(let i = localStorage.length - 1; i >= 0; i--){
+      const k = localStorage.key(i);
+      if(k && k.indexOf('carteira_lote_') === 0) localStorage.removeItem(k);
+    }
+    // o que era da pessoa que saiu: os números do cartão Minhas vendas e o "pode perguntar"
+    localStorage.removeItem('vendas_mes_ultimo');
+    localStorage.removeItem('assistente_estado');
+  }catch(e){}
+  cartGuardarSessao(null); cartLote = []; cartPos = 0;
+  try{ if(window.mvEsquecer) window.mvEsquecer(); }catch(e){}
+  go('carteira');
+  cartVer('login');
+}
+
 function cartSessaoCaiu(msg){
   cartGuardarSessao(null);
   cartLote = []; cartPos = 0;
@@ -4911,19 +4938,7 @@ function cartConcluir(texto){
   document.getElementById('cart-msg').addEventListener('input', cartContarLetras);
   document.getElementById('cart-btn-voltar').addEventListener('click', () => { cartPreparaInicio(); cartVer('inicio'); });
   document.getElementById('cart-btn-pausar').addEventListener('click', () => { cartPreparaInicio(); cartVer('inicio'); });
-  document.getElementById('cart-btn-sair').addEventListener('click', () => {
-    // Sair tem que levar o lote junto: sem isso, o proximo a entrar neste
-    // aparelho veria a lista de quem saiu. A fila de desfechos NAO e apagada —
-    // ela guarda trabalho ja feito que ainda nao subiu.
-    if(cartFila.length && !confirm('Há ' + cartFila.length + ' registro(s) ainda não enviado(s). Sair mesmo assim?')) return;
-    try{
-      for(let i = localStorage.length - 1; i >= 0; i--){
-        const k = localStorage.key(i);
-        if(k && k.indexOf('carteira_lote_') === 0) localStorage.removeItem(k);
-      }
-    }catch(e){}
-    cartGuardarSessao(null); cartLote = []; cartPos = 0; cartVer('login');
-  });
+  document.getElementById('cart-btn-sair').addEventListener('click', () => cartSair());
   document.querySelectorAll('#view-carteira .cart-desf button').forEach(b => {
     b.addEventListener('click', () => cartDesfecho(b.dataset.desf));
   });
@@ -6277,7 +6292,7 @@ function cartConcluir(texto){
     if(s && s.token && !mvDoTime(s)){ card.hidden = true; return; }   // gestão e consulta: não é a tela deles
     card.hidden = false;
     const tem = !!(s && s.token);
-    const d0 = tem ? (mvDados || mvLerCache(s.vendedor)) : null;
+    const d0 = tem ? ((mvDados && mvDados.vendedor === s.vendedor) ? mvDados : mvLerCache(s.vendedor)) : null;
     // a cópia de outro mês não vale para o mês que virou
     const d = (d0 && d0.mes === mvMesAgora()) ? d0 : null;
     card.classList.toggle('sem', !d);
@@ -6423,6 +6438,7 @@ function cartConcluir(texto){
     }
   }
   window.mvBuscar = mvBuscar;
+  window.mvEsquecer = function(){ mvDados = null; mvErro = ''; mvPintarCard(); };
 
   // ---- os toques ----
   $mv('mvCard').addEventListener('click', () => {
@@ -7143,6 +7159,7 @@ async function cgEnviarSobra(){
     if(painel) go('home'); else { cgEstado.modoSobra = false; cgVer('painel'); cgCarregarPainel(); }
   });
   on('cg-btn-carteira', 'click', () => { window.cgVerCarteira = true; go('carteira'); });
+  on('cg-btn-sair', 'click', () => cartSair());
 
   on('cg-btn-nova', 'click', () => {
     cgZerar();
@@ -7394,6 +7411,7 @@ async function cgEnviarSobra(){
   $as('asEnviar').addEventListener('click', asPerguntar);
   $as('asCampo').addEventListener('keydown', ev => { if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); asPerguntar(); } });
   $as('asCampo').addEventListener('input', function(){ this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 140) + 'px'; });
+  $as('asSair').addEventListener('click', () => cartSair());
   $as('asLimpar').addEventListener('click', () => {
     if(asOcupado) return;
     asHist = []; $as('asMsgs').textContent = ''; const d = $as('asDica'); if(d) d.hidden = false; asStatus('');
