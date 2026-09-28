@@ -1064,8 +1064,8 @@ input.an-plain{padding-left:14px; font-size:16px}
 .hm-cab .hm-logo{height:40px; width:auto; display:block}
 .hm-ola{text-align:right; font-size:12px; color:rgba(53,31,9,.8); line-height:1.25}
 .hm-ola b{display:block; font-family:"PF Marlet Display","Playfair Display",serif; font-size:17px; font-weight:700; color:var(--marrom-2)}
-.hm-main{max-width:520px; margin:0 auto; padding:10px 14px calc(env(safe-area-inset-bottom) + 10px); display:flex; flex-direction:column; gap:10px}
-.hm-main .barra-estoque{margin:0; padding:4px 6px 8px}
+.hm-main{max-width:520px; margin:0 auto; padding:8px 14px calc(env(safe-area-inset-bottom) + 6px); display:flex; flex-direction:column; gap:8px}   /* (27/09) respiro apertado para o cartão Minhas vendas */
+.hm-main .barra-estoque{margin:0; padding:3px 6px 6px}
 .hm-agora{background:var(--card); border:1px solid rgba(204,144,11,.5); border-radius:14px; box-shadow:0 0 0 3px rgba(253,190,14,.18); overflow:hidden}
 .hm-agora:not(:has(.hm-l:not([hidden]))){display:none}
 .hm-l{display:flex; width:100%; align-items:center; gap:10px; padding:11px 12px; font:inherit; font-size:13.5px; color:var(--marrom); background:none; border:0; text-align:left; cursor:pointer}
@@ -1077,7 +1077,7 @@ input.an-plain{padding-left:14px; font-size:16px}
 .hm-l .tx b{font-weight:600}
 .hm-l .arw{color:var(--dourado); font-size:18px}
 .hm-grade{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.hm-tile{position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-height:96px; padding:12px 12px 11px; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 2px rgba(66,39,12,.06), 0 6px 18px rgba(66,39,12,.08); font:inherit; color:var(--marrom); text-align:left; cursor:pointer}
+.hm-tile{position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-height:92px; padding:11px 12px 10px; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 2px rgba(66,39,12,.06), 0 6px 18px rgba(66,39,12,.08); font:inherit; color:var(--marrom); text-align:left; cursor:pointer}
 .hm-tile:active{transform:scale(.98)}
 .hm-tile .ic{width:36px; height:36px; border-radius:11px; background:rgba(204,144,11,.12); display:grid; place-items:center}
 .hm-tile .ic svg{width:20px; height:20px; stroke:var(--dourado); fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round}
@@ -1085,18 +1085,62 @@ input.an-plain{padding-left:14px; font-size:16px}
 .hm-tile .d{font-size:11.5px; color:var(--muted); line-height:1.3; margin-top:-4px}
 .hm-tile .bd{position:absolute; top:10px; right:10px; min-width:22px; height:22px; border-radius:11px; background:var(--dourado); color:#fff; font-size:12px; font-weight:700; display:grid; place-items:center; padding:0 6px}
 .hm-tile .bd[hidden]{display:none}
-/* (24/09) Tirar dúvida: o 7º cartão ocupa a linha inteira — a grade segue 2×3 para quem não o vê. */
 .hm-tile[hidden]{display:none}
-/* (25/09) em destaque: primeiro da grade (order), escuro, ícone dourado, seta à direita. */
-#asTile{grid-column:1/-1; order:-1; flex-direction:row; align-items:center; min-height:0; gap:14px; padding:14px 14px 14px 13px;
-  background:linear-gradient(135deg,#42270C 0%,#5C3A14 100%); border-color:transparent; color:var(--off-white);
-  box-shadow:0 2px 4px rgba(66,39,12,.18), 0 10px 26px rgba(66,39,12,.22)}
-#asTile .ic{width:42px; height:42px; border-radius:13px; background:var(--dourado); flex:0 0 auto}
-#asTile .ic svg{stroke:#fff; width:23px; height:23px}
-#asTile .t{color:var(--off-white); font-size:18px}
-#asTile .d{margin-top:2px; color:var(--muted-on-dark); font-size:12.5px}
-#asTile .as-txt{flex:1; text-align:left}
-#asTile .as-seta{font-size:24px; line-height:1; color:var(--amarelo); margin-left:auto}
+/* (27/09) O "Tirar dúvida" saiu da grade (volta a 2×3 fixa): a porta é o balão #asFab e o PIN de consulta. */
+
+/* ---------- Minhas vendas do mês (27/09/2026, mockup mockups/pocket-minhas-vendas-v1.html) ----------
+   Um cartão entre a barra de estoque e a faixa "Agora"; o toque abre a folha #maskMv (.mask/.modal). */
+.mv{display:block; width:100%; text-align:left; font:inherit; color:var(--marrom); background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 2px rgba(66,39,12,.06), 0 6px 18px rgba(66,39,12,.08); padding:7px 12px 8px; cursor:pointer}
+.mv[hidden]{display:none}
+.mv:active{transform:scale(.99)}
+.mv-top{display:flex; align-items:baseline; justify-content:space-between; gap:8px}
+.mv-tit{font-size:11px; letter-spacing:1.4px; text-transform:uppercase; color:var(--muted); font-weight:700}
+.mv-tit b{color:var(--marrom-2)}
+.mv-ver{font-size:12px; color:var(--dourado); font-weight:600; white-space:nowrap}
+.mv-ver::after{content:" ›"; font-size:15px}
+.mv-kpis{display:grid; grid-template-columns:1.25fr 1fr 1.1fr; gap:8px; margin-top:4px; align-items:end}
+.mv-k{min-width:0}
+.mv-k .n{font-family:"PF Marlet Display","Playfair Display",serif; font-size:21px; line-height:1; color:var(--marrom-2); font-variant-numeric:tabular-nums; white-space:nowrap}
+.mv-k .n.tk{font-size:18px}
+.mv-k .n small{font-family:"Ingra",sans-serif; font-size:12.5px; color:var(--muted); font-weight:600; margin-left:2px}
+.mv-k .l{font-size:10.5px; color:var(--muted); line-height:1.2; margin-top:2px}
+.mv-bar{display:grid; gap:2px; margin-top:6px; height:5px}
+.mv-bar[hidden]{display:none}
+.mv-bar i{display:block; height:100%; border-radius:2px; background:rgba(66,39,12,.12)}
+.mv-bar i.ok{background:var(--dourado)}
+.mv-bar i.proj{background:transparent; box-shadow:inset 0 0 0 1.5px var(--dourado); opacity:.7}
+/* meta acima de 40: a célula ficaria menor que 6px — barra contínua com o mesmo % */
+.mv-bar.cont{display:block; position:relative; border-radius:2px; background:rgba(66,39,12,.12)}
+.mv-bar.cont i{position:absolute; left:0; top:0; bottom:0; background:transparent}
+.mv-eq{display:flex; align-items:center; gap:4px; margin-top:5px; padding-top:4px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden}
+.mv-eq>span:first-child{font-weight:700; letter-spacing:1px; text-transform:uppercase; font-size:9.5px; margin-right:3px}
+.mv-eq b{color:var(--marrom); font-weight:600}
+.mv-eq .sep{margin:0 3px}
+.mv-nota{font-size:10.5px; color:var(--muted); margin-top:5px; display:flex; align-items:center; gap:6px}
+.mv-nota[hidden]{display:none}
+.mv-top .mv-nota{margin-top:0; white-space:nowrap}   /* no cartão, o aviso toma o lugar do "ver vendas": a altura não muda */
+.mv-ver[hidden]{display:none}
+.modal .mv-nota{margin-top:8px}
+.mv-nota .pt{width:7px; height:7px; border-radius:50%; background:var(--warn); flex:0 0 auto}
+.mv.sem{opacity:.85}
+.mv.sem .n{color:var(--muted)}
+.mv.conf .mv-kpis, .mv.conf .mv-bar, .mv.conf .mv-eq{opacity:.55}   /* Sanidade vermelha: o KPI escurecido do Painel */
+/* a folha */
+.mv-lista{margin:12px 0 0; padding:0; list-style:none; border-top:1px solid var(--border)}
+.mv-lista li{display:grid; grid-template-columns:1fr auto 34px; gap:2px 8px; align-items:center; padding:6px 0; border-bottom:1px solid var(--border)}
+.mv-lista .cli{font-weight:600; font-size:14px; line-height:1.2; min-width:0; overflow-wrap:anywhere}
+.mv-lista .val{font-weight:700; font-size:14px; font-variant-numeric:tabular-nums; text-align:right; color:var(--marrom-2); white-space:nowrap}
+.mv-lista .meta{grid-column:1 / span 2; grid-row:2; font-size:11.5px; color:var(--muted); display:flex; gap:10px; flex-wrap:wrap}
+.mv-lista .meta b{color:var(--marrom); font-weight:600}
+.mv-lista .meta .tag{border:1px solid var(--border-strong); border-radius:6px; padding:0 5px; font-size:10.5px}
+.mv-wa{grid-column:3; grid-row:1 / span 2; width:34px; height:34px; border-radius:10px; border:1px solid var(--border); background:#fff; display:grid; place-items:center; padding:0; cursor:pointer}
+.mv-wa svg{width:17px; height:17px; stroke:var(--dourado); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.mv-vazio{font-size:13px; color:var(--muted); padding:12px 0; border-bottom:1px solid var(--border)}
+.mv-res{display:flex; justify-content:space-between; gap:10px; margin-top:10px; font-size:12.5px; color:var(--muted); flex-wrap:wrap}
+.mv-res b{color:var(--marrom-2); font-variant-numeric:tabular-nums}
+.mv-res.eqtit{margin-top:12px; padding-top:10px; border-top:1px solid var(--border)}
+.mv-res.eqtit b{font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted)}
+.mv-res.eqlin{margin-top:4px}
 /* (25/09) balão flutuante em todas as telas — abaixo das máscaras (z 60), acima do conteúdo. */
 .as-fab{position:fixed; right:16px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:55; width:58px; height:58px; border-radius:50%;
   border:0; cursor:pointer; background:var(--marrom); display:grid; place-items:center;
@@ -1106,6 +1150,9 @@ input.an-plain{padding-left:14px; font-size:16px}
 .as-fab[hidden]{display:none}
 /* com o balão à mostra, o fim de cada tela ganha folga para o balão não cobrir o último botão */
 body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
+/* (27/09) a home não rola: nela, em vez da folga, o rodapé recua para o balão (que só encosta no canto do último cartão) */
+body.as-fab-on #view-home .hm-main{padding-bottom:calc(env(safe-area-inset-bottom) + 6px)}
+body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
 #view-assistente [hidden]{display:none!important}
 .as-aviso{background:rgba(204,144,11,.10); border:1px solid rgba(204,144,11,.30); border-radius:var(--radius-sm); padding:10px 13px; font-size:12.5px; line-height:1.45; margin:4px 2px 12px; font-weight:600}
 .as-msgs{display:flex; flex-direction:column; gap:10px; margin:0 0 12px}
@@ -1120,7 +1167,7 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
 .as-caixa .cart-btn{width:auto; padding:14px 16px}
 .as-rodape{font-size:11.5px; color:var(--muted); margin:8px 2px 0; display:flex; justify-content:space-between; gap:8px}
 .as-rodape button{border:0; background:none; color:var(--dourado); font:inherit; font-weight:700; cursor:pointer; padding:0}
-.hm-rodape{text-align:center; font-size:10.5px; color:var(--muted); line-height:1.35; padding-top:2px}
+.hm-rodape{text-align:center; font-size:10.5px; color:var(--muted); line-height:1.35; padding-top:0}
 </style>
 </head>
 <body>
@@ -1146,6 +1193,23 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
         <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
       </span>
     </div>
+
+    <!-- (27/09) Minhas vendas do mês: os números do vendedor da sessão (ação vendas_mes do Cofre).
+         Sem PIN: apagado, toque leva ao PIN. Gestão/consulta: oculto. Toque abre a folha #maskMv. -->
+    <button class="mv sem" type="button" id="mvCard" aria-label="Minhas vendas do mês — ver detalhe">
+      <div class="mv-top">
+        <span class="mv-tit">Minhas vendas · <b id="mvMes">—</b></span>
+        <span class="mv-ver" id="mvVer">ver vendas</span>
+        <span class="mv-nota" id="mvNota" hidden><span class="pt"></span><span>dado em conferência</span></span>
+      </div>
+      <div class="mv-kpis">
+        <div class="mv-k"><div class="n" id="mvN1">—</div><div class="l" id="mvL1">vendas / meta</div></div>
+        <div class="mv-k"><div class="n" id="mvN2">—</div><div class="l">projeção</div></div>
+        <div class="mv-k"><div class="n tk" id="mvN3">—</div><div class="l">ticket (mediana)</div></div>
+      </div>
+      <div class="mv-bar" id="mvBar" hidden></div>
+      <div class="mv-eq" id="mvEq">Entre com o PIN para ver o seu mês</div>
+    </button>
 
     <!-- "Agora": só o que pede ação. Cada linha nasce escondida; a faixa inteira some quando
          nenhuma está à mostra (:has).
@@ -1180,16 +1244,11 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
         <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.7 2.7 0 1 1 3.4 2.6c-.85.28-1.2.9-1.2 1.75"/><line x1="12" y1="16.8" x2="12" y2="16.81"/></svg></span>
         <span class="t">FAQ Mistos</span><span class="d">Humano + pet</span>
       </button>
-      <!-- (24/09) Tirar dúvida — escondido até o Cofre dizer que a pessoa pode (assistente_estado, 25/09).
-           Quem manda de verdade é o servidor a cada pergunta; isto só evita um botão que diria "não". -->
-      <button class="hm-tile" data-go="assistente" id="asTile" hidden>
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M20 14.5a2 2 0 0 1-2 2H8l-4 4V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/><path d="M9.6 8.4a2.4 2.4 0 1 1 3 2.3c-.7.2-1 .7-1 1.4"/><line x1="11.6" y1="14" x2="11.6" y2="14.01"/></svg></span>
-        <span class="as-txt"><span class="t">Tirar dúvida</span><br><span class="d">Pergunte uma regra de venda — a resposta vem com a fonte</span></span>
-        <span class="as-seta" aria-hidden="true">&rsaquo;</span>
-      </button>
+      <!-- (27/09) O "Tirar dúvida" saiu daqui: a porta é o balão #asFab (acende pelo assistente_estado)
+           e o PIN do papel consulta, que entra direto na conversa. -->
     </div>
 
-    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 22/09/2026 · 17:10</span></div>
+    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 27/09/2026 · 22:10</span></div>
   </main>
 </section>
 
@@ -1768,6 +1827,11 @@ body.as-fab-on .wrap, body.as-fab-on .hm-main{padding-bottom:96px}
 <!-- Confirmação da entrada adicional — conteúdo montado por abrirConfirmaEntrada() -->
 <div class="mask" id="maskEnt" role="dialog" aria-modal="true" aria-labelledby="entConfTit" hidden>
   <div class="modal" id="modalEnt"></div>
+</div>
+
+<!-- (27/09) Minhas vendas do mês — a folha do cartão da home, montada por mvPintarFolha() -->
+<div class="mask" id="maskMv" role="dialog" aria-modal="true" aria-labelledby="mvFolhaTit" hidden>
+  <div class="modal" id="modalMv"></div>
 </div>
 
 
@@ -3837,6 +3901,7 @@ function go(view, push){
   if(view==='assistente' && typeof asAoEntrar==='function') asAoEntrar();
   if(typeof asPintarTile==='function') asPintarTile();   // cartão da home + balão flutuante
   if(view==='home' && typeof ctPintarCard==='function') ctPintarCard();
+  if(view==='home' && typeof window.mvBuscar==='function') window.mvBuscar();   // (27/09) Minhas vendas: busca a cada volta
   if(view==='home' && typeof homeSaudar==='function') homeSaudar();
   if(view==='sim') estBuscar();
   if(push!==false){ try{ history.pushState({view}, '', '#'+view); }catch(e){} }
@@ -4689,6 +4754,8 @@ async function cartEntrar(){
     // Contratos para assinar: o card da home ganha o número com o token novo; quem veio do portão volta para a tela.
     try{ if(window.ctBuscar) window.ctBuscar(); }catch(e){}
     try{ if(sessionStorage.getItem('contratos_voltar')){ sessionStorage.removeItem('contratos_voltar'); go('contratos'); } }catch(e){}
+    // (27/09) Minhas vendas: o cartão ganha os números com o token novo; quem veio do cartão volta para a home.
+    try{ if(sessionStorage.getItem('minhasvendas_voltar')){ sessionStorage.removeItem('minhasvendas_voltar'); if(r.papel !== 'gestao' && r.papel !== 'consulta') go('home'); } if(window.mvBuscar) window.mvBuscar(); }catch(e){}
     // Tirar dúvida: quem veio do portão volta para a conversa; o cartão da home acende conforme o Cofre (assistente_estado).
     try{ if(window.asPintarTile) window.asPintarTile(); }catch(e){}
     try{ if(window.asConsultarEstado) window.asConsultarEstado(); }catch(e){}
@@ -6118,6 +6185,274 @@ function cartConcluir(texto){
   // Uma busca por abertura do app: o card da home nasce da cópia do aparelho e se corrige sozinho.
   ctPintarCard();
   ctBuscar();
+})();
+
+// ==================== MINHAS VENDAS DO MÊS (27/09/2026) ====================
+// O cartão da home e a folha de detalhe. Pedido do Ricardo, 27/09; layout: mockups/pocket-minhas-vendas-v1.html.
+// Backend: ação vendas_mes no Cofre (VendasPocket.gs) — portão = sessão do PIN da Carteira, e os números
+// (total, meta, projeção pelo ritmo corrido, ticket mediano, equipe) são os do Executivo, calculados lá.
+// No aparelho fica SÓ o número (`vendas_mes_ultimo`), para o cartão nascer preenchido. A LISTA de vendas
+// (com o nome do cliente) vive na memória da página e é buscada de novo a cada abertura da folha.
+(function(){
+  const $mv = id => document.getElementById(id);
+  const MV_K = 'vendas_mes_ultimo';
+  const MV_SESSAO_MORTA = ['TOKEN_INVALIDO','VENDEDOR_INATIVO'];
+  const MV_MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const MV_BARRA_MAX = 40;   // acima disso a célula fica menor que 6px: barra contínua
+  let mvDados = null;        // a última resposta inteira (com a lista) — só na memória
+  let mvBuscando = false, mvErro = '';
+
+  const mvEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function mvSessao(){ try{ return JSON.parse(localStorage.getItem('carteira_sessao')||'null'); }catch(e){ return null; } }
+  const mvDoTime = s => !!(s && s.token) && s.papel !== 'gestao' && s.papel !== 'consulta';
+  function mvLerCache(vend){
+    try{ const c = JSON.parse(localStorage.getItem(MV_K)||'null'); return (c && c.vendedor === vend) ? c : null; }catch(e){ return null; }
+  }
+  function mvGravarCache(d){
+    try{
+      if(!d){ localStorage.removeItem(MV_K); return; }
+      // só números: nome de cliente nunca vai para o aparelho
+      localStorage.setItem(MV_K, JSON.stringify({ mes: d.mes, vendedor: d.vendedor, total: d.total, meta: d.meta,
+        projecao: d.projecao, ticket: d.ticket, dia_hoje: d.dia_hoje, dias_no_mes: d.dias_no_mes,
+        equipe: d.equipe ? { total: d.equipe.total, meta: d.equipe.meta, projecao: d.equipe.projecao, ticket: d.equipe.ticket } : null,
+        saude: d.saude || null, atualizado_em: d.atualizado_em || '' }));
+    }catch(e){}
+  }
+  const mvN = n => (n === null || n === undefined || !isFinite(n)) ? '—' : Math.round(n).toLocaleString('pt-BR');
+  const mvRS = n => (n === null || n === undefined || !isFinite(n)) ? '—' : 'R$ ' + Math.round(n).toLocaleString('pt-BR');
+  const mvPct = (a, b) => b ? Math.round(a / b * 100) + '%' : '';
+  function mvMesCurto(am){ const m = String(am||'').match(/^(\d{4})-(\d{2})$/); return m ? MV_MESES[+m[2]-1].slice(0,3) + '/' + m[1].slice(2) : '—'; }
+  function mvMesLongo(am){ const m = String(am||'').match(/^(\d{4})-(\d{2})$/); return m ? MV_MESES[+m[2]-1] + '/' + m[1] : ''; }
+  function mvMesAgora(){ try{ return escHojeISO().slice(0,7); }catch(e){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); } }
+  const mvDiaBR = iso => { const m = String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '/' + m[2] : ''; };
+  const mvConferencia = d => !!(d && d.saude && d.saude.cor === 'vermelho');   // a leitura que o Painel faz do `saude`
+  function mvNome(n){ try{ return cartNomeBonito(n) || '(sem nome)'; }catch(e){ return n || '(sem nome)'; } }
+  function mvEhReserva(v){ return /^reserva$/i.test(v.modalidade || '') || /^reserva$/i.test(v.quadra || ''); }
+  function mvJazigo(v){
+    if(mvEhReserva(v)) return 'Reserva';
+    if(v.quadra && v.jazigo) return v.quadra + ' · ' + v.jazigo;
+    return v.quadra || v.jazigo || '';
+  }
+  function mvQuando(c){
+    c = String(c || ''); if(!/^\d{4}-\d{2}-\d{2}/.test(c)) return '';
+    let hoje = '', ontem = '';
+    try{ hoje = escHojeISO(); }catch(e){}
+    const o = new Date(); o.setDate(o.getDate() - 1);
+    ontem = o.getFullYear() + '-' + String(o.getMonth()+1).padStart(2,'0') + '-' + String(o.getDate()).padStart(2,'0');
+    const dia = c.slice(0,10), hora = c.slice(11,16);
+    return (dia === hoje ? 'hoje' : dia === ontem ? 'ontem' : 'em ' + mvDiaBR(dia)) + (hora ? ' às ' + hora : '');
+  }
+
+  // ---- a barra pontilhada: uma célula por venda da meta ----
+  function mvBarra(d){
+    const bar = $mv('mvBar');
+    const meta = Number(d && d.meta) || 0;
+    if(!meta){ bar.hidden = true; bar.innerHTML = ''; return; }
+    const total = Math.max(0, Number(d.total) || 0), proj = Math.max(total, Number(d.projecao) || 0);
+    bar.hidden = false;
+    bar.setAttribute('aria-label', total + ' de ' + meta);
+    if(meta > MV_BARRA_MAX){
+      bar.className = 'mv-bar cont'; bar.style.gridTemplateColumns = '';
+      const pOk = Math.min(100, total / meta * 100), pPr = Math.min(100, proj / meta * 100);
+      bar.innerHTML = '<i class="proj" style="width:' + pPr.toFixed(1) + '%"></i><i class="ok" style="width:' + pOk.toFixed(1) + '%"></i>';
+      return;
+    }
+    bar.className = 'mv-bar'; bar.style.gridTemplateColumns = 'repeat(' + meta + ',1fr)';
+    let h = '';
+    for(let i = 1; i <= meta; i++) h += i <= total ? '<i class="ok"></i>' : i <= proj ? '<i class="proj"></i>' : '<i></i>';
+    bar.innerHTML = h;
+  }
+  function mvLinhaEquipe(eq){
+    if(!eq) return '<span>Equipe</span>—';
+    const tm = eq.ticket ? '<span class="sep">·</span>TM <b>' + mvRS(eq.ticket) + '</b>' : '';
+    const pr = eq.projecao !== null && eq.projecao !== undefined ? '<span class="sep">·</span>projeção <b>' + mvN(eq.projecao) + '</b>' : '';
+    if(eq.meta) return '<span>Equipe</span><b>' + mvN(eq.total) + '</b> / ' + mvN(eq.meta) + ' · <b>' + mvPct(eq.total, eq.meta) + '</b>' + pr + tm;
+    return '<span>Equipe</span><b>' + mvN(eq.total) + '</b> ' + (eq.total === 1 ? 'venda' : 'vendas') + pr + tm;
+  }
+
+  // ---- o cartão da home ----
+  function mvPintarCard(){
+    const card = $mv('mvCard'); if(!card) return;
+    const s = mvSessao();
+    if(s && s.token && !mvDoTime(s)){ card.hidden = true; return; }   // gestão e consulta: não é a tela deles
+    card.hidden = false;
+    const tem = !!(s && s.token);
+    const d0 = tem ? (mvDados || mvLerCache(s.vendedor)) : null;
+    // a cópia de outro mês não vale para o mês que virou
+    const d = (d0 && d0.mes === mvMesAgora()) ? d0 : null;
+    card.classList.toggle('sem', !d);
+    card.classList.toggle('conf', mvConferencia(d));
+    $mv('mvNota').hidden = !mvConferencia(d);
+    $mv('mvMes').textContent = mvMesCurto(d ? d.mes : mvMesAgora());
+    $mv('mvVer').hidden = !tem || mvConferencia(d);
+    if(!d){
+      $mv('mvN1').textContent = '—'; $mv('mvN2').textContent = '—'; $mv('mvN3').textContent = '—';
+      $mv('mvL1').textContent = 'vendas / meta';
+      $mv('mvBar').hidden = true;
+      $mv('mvEq').textContent = tem ? (mvBuscando ? 'Conferindo o seu mês…' : 'Ainda sem resposta do servidor.') : 'Entre com o PIN para ver o seu mês';
+      card.setAttribute('aria-label', tem ? 'Minhas vendas do mês — ver detalhe' : 'Minhas vendas do mês — entre com o PIN');
+      return;
+    }
+    if(d.meta){
+      $mv('mvN1').innerHTML = mvN(d.total) + '<small>/ ' + mvN(d.meta) + ' · ' + mvPct(d.total, d.meta) + '</small>';
+      $mv('mvL1').textContent = 'vendas / meta';
+    } else {
+      $mv('mvN1').textContent = mvN(d.total);
+      $mv('mvL1').textContent = 'meta não definida';
+    }
+    $mv('mvN2').textContent = mvN(d.projecao);
+    $mv('mvN3').textContent = mvRS(d.ticket);
+    mvBarra(d);
+    $mv('mvEq').innerHTML = mvLinhaEquipe(d.equipe);
+    card.setAttribute('aria-label', 'Minhas vendas de ' + mvMesLongo(d.mes) + ': ' + d.total + ' — ver detalhe');
+  }
+  window.mvPintarCard = mvPintarCard;
+
+  // ---- a folha ----
+  function mvTextoVenda(v, d){
+    const dia = String(v.data||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const jz = mvEhReserva(v) ? 'Reserva' : [v.quadra, v.jazigo, v.modalidade].filter(Boolean).join(' · ');
+    return '✅ Venda · ' + (d.vendedor || '') + (dia ? ' · ' + dia[3] + '/' + dia[2] + '/' + dia[1] : '') + '\n' +
+      '👤 ' + mvNome(v.cliente) + '\n' +
+      '🪦 ' + (jz || '—') + '\n' +
+      '💰 ' + (Number(v.valor) === 0 ? 'R$ 0 (cortesia)' : mvRS(v.valor)) + '\n' +
+      '🔗 deal ' + v.deal;
+  }
+  function mvPintarFolha(){
+    const box = $mv('modalMv'); if(!box) return;
+    const d = mvDados;
+    const ico = '<svg viewBox="0 0 24 24"><path d="M20 14.5a2 2 0 0 1-2 2H8l-4 4V5.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>';
+    let h = '<div class="mtag" id="mvFolhaTit">Minhas vendas · ' + mvEsc(mvMesLongo(d ? d.mes : mvMesAgora())) + '</div>';
+    if(!d){
+      h += '<h3>' + (mvBuscando ? 'Buscando as suas vendas…' : mvEsc(mvErro || 'Ainda sem resposta do servidor.')) + '</h3>';
+    } else {
+      const vendas = d.vendas || [];
+      h += '<h3>' + mvN(d.total) + ' ' + (d.total === 1 ? 'venda' : 'vendas') + ' · ' + mvRS(d.valor_total) + ' contratados</h3>';
+      h += '<div class="mv-res"><span>' + (d.meta ? 'Meta <b>' + mvN(d.meta) + '</b> · ' +
+             (d.total >= d.meta ? '<b>batida</b>' : 'falta <b>' + mvN(d.meta - d.total) + '</b>') : 'Meta <b>não definida</b>') + '</span>' +
+           '<span>Projeção <b>' + mvN(d.projecao) + '</b></span><span>Ticket <b>' + mvRS(d.ticket) + '</b></span></div>';
+      if(mvConferencia(d)) h += '<div class="mv-nota"><span class="pt"></span><span>dado em conferência — os números podem mudar</span></div>';
+      if(mvBuscando || mvErro) h += '<div class="mv-nota"><span>' + mvEsc(mvBuscando ? 'atualizando…' : mvErro) + '</span></div>';
+      if(vendas.length){
+        h += '<ul class="mv-lista">' + vendas.map((v, i) => {
+          const jz = mvJazigo(v);
+          return '<li><span class="cli">' + mvEsc(mvNome(v.cliente)) + '</span>' +
+            '<span class="val">' + (Number(v.valor) === 0 ? 'R$ 0 · cortesia' : mvEsc(mvRS(v.valor))) + '</span>' +
+            '<span class="meta"><span>deal <b>' + mvEsc(v.deal) + '</b></span>' +
+            (jz && !mvEhReserva(v) ? '<span>' + mvEsc(v.quadra) + (v.jazigo ? ' · <b>' + mvEsc(v.jazigo) + '</b>' : '') + '</span>' : '') +
+            (v.modalidade ? '<span class="tag">' + mvEsc(v.modalidade) + '</span>' : '') +
+            '<span>' + mvEsc(mvDiaBR(v.data)) + '</span></span>' +
+            '<button class="mv-wa" type="button" data-mv-i="' + i + '" aria-label="Copiar esta venda e enviar no WhatsApp">' + ico + '</button></li>';
+        }).join('') + '</ul>';
+      } else {
+        h += '<div class="mv-lista"><div class="mv-vazio">Nenhuma venda sua neste mês, até agora.</div></div>';
+      }
+      const eq = d.equipe;
+      if(eq){
+        h += '<div class="mv-res eqtit"><span><b>Equipe · ' + mvEsc(mvMesCurto(d.mes)) + '</b></span></div>' +
+             '<div class="mv-res eqlin"><span>Vendas <b>' + mvN(eq.total) + '</b>' + (eq.meta ? ' / ' + mvN(eq.meta) + ' · <b>' + mvPct(eq.total, eq.meta) + '</b>' : '') + '</span>' +
+             '<span>Projeção <b>' + mvN(eq.projecao) + '</b></span><span>Ticket <b>' + mvRS(eq.ticket) + '</b></span></div>';
+      }
+      const q = mvQuando(d.atualizado_em);
+      h += '<div class="mv-nota"><span>' + (q ? 'Facilita conferido ' + mvEsc(q) + ' · ' : '') + 'vendas pela Data da Venda</span></div>';
+    }
+    h += '<div class="macts"><button type="button" class="m-keep" id="mvFechar">Fechar</button></div>';
+    box.innerHTML = h;
+    $mv('mvFechar').addEventListener('click', mvFecharFolha);
+  }
+  let mvFocoAnt = null;
+  function mvAbrirFolha(){
+    const m = $mv('maskMv'); if(!m) return;
+    mvFocoAnt = document.activeElement;
+    mvPintarFolha();
+    m.hidden = false; m.classList.add('show');
+    document.body.classList.add('no-scroll');
+    try{ $mv('mvFechar').focus({preventScroll:true}); }catch(e){}
+    mvBuscar();   // a lista é buscada de novo a cada abertura
+  }
+  function mvFecharFolha(){
+    const m = $mv('maskMv'); if(!m) return;
+    m.classList.remove('show'); m.hidden = true;
+    document.body.classList.remove('no-scroll');
+    if(mvFocoAnt){ try{ mvFocoAnt.focus({preventScroll:true}); }catch(e){} mvFocoAnt = null; }
+  }
+  function mvCopiar(txt){
+    try{ if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).catch(() => mvCopiarVelho(txt)); return; } }catch(e){}
+    mvCopiarVelho(txt);
+  }
+  function mvCopiarVelho(txt){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }catch(e){}
+  }
+
+  // ---- a busca ----
+  async function mvBuscar(){
+    const s = mvSessao();
+    if(!mvDoTime(s) || mvBuscando){ mvPintarCard(); return; }
+    mvBuscando = true;
+    const folhaAberta = () => { const m = $mv('maskMv'); return !!(m && !m.hidden); };
+    if(folhaAberta()) mvPintarFolha();
+    try{
+      const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+      const timer = ctl ? setTimeout(() => ctl.abort(), 25000) : null;
+      let j;
+      try{
+        // sem Content-Type de propósito: header customizado dispara preflight que o GAS não responde
+        const r = await fetch(CARTEIRA_API, { method:'POST', signal: ctl ? ctl.signal : undefined,
+          body: JSON.stringify({ acao:'vendas_mes', token: s.token }) });
+        j = await r.json();
+      } finally { if(timer) clearTimeout(timer); }
+      if(j && j.ok === true){
+        mvDados = j; mvErro = ''; mvGravarCache(j);
+      } else if(j && MV_SESSAO_MORTA.indexOf(String(j.erro || '')) >= 0){
+        mvDados = null; mvGravarCache(null);
+        mvErro = j.msg || 'Sua sessão expirou. Entre de novo com o seu PIN.';
+        try{ cartSessaoCaiu(mvErro); }catch(e){ try{ localStorage.removeItem('carteira_sessao'); }catch(_){} }
+      } else {
+        mvErro = 'O servidor não respondeu direito agora' + ((j && j.msg) ? ' (' + j.msg + ')' : '') + '.';
+      }
+    }catch(e){
+      mvErro = 'Sem conexão com o servidor agora.';   // a home fica com o que tinha, sem alerta
+    }finally{
+      mvBuscando = false;
+      mvPintarCard();
+      if(folhaAberta()) mvPintarFolha();
+    }
+  }
+  window.mvBuscar = mvBuscar;
+
+  // ---- os toques ----
+  $mv('mvCard').addEventListener('click', () => {
+    const s = mvSessao();
+    if(!(s && s.token)){
+      try{ sessionStorage.setItem('minhasvendas_voltar', '1'); }catch(e){}
+      go('carteira');
+      return;
+    }
+    mvAbrirFolha();
+  });
+  $mv('maskMv').addEventListener('click', e => {
+    if(e.target === $mv('maskMv')){ mvFecharFolha(); return; }
+    const b = e.target.closest && e.target.closest('.mv-wa');
+    if(!b || !mvDados) return;
+    const v = (mvDados.vendas || [])[Number(b.dataset.mvI)];
+    if(!v) return;
+    const txt = mvTextoVenda(v, mvDados);
+    mvCopiar(txt);
+    // sem número: o vendedor escolhe o contato ou o grupo
+    window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+    try{ toast('Venda copiada'); }catch(e){}
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && !$mv('maskMv').hidden) mvFecharFolha();
+  });
+
+  // Uma busca por abertura do app e outra a cada volta para a home (go('home') chama mvBuscar).
+  mvPintarCard();
+  mvBuscar();
 })();
 
 // ==================== GESTAO DA CARTEIRA (22/09/2026) ====================
