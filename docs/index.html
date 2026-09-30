@@ -4,6 +4,14 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 30/09/2026 (Ricardo) — ESCALA DE OUTUBRO E FIM DO PDV JARDIM NORTE. O JN sai e no lugar
+       dele entra a Captação própria: dia útil = 1 Parque + 1 folga + os demais na Captação 8-18 (o
+       Jaime também, fora dos dias de Parque); fim de semana = Parque + Captação 13-18. Jaime folga
+       09/10; Ana folga 10–11/10 (era o fim de semana dela no rodízio). Ponte 28–30/09 mantida para o
+       Cheguei de hoje. A legenda mostra só os postos dos dias visíveis; a folha impressa, só o mês.
+       Origem "PDV Jardim Norte" e porta "Presencial no PDV Jardim Norte" saem do Anúncio e do
+       cadastro de visitantes (decisão do Ricardo) — o Facilita ainda tem a origem; o Pocket vira
+       um recorte da lista dele, não mais o espelho completo.
      Rev. 25/09/2026, noite, 2ª (Ricardo) — PIN SÓ PARA O TIRAR DÚVIDA. Rodrigo, Fabrícia e Aline entram
        no seletor do PIN (CARTEIRA_CONSULTA, só o login — NÃO no "Quem vendeu?" do Anúncio) com o papel
        novo `consulta` da Config_Carteira: o login e a tela Carteira levam direto ao Tirar dúvida; sem
@@ -1490,8 +1498,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       
     </div>
     <span class="apptag">Pocket NPS · Escala</span>
-    <h1>Escala — Setembro/2026</h1>
-    <p class="lead">Um vendedor por posto. No fim de semana, Parque e Jardim Norte com um cada — e cada vendedor folga um fim de semana inteiro por mês.</p>
+    <h1>Escala — Outubro/2026</h1>
+    <p class="lead">Um vendedor no Parque por dia; nos dias úteis, quem não está no Parque nem de folga faz captação própria. No fim de semana, Parque e Captação com um cada — e cada vendedor folga um fim de semana inteiro por mês.</p>
   </div>
 </header>
 
@@ -1513,7 +1521,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   </div>
   <div class="esc2-datepick">
     <label for="escDate">Ir para o dia:</label>
-    <input type="date" id="escDate" min="2026-08-31" max="2026-09-30" value="2026-08-31">
+    <input type="date" id="escDate" min="2026-09-28" max="2026-10-31" value="2026-10-01">
   </div>
 
   <!-- postos do dia selecionado -->
@@ -1535,8 +1543,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   <button class="esc2-print" id="btnImprimirEscala">🖨 Imprimir a escala do mês</button>
 
   <footer>
-    <div class="sens">Escala de Setembro/2026 — vale de 16/09. O Jaime faz o rodízio do Parque e, nos demais dias úteis, está em outro local. Não trabalha aos sábados.</div>
-    <div class="inst">Dia útil: 1× Parque 8-18 · 1× JN 12-16 · 1× JN 16-20. Fim de semana: 1× Parque 8-18 · 1× JN 13-18.</div>
+    <div class="sens">Escala de Outubro/2026. O PDV Jardim Norte saiu: no lugar dele, cada vendedor faz captação própria, em locais que serão registrados aqui no Pocket. O Jaime faz o rodízio do Parque e, nos demais dias úteis, a Captação. Não trabalha aos sábados.</div>
+    <div class="inst">Dia útil: 1× Parque 8-18 · 1 folga · os demais na Captação 8-18. Fim de semana: 1× Parque 8-18 · 1× Captação 13-18.</div>
   </footer>
 </main>
 </section>
@@ -3916,22 +3924,37 @@ window.addEventListener('popstate', e=> go((e.state&&e.state.view)||'home', fals
 // A rota inicial por hash NÃO mora aqui — ver rotaInicial() no fim do script.
 
 // ==================== ESCALA DA EQUIPE — mês em ESCALA_MES.rotulo ====================
-// Escala mensal fixa (dados estáticos, verbatim). A partir de 16/09: 1 vendedor por posto; ninguém
-// trabalha os dois dias do fim de semana e cada um folga um inteiro por mês. O Jaime faz o rodízio do Parque
-// como os outros, trabalha em outro local nos demais dias úteis e nunca trabalha sábado.
-const ESCALA_MES = {"rotulo":"Setembro/2026","vendedores":["Ana Luiza","Guilherme","Wanderson","Felipe","Jaime"],"escala":{"2026-08-31":{"Ana Luiza":"JN 16-20","Guilherme":"Parque 8-18","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-01":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-02":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-03":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-04":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-05":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-06":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-07":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-08":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-09":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-10":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-11":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-12":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 12-16"},"2026-09-13":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20"},"2026-09-14":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre"},"2026-09-15":{"Ana Luiza":"JN 12-16","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"Parque 8-18"},"2026-09-16":{"Ana Luiza":"Livre","Guilherme":"JN 16-20","Wanderson":"JN 12-16","Felipe":"Parque 8-18","Jaime":"Outro local"},"2026-09-17":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 16-20","Wanderson":"Livre","Felipe":"JN 12-16","Jaime":"Outro local"},"2026-09-18":{"Ana Luiza":"JN 16-20","Guilherme":"Livre","Wanderson":"JN 12-16","Felipe":"Parque 8-18","Jaime":"Outro local"},"2026-09-19":{"Ana Luiza":"Livre","Guilherme":"JN 13-18","Wanderson":"Parque 8-18","Felipe":"Livre","Jaime":"Livre"},"2026-09-20":{"Ana Luiza":"JN 13-18","Guilherme":"Livre","Wanderson":"Livre","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-09-21":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"JN 12-16","Felipe":"JN 16-20","Jaime":"Outro local"},"2026-09-22":{"Ana Luiza":"JN 12-16","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"JN 16-20","Jaime":"Outro local"},"2026-09-23":{"Ana Luiza":"JN 16-20","Guilherme":"Parque 8-18","Wanderson":"Livre","Felipe":"JN 12-16","Jaime":"Outro local"},"2026-09-24":{"Ana Luiza":"Livre","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Parque 8-18","Jaime":"Outro local"},"2026-09-25":{"Ana Luiza":"Parque 8-18","Guilherme":"JN 12-16","Wanderson":"JN 16-20","Felipe":"Livre","Jaime":"Outro local"},"2026-09-26":{"Ana Luiza":"Parque 8-18","Guilherme":"Livre","Wanderson":"JN 13-18","Felipe":"Livre","Jaime":"Livre"},"2026-09-27":{"Ana Luiza":"Livre","Guilherme":"Livre","Wanderson":"Livre","Felipe":"JN 13-18","Jaime":"Parque 8-18"},"2026-09-28":{"Ana Luiza":"Livre","Guilherme":"JN 16-20","Wanderson":"Parque 8-18","Felipe":"JN 12-16","Jaime":"Outro local"},"2026-09-29":{"Ana Luiza":"JN 16-20","Guilherme":"JN 12-16","Wanderson":"Livre","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-09-30":{"Ana Luiza":"JN 12-16","Guilherme":"Parque 8-18","Wanderson":"Livre","Felipe":"JN 16-20","Jaime":"Outro local"}}};
+// Escala mensal fixa (dados estáticos). Outubro/2026: o PDV Jardim Norte saiu e no lugar dele entra a
+// CAPTAÇÃO PRÓPRIA do vendedor (o local será registrado no Pocket, em tarefa futura). Dia útil: 1 no Parque,
+// 1 de folga e os demais na Captação 8-18 — o Jaime também, quando não está no Parque. Fim de semana: 1 no
+// Parque + 1 na Captação 13-18; ninguém trabalha sábado e domingo do mesmo fim de semana e cada um folga um
+// inteiro (rodízio: Wanderson 3–4 · Ana Luiza 10–11 · Felipe 17–18 · Guilherme 24–25 · Wanderson 31/10). O
+// Jaime fica no Parque aos domingos e nunca trabalha sábado; 09/10 não trabalha. 28–30/09 são a ponte de
+// setembro, copiados como estavam (por isso os postos do Jardim Norte seguem no POSTOS).
+// `mes` separa o mês da ponte: a folha impressa só leva os dias do mês.
+const ESCALA_MES = {"rotulo":"Outubro/2026","mes":"2026-10","vendedores":["Ana Luiza","Guilherme","Wanderson","Felipe","Jaime"],"escala":{"2026-09-28":{"Ana Luiza":"Livre","Guilherme":"JN 16-20","Wanderson":"Parque 8-18","Felipe":"JN 12-16","Jaime":"Outro local"},"2026-09-29":{"Ana Luiza":"JN 16-20","Guilherme":"JN 12-16","Wanderson":"Livre","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-09-30":{"Ana Luiza":"JN 12-16","Guilherme":"Parque 8-18","Wanderson":"Livre","Felipe":"JN 16-20","Jaime":"Outro local"},"2026-10-01":{"Ana Luiza":"Livre","Guilherme":"Captação 8-18","Wanderson":"Captação 8-18","Felipe":"Parque 8-18","Jaime":"Captação 8-18"},"2026-10-02":{"Ana Luiza":"Captação 8-18","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-03":{"Ana Luiza":"Livre","Guilherme":"Captação 13-18","Wanderson":"Livre","Felipe":"Parque 8-18","Jaime":"Livre"},"2026-10-04":{"Ana Luiza":"Captação 13-18","Guilherme":"Livre","Wanderson":"Livre","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-10-05":{"Ana Luiza":"Captação 8-18","Guilherme":"Captação 8-18","Wanderson":"Livre","Felipe":"Captação 8-18","Jaime":"Parque 8-18"},"2026-10-06":{"Ana Luiza":"Parque 8-18","Guilherme":"Livre","Wanderson":"Captação 8-18","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-07":{"Ana Luiza":"Livre","Guilherme":"Captação 8-18","Wanderson":"Captação 8-18","Felipe":"Parque 8-18","Jaime":"Captação 8-18"},"2026-10-08":{"Ana Luiza":"Captação 8-18","Guilherme":"Parque 8-18","Wanderson":"Livre","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-09":{"Ana Luiza":"Captação 8-18","Guilherme":"Parque 8-18","Wanderson":"Captação 8-18","Felipe":"Livre","Jaime":"Livre"},"2026-10-10":{"Ana Luiza":"Livre","Guilherme":"Captação 13-18","Wanderson":"Parque 8-18","Felipe":"Livre","Jaime":"Livre"},"2026-10-11":{"Ana Luiza":"Livre","Guilherme":"Livre","Wanderson":"Livre","Felipe":"Captação 13-18","Jaime":"Parque 8-18"},"2026-10-12":{"Ana Luiza":"Captação 8-18","Guilherme":"Captação 8-18","Wanderson":"Livre","Felipe":"Parque 8-18","Jaime":"Captação 8-18"},"2026-10-13":{"Ana Luiza":"Captação 8-18","Guilherme":"Captação 8-18","Wanderson":"Parque 8-18","Felipe":"Livre","Jaime":"Captação 8-18"},"2026-10-14":{"Ana Luiza":"Captação 8-18","Guilherme":"Livre","Wanderson":"Captação 8-18","Felipe":"Parque 8-18","Jaime":"Captação 8-18"},"2026-10-15":{"Ana Luiza":"Parque 8-18","Guilherme":"Livre","Wanderson":"Captação 8-18","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-16":{"Ana Luiza":"Livre","Guilherme":"Captação 8-18","Wanderson":"Parque 8-18","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-17":{"Ana Luiza":"Parque 8-18","Guilherme":"Livre","Wanderson":"Captação 13-18","Felipe":"Livre","Jaime":"Livre"},"2026-10-18":{"Ana Luiza":"Livre","Guilherme":"Captação 13-18","Wanderson":"Livre","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-10-19":{"Ana Luiza":"Captação 8-18","Guilherme":"Livre","Wanderson":"Parque 8-18","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-20":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"Captação 8-18","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-21":{"Ana Luiza":"Parque 8-18","Guilherme":"Captação 8-18","Wanderson":"Captação 8-18","Felipe":"Livre","Jaime":"Captação 8-18"},"2026-10-22":{"Ana Luiza":"Captação 8-18","Guilherme":"Captação 8-18","Wanderson":"Livre","Felipe":"Parque 8-18","Jaime":"Captação 8-18"},"2026-10-23":{"Ana Luiza":"Captação 8-18","Guilherme":"Captação 8-18","Wanderson":"Captação 8-18","Felipe":"Livre","Jaime":"Parque 8-18"},"2026-10-24":{"Ana Luiza":"Parque 8-18","Guilherme":"Livre","Wanderson":"Captação 13-18","Felipe":"Livre","Jaime":"Livre"},"2026-10-25":{"Ana Luiza":"Livre","Guilherme":"Livre","Wanderson":"Livre","Felipe":"Captação 13-18","Jaime":"Parque 8-18"},"2026-10-26":{"Ana Luiza":"Parque 8-18","Guilherme":"Captação 8-18","Wanderson":"Livre","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-27":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"Captação 8-18","Felipe":"Captação 8-18","Jaime":"Captação 8-18"},"2026-10-28":{"Ana Luiza":"Captação 8-18","Guilherme":"Livre","Wanderson":"Captação 8-18","Felipe":"Parque 8-18","Jaime":"Captação 8-18"},"2026-10-29":{"Ana Luiza":"Captação 8-18","Guilherme":"Parque 8-18","Wanderson":"Captação 8-18","Felipe":"Livre","Jaime":"Captação 8-18"},"2026-10-30":{"Ana Luiza":"Captação 8-18","Guilherme":"Captação 8-18","Wanderson":"Parque 8-18","Felipe":"Livre","Jaime":"Captação 8-18"},"2026-10-31":{"Ana Luiza":"Livre","Guilherme":"Parque 8-18","Wanderson":"Livre","Felipe":"Captação 13-18","Jaime":"Livre"}}};
 
-// Definição dos 6 postos: cor, abreviação (grade) e texto da legenda.
+// Definição dos postos: cor, abreviação (grade) e texto da legenda. A legenda mostra só os postos
+// que aparecem nos dias da grade — os do Jardim Norte e o Outro local só existem na ponte de setembro.
 const POSTOS = {
   'Parque 8-18':{cor:'#55684E', abbr:'P',  leg:'Parque 8-18 — Parque da Saudade — turno cheio 8h às 18h (10h)'},
-  'JN 12-16':   {cor:'#B5552A', abbr:'J1', leg:'JN 12-16 — Jardim Norte — Turno 1, 12h às 16h (4h)'},
+  'Captação 8-18': {cor:'#B5552A', abbr:'C', leg:'Captação 8-18 — captação própria do vendedor, 8h às 18h (10h)'},
+  'Captação 13-18':{cor:'#98452A', abbr:'C', leg:'Captação 13-18 — captação própria, fim de semana, 13h às 18h (5h)'},
+  'JN 12-16':   {cor:'#C2703F', abbr:'J1', leg:'JN 12-16 — Jardim Norte — Turno 1, 12h às 16h (4h)'},
   'JN 16-20':   {cor:'#7A3B1E', abbr:'J2', leg:'JN 16-20 — Jardim Norte — Turno 2, 16h às 20h (4h)'},
-  'JN 13-18':   {cor:'#98452A', abbr:'J',  leg:'JN 13-18 — Jardim Norte — fim de semana, 13h às 18h (5h)'},
+  'JN 13-18':   {cor:'#A8603A', abbr:'J',  leg:'JN 13-18 — Jardim Norte — fim de semana, 13h às 18h (5h)'},
   'Outro local':{cor:'#5E6F82', abbr:'O',  leg:'Outro local — só o Jaime, nos dias úteis em que não está no Parque'},
   'Livre':      {cor:'#9A968E', abbr:'L',  leg:'Livre'}
 };
-const POSTO_ORDEM = ['Parque 8-18','JN 12-16','JN 16-20','JN 13-18','Outro local','Livre'];
-const ESC_DIAS = Object.keys(ESCALA_MES.escala).sort(); // '2026-08-31' (ponte) + '2026-09-01'..'2026-09-30'
+const POSTO_ORDEM = ['Parque 8-18','Captação 8-18','Captação 13-18','JN 12-16','JN 16-20','JN 13-18','Outro local','Livre'];
+// postos que aparecem numa lista de dias, na ordem oficial (Livre sempre entra)
+function escPostosUsados(diasISO){
+  const usados=new Set();
+  diasISO.forEach(iso=>{ const d=ESCALA_MES.escala[iso]||{}; Object.keys(d).forEach(v=>usados.add(d[v])); });
+  return POSTO_ORDEM.filter(k=>usados.has(k)||k==='Livre');
+}
+const ESC_DIAS = Object.keys(ESCALA_MES.escala).sort(); // '2026-09-28'..'2026-09-30' (ponte) + '2026-10-01'..'2026-10-31'
+const ESC_DIAS_MES = ESC_DIAS.filter(iso=>iso.startsWith(ESCALA_MES.mes)); // só o mês — a folha impressa
 const WD_CURTO = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 let escSel = ESC_DIAS[0]; // dia selecionado (ISO)
 let escSelTocado = false;  // usuário já navegou manualmente?
@@ -4015,7 +4038,7 @@ function escalaImpressaoHTML(){
   const hoje=new Date(), dd=String(hoje.getDate()).padStart(2,'0'), mm=String(hoje.getMonth()+1).padStart(2,'0');
   const emitida=`${dd}/${mm}/${hoje.getFullYear()}`;
   let linhas='';
-  ESC_DIAS.forEach(iso=>{
+  ESC_DIAS_MES.forEach(iso=>{
     const dt=escParseISO(iso), dow=dt.getDay(), [,m,d]=iso.split('-');
     const cls=[dow===0||dow===6?'ep-fds':'', dow===1?'ep-seg':''].filter(Boolean).join(' ');
     let tds='';
@@ -4032,13 +4055,15 @@ function escalaImpressaoHTML(){
   // da tela (que fala de turno e cita o Jaime) — o papel vai para a parede.
   const EP_LEGENDA = {
     'Parque 8-18':'Parque da Saudade, das 8h às 18h',
+    'Captação 8-18':'Captação própria do vendedor, das 8h às 18h',
+    'Captação 13-18':'Captação própria do vendedor, das 13h às 18h (sábado e domingo)',
     'JN 12-16':   'Jardim Norte, das 12h às 16h',
     'JN 16-20':   'Jardim Norte, das 16h às 20h',
     'JN 13-18':   'Jardim Norte, das 13h às 18h (sábado e domingo)',
     'Outro local':'Trabalhando fora do Parque e do Jardim Norte',
     'Livre':      'Folga'
   };
-  const leg=POSTO_ORDEM.map(k=>{
+  const leg=escPostosUsados(ESC_DIAS_MES).map(k=>{
     const livre=k==='Livre', p=POSTOS[k];
     const st=livre?'':`border-left-color:${p.cor}; background:${epTint(p.cor)}`;
     return `<div><span class="ep-p${livre?' ep-off':''}" style="${st}">${k}</span>${EP_LEGENDA[k]||p.leg}</div>`;
@@ -4084,7 +4109,8 @@ function renderEscGrade(){
 
 // ---- legenda ----
 function renderEscLegenda(){
-  $('#escLegend').innerHTML = POSTO_ORDEM.map(k=>{
+  const dias = escVisModo==='semana' ? escSemanaDias(escSel) : ESC_DIAS;
+  $('#escLegend').innerHTML = escPostosUsados(dias).map(k=>{
     const p=POSTOS[k];
     return `<span class="lg"><span class="sw" style="background:${p.cor}"></span>${p.leg}</span>`;
   }).join('');
@@ -4095,6 +4121,7 @@ function renderEscala(){
   const hoje = escHojeISO();
   if(ESCALA_MES.escala[hoje] && !escSelTocado) escSel = hoje;
   escInitEuSel();
+  const dp=$('#escDate'); if(dp){ dp.min=ESC_DIAS[0]; dp.max=ESC_DIAS[ESC_DIAS.length-1]; }
   renderEscDia();
   renderEscGrade();
   renderEscLegenda();
@@ -4972,18 +4999,18 @@ function cartConcluir(texto){
 // combinação delas com as portas é improvável, então a AN_MATRIZ não muda.
 (function(){
   // Sem "Não informado" de propósito: quem não sabe usa "Outro" e escreve o que houve.
-  const AN_ORIGENS = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
+  const AN_ORIGENS = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
   const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
   const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
   // "WhatsApp do Parque" e não "WhatsApp (SATI)": SATI é nome de plataforma,
   // vocabulário interno que o vendedor não conhece. Este campo não espelha o
   // CRM (a porta não existe no Facilita), então renomear aqui é seguro.
-  const AN_CHEGOU = ['Presencial no Parque','Presencial no PDV Jardim Norte','Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor','Outro'];
+  const AN_CHEGOU = ['Presencial no Parque','Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor','Outro'];
   // ---- a pergunta que ensina a origem (bloco fixo entre Chegou e Origem) ----
   // Remoto: o cliente chegou por um número/canal — o número é caminho, não
   // origem. Presencial: o lugar onde ele apareceu pode não ser o que o trouxe.
   const AN_CHEGOU_REMOTO = ['Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor'];
-  const AN_CHEGOU_PRESENCIAL = ['Presencial no Parque','Presencial no PDV Jardim Norte'];
+  const AN_CHEGOU_PRESENCIAL = ['Presencial no Parque'];
   const AN_PERGUNTA = {
     remoto: '<b>❓ Você perguntou como ele chegou até esse número?</b>'+
       'Ele viu num outdoor, num panfleto, num anúncio, ou alguém indicou. '+
@@ -5004,15 +5031,11 @@ function cartConcluir(texto){
   // são os MESMOS das listas acima — regra apontando para opção inexistente
   // nunca dispara e ninguém percebe.
   const AN_MATRIZ = [
-    {origem:'Visita ao Parque', chegou:['Presencial no PDV Jardim Norte'], nivel:'contradicao',
-     msg:'Essas duas não podem coexistir: a origem diz um lugar e o atendimento diz outro. Reveja qual dos dois está certo.'},
-    {origem:'PDV Jardim Norte', chegou:['Presencial no Parque'], nivel:'contradicao',
-     msg:'Essas duas não podem coexistir: a origem diz um lugar e o atendimento diz outro. Reveja qual dos dois está certo.'},
     {origem:'Meta Ads', chegou:['Contato direto com o vendedor'], nivel:'improvavel',
      msg:'Anúncio da empresa cai no WhatsApp do Parque ou no site. Se ele te chamou no seu número, ou o anúncio era seu, ou alguém te passou o contato.'},
     {origem:'Meta Ads do vendedor', chegou:['WhatsApp do Parque'], nivel:'improvavel',
      msg:'Seu impulsionamento aponta para o seu número. Confirme se o anúncio era mesmo seu.'},
-    {origem:'Google / Site', chegou:['Presencial no Parque','Presencial no PDV Jardim Norte'], nivel:'improvavel',
+    {origem:'Google / Site', chegou:['Presencial no Parque'], nivel:'improvavel',
      msg:'Quem veio da busca costuma chamar antes. Ele chegou direto?'}
   ];
   // Frase de confirmação por porta, escrita à mão — preposição por concatenação
@@ -5022,7 +5045,6 @@ function cartConcluir(texto){
     'Ligação para a recepção':          {pre:'com você ', frag:'pela ligação para a recepção'},
     'WhatsApp do Parque':               {pre:'com você ', frag:'pelo WhatsApp do Parque'},
     'Presencial no Parque':             {pre:'com você ', frag:'pessoalmente no Parque'},
-    'Presencial no PDV Jardim Norte':   {pre:'com você ', frag:'pessoalmente no PDV Jardim Norte'},
     'Contato direto com o vendedor':    {pre:'', frag:'direto com você'},
     'Outro':                            {pre:'com você ', frag:'por outro caminho'}
   };
@@ -5036,7 +5058,6 @@ function cartConcluir(texto){
     'Busdoor':'Ele citou ter visto a peça. Diga qual.',
     'Panfletagem':'Ele recebeu ou viu o panfleto. Diga onde.',
     'Evento':'Conheceu a gente num evento. Diga qual.',
-    'PDV Jardim Norte':'Passou no shopping e viu o quiosque, sem ter visto nada antes. Se viu um outdoor e por isso foi lá, a origem é o outdoor.',
     'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
     'Disparo WhatsApp':'A mensagem que o Parque mandou. Não confundir com a porta WhatsApp do Parque — a porta é por onde ele falou; esta é o que o fez agir. Diga qual disparo.',
     'Email Marketing':'E-mail enviado pelo Parque. Diga qual campanha.',
@@ -5652,7 +5673,7 @@ function cartConcluir(texto){
   // Facilita caractere a caractere, com o mesmo detalhe e o mesmo texto de apoio. Cópia das
   // constantes AN_ORIGENS / AN_ORIGEM_SUB / AN_SUB_PH / AN_ORIGEM_APOIO, que vivem na IIFE do
   // anúncio e não são alcançáveis daqui. Mudou lá, muda aqui (e no Evento50.gs e no form).
-  const EV_COMO_SOUBE = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','PDV Jardim Norte','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
+  const EV_COMO_SOUBE = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
   const EV_COMO_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
   const EV_COMO_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
   const EV_COMO_APOIO = {
@@ -5664,7 +5685,6 @@ function cartConcluir(texto){
     'Busdoor':'Ele citou ter visto a peça. Diga qual.',
     'Panfletagem':'Ele recebeu ou viu o panfleto. Diga onde.',
     'Evento':'Conheceu a gente num evento. Diga qual.',
-    'PDV Jardim Norte':'Passou no shopping e viu o quiosque, sem ter visto nada antes. Se viu um outdoor e por isso foi lá, a origem é o outdoor.',
     'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
     'Disparo WhatsApp':'A mensagem que o Parque mandou. Não confundir com a porta WhatsApp do Parque — a porta é por onde ele falou; esta é o que o fez agir. Diga qual disparo.',
     'Email Marketing':'E-mail enviado pelo Parque. Diga qual campanha.',
