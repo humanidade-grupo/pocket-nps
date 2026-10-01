@@ -4,6 +4,18 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 01/10/2026 (Diretoria) — M-21 PODE SER SÓ HUMANO · VENDA DAS RETOMADAS LIBERADA. FAQ da
+       Mista ganha duas perguntas (o pet é opcional no jazigo misto; os vizinhos podem receber pets).
+       A Retomada volta às telas de onde saiu em 22/09 — barra de estoque da home, QUADRAS_ORDEM do
+       Simulador e seletor do Anúncio — e o card da Tabela de Preços e o FAQ perdem o "venda
+       suspensa"; o FAQ descreve o processo de 24/09 no presente (origem antes de assinar, inspeção
+       antes de liberar o contrato, vendeu → Pedro). Nenhum preço, fórmula, régua ou tabela mudou.
+       A volta à barra e à lista depende da chave estoque.quadras_publicas da Config (o Ricardo
+       devolve `Retomada` à mão) e dos 42 jazigos de novo no estoque do Facilita. Para a ordem não
+       importar, a barra passou a obedecer "quadra desconhecida" como o Simulador já obedecia:
+       esconde o grupo e apaga a cópia do aparelho — a cópia de 22/09 nunca é pintada.
+       "Temporário é uso imediato — só na M-19" vira "só em jazigo pronto (M-19 e Retomadas)": a regra
+       do código já era essa (decisão de 24/09); o texto falava só da M-19 porque a Retomada estava fora.
      Rev. 30/09/2026 (Ricardo) — ESCALA DE OUTUBRO E FIM DO PDV JARDIM NORTE. O JN sai e no lugar
        dele entra a Captação própria: dia útil = 1 Parque + 1 folga + os demais na Captação 8-18 (o
        Jaime também, fora dos dias de Parque); fim de semana = Parque + Captação 13-18. Jaime folga
@@ -1197,11 +1209,18 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <div class="hm-ola" id="greet">Bem-vindo</div>
   </div>
   <main class="hm-main">
-    <!-- Barra de estoque: so M-19 (12/09; a Retomada saiu em 22/09, venda suspensa). O grupo
-         nasce escondido: quadra cuja rota nao respondeu (e sem copia no aparelho) nao aparece. -->
+    <!-- Barra de estoque: M-19 e Retomada (12/09; a Retomada saiu em 22/09 e voltou em 01/10).
+         Cada grupo nasce escondido: quadra cuja rota nao respondeu (e sem copia no aparelho), ou
+         fora da estoque.quadras_publicas da Config, simplesmente nao aparece. -->
     <div id="barraEstoque" class="barra-estoque" hidden aria-live="polite">
       <span class="be-grupo" data-q="M-19" hidden>
         <span class="be-quadra">M-19</span>
+        <span class="be-item"><i class="be-dot be-verde"></i><b data-c="disp">–</b></span>
+        <span class="be-item"><i class="be-dot be-laranja"></i><b data-c="res">–</b></span>
+        <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
+      </span>
+      <span class="be-grupo" data-q="Retomada" hidden>
+        <span class="be-quadra">Retomada</span>
         <span class="be-item"><i class="be-dot be-verde"></i><b data-c="disp">–</b></span>
         <span class="be-item"><i class="be-dot be-laranja"></i><b data-c="res">–</b></span>
         <span class="be-item"><i class="be-dot be-vermelho"></i><b data-c="vend">–</b></span>
@@ -1310,7 +1329,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <!-- 24/09 (Ricardo): Temporário é uso imediato, e uso imediato só existe na M-19. Aparece
          quando a quadra escolhida desliga o botão (simSyncProdutos) — a razão escrita junto do
          botão, como a da campanha ao lado do interruptor quando o produto está fora dela. -->
-    <p class="fieldnote" id="notaProdQuadra" hidden><b>Temporário é uso imediato — só na M-19.</b></p>
+    <p class="fieldnote" id="notaProdQuadra" hidden><b>Temporário é uso imediato — só em jazigo pronto (M-19 e Retomadas).</b></p>
   </section>
 
   <!-- STEP 2: valor -->
@@ -1622,8 +1641,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       <span class="ic"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg></span>
       <span class="tx">
         <span class="t">Retomadas</span>
-        <span class="d"><b>Venda suspensa desde 22/09/2026.</b> A tabela fica aqui para consulta &mdash; não ofereça retomada ao cliente. Perpétuo e Temporário &middot; à vista de R$ 27.799 a R$ 23.299.</span>
-        <span class="tabmeta"><span>venda suspensa</span><span>42 jazigos</span><span>4 faixas</span><span>21x &middot; 72x</span><span>Temp. 20%</span></span>
+        <span class="d">Perpétuo e Temporário &middot; à vista de R$ 27.799 a R$ 23.299.</span>
+        <span class="tabmeta"><span>42 jazigos</span><span>4 faixas</span><span>21x &middot; 72x</span><span>Temp. 20%</span></span>
       </span>
       <span class="arw">&rsaquo;</span>
     </a>
@@ -1943,6 +1962,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <details class="faq"><summary><span class="q">Quem pode solicitar o sepultamento de um pet na Quadra Mista?</span><span class="chev">›</span></summary><div class="a"><p>Podem solicitar: o tutor do animal que também seja titular do Jazigo Misto; o tutor que apresente autorização escrita do titular; o responsável legal (no caso de menores ou incapazes); ou um familiar do titular que comprove o vínculo e apresente autorização.</p></div></details>
     <details class="faq"><summary><span class="q">Como o Regulamento define "família"?</span><span class="chev">›</span></summary><div class="a"><p>De forma abrangente: cônjuge, companheiro(a) em união estável, descendentes, ascendentes e colaterais até o 2º grau. O conceito contempla arranjos contemporâneos, incluindo uniões homoafetivas e famílias recompostas, desde que comprovado o vínculo.</p></div></details>
     <details class="faq"><summary><span class="q">Preciso já ter um jazigo para sepultar meu pet?</span><span class="chev">›</span></summary><div class="a"><p>Para sepultar na Quadra Mista, sim — o pet vai para um Jazigo Misto (Definitivo ou Transitório). Quem não tem jazigo misto tem duas saídas: <strong>migrar</strong> um jazigo existente para a Quadra Mista, quando houver um pet para sepultar, ou <strong>adquirir</strong> um novo jazigo misto. Se o titular quiser sepultar o pet no próprio jazigo, em outra quadra, a lei permite — fale com o consultor, que explica os riscos.</p></div></details>
+    <details class="faq"><summary><span class="q">Posso comprar um jazigo na Quadra Mista e usar só para pessoas da família, sem pet?</span><span class="chev">›</span></summary><div class="a"><p><strong>Sim.</strong> Sepultar um animal no jazigo misto é uma possibilidade, não uma obrigação. O titular pode usar o jazigo apenas para sepultamentos humanos, pelo tempo que quiser, e decidir no futuro sepultar um pet, se desejar. O preço, as condições de pagamento e a capacidade (até 2 urnas humanas simultâneas) são os mesmos.</p></div></details>
+    <details class="faq"><summary><span class="q">Os jazigos ao lado do meu podem receber animais?</span><span class="chev">›</span></summary><div class="a"><p><strong>Sim.</strong> A Quadra Mista é toda destinada ao sepultamento conjunto de pessoas e animais de estimação, então os jazigos vizinhos podem receber pets, mesmo que o seu seja usado só para pessoas. Isso é informado antes da contratação e consta do contrato.</p></div></details>
   </section>
   <section class="faq-sec">
     <h2><span class="num">3</span>Animais elegíveis</h2>
@@ -2021,7 +2042,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   <section class="faq-sec">
     <h2><span class="num">14</span>Campanha e quadras</h2>
     <details class="faq"><summary><span class="q">O desconto da campanha soma com o meu desconto?</span><span class="chev">›</span></summary><div class="a"><p><strong>Não.</strong> A campanha substitui o desconto de alçada; os dois não se somam.</p></div></details>
-    <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p><p><strong>A venda de retomada está suspensa desde 22/09/2026.</strong> Os jazigos saíram do estoque no Facilita e a quadra saiu do Simulador e do Anúncio de Venda. A tabela de preços continua na tela Tabela de Preços, só para consulta.</p><p><strong>Quando a venda voltar:</strong> antes de liberar o contrato, a equipe abre o jazigo para conferir tampa e laterais (procedimento padrão — ficou muito tempo fechado). Vendeu, avise o Pedro, que aciona os sepultadores. Dia calmo, é rápido; dia cheio, pode ficar para o dia seguinte. <strong>O cliente precisa saber a origem do jazigo antes de assinar.</strong></p></div></details>
+    <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p><p>Antes de liberar o contrato, a equipe abre o jazigo para conferir tampa e laterais (procedimento padrão — ficou muito tempo fechado). Vendeu, avise o Pedro, que aciona os sepultadores. Dia calmo, é rápido; dia cheio, pode ficar para o dia seguinte. <strong>O cliente precisa saber a origem do jazigo antes de assinar.</strong></p></div></details>
   </section>
   <div class="faq-foot">Material de apoio elaborado a partir do Regulamento Interno para Sepultamento de Animais Domésticos (versão em revisão). Para situações não previstas aqui, consultar a Administração do Parque da Saudade, que resolve os casos omissos com base na legislação aplicável.</div>
 </main>
@@ -2532,8 +2553,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
           <button data-q="M-19" aria-pressed="false">M-19</button>
           <button data-q="M-20" aria-pressed="false">M-20</button>
           <button data-q="M-21" aria-pressed="false">M-21</button>
-          <!-- (22/09) Retomada saiu: venda suspensa. Para reabrir, devolver
-               <button data-q="Retomada">Retomada</button> aqui e 'Retomada' em QUADRAS_ORDEM. -->
+          <button data-q="Retomada" aria-pressed="false">Retomada</button>
         </div>
       </div>
       <div class="field">
@@ -3036,10 +3056,9 @@ const pctTxt = p => Math.round(p*1000)/10 + '%';
 // A RESERVA não vira botão de quadra (13/09): é produto de valor fixo, qualquer jazigo, e o
 // jazigo só é escolhido no fim (Playbook §2.3). A lista dela serve para uma coisa só — trazer
 // o valor quando o vendedor toca o produto Reserva.
-// (22/09) 'Retomada' saiu da lista: venda suspensa, e a quadra também saiu da chave
-// estoque.quadras_publicas da Config. Tirar daqui é o cinto: mesmo o aparelho que já tem
-// pocket_estoque_lista_retomada guardado não ganha o botão de volta.
-const QUADRAS_ORDEM = ['M-19','M-20','M-21','Reserva'];
+// (01/10) 'Retomada' voltou: a venda suspensa em 22/09 foi liberada pela Diretoria. O botão
+// só aparece quando a rota devolve a lista — isto é, com `Retomada` na estoque.quadras_publicas.
+const QUADRAS_ORDEM = ['M-19','M-20','M-21','Reserva','Retomada'];
 const QUADRA_ROTULO = {'M-21':'M-21 (Mista)'};
 const QUADRA_MISTA = 'M-21';          // paga em 2 etapas: a rota dá o TOTAL, simula-se 50%
 const ETAPA_MISTA = 0.5;
@@ -3132,7 +3151,7 @@ function simAplicarValor(){
   congChave = '';
   setMoney($('#valor'),'valor', simValorDoJazigo());
 }
-// Produto × quadra: Temporário é uso imediato — só na M-19. A M-20 (pré-venda) e a M-21 (mista
+// Produto × quadra: Temporário é uso imediato — só em jazigo pronto (M-19 e Retomadas). A M-20 (pré-venda) e a M-21 (mista
 // provisória, e Quadra Mista é só Perpétuo) não o têm. Reserva fica sempre disponível — tocar
 // nela solta o jazigo (ver simAplicarValor). Sem quadra (valor à mão), tudo livre.
 function simProdutosPermitidos(){
@@ -4220,18 +4239,20 @@ function homeSaudar(){
 }
 homeSaudar();
 
-/* Barra de estoque: so M-19 (12/09). Le a rota publica do Cofre (sem token, so contagem)
-   pelo cofreLer, que tenta de novo quando o Google responde HTML no lugar do JSON.
+/* Barra de estoque: M-19 e Retomada (12/09). Le a rota publica do Cofre (sem token, so
+   contagem) pelo cofreLer, que tenta de novo quando o Google responde HTML no lugar do JSON.
    Pinta primeiro o que estiver guardado no aparelho — o app e offline-first e a barra nao
    pode piscar vazia — e depois substitui pelo numero da rede.
-   (22/09) A Retomada saiu daqui: a venda esta suspensa. Nao bastava tirar a quadra da
-   Config: quando a rota responde "quadra desconhecida" este codigo MANTEM o que ja estava
-   pintado da copia do aparelho (ver o `return` logo abaixo), e o celular que ja tinha visto
-   a Retomada seguiria mostrando os numeros velhos para sempre. Por isso ela sai da lista. */
+   Na Retomada, as ainda nao liberadas no Facilita chegam em `outros` (situacao
+   reserved-permanetly, que a contagem nao classifica): aqui elas somam no laranja, de
+   reservado, e o title diz quantas sao — do contrario a quadra apareceria 0 · 0 · 0.
+   (01/10) A Retomada voltou (saiu em 22/09). "Quadra desconhecida" agora esconde o grupo e
+   apaga a copia do aparelho, como o estBuscar do Simulador ja fazia: quem decide se a quadra
+   aparece e a estoque.quadras_publicas da Config, nunca uma copia velha guardada no celular. */
 (function(){
   var el = document.getElementById('barraEstoque');
   if (!el) return;
-  ['M-19'].forEach(function(q){
+  ['M-19', 'Retomada'].forEach(function(q){
     var g = el.querySelector('.be-grupo[data-q="' + q + '"]');
     if (!g) return;
     var CHAVE = q === 'M-19' ? 'pocket_estoque_m19' : 'pocket_estoque_' + q.toLowerCase();
@@ -4250,7 +4271,13 @@ homeSaudar();
     }
     pintar(guardaLer(CHAVE), true);
     cofreLer('app=estoque&fn=quadra&q=' + encodeURIComponent(q)).then(function(d){
-      if (!d || d.ok !== true) return;          // HTML, erro ou quadra fora da lista: fica o que ja estava
+      if (d && d.ok === false && /quadra desconhecida/i.test(String(d.error || ''))) {
+        g.hidden = true;                        // fora da Config: some, e a copia vai junto
+        try { localStorage.removeItem(CHAVE); } catch (e) {}
+        if (!el.querySelector('.be-grupo:not([hidden])')) el.hidden = true;
+        return;
+      }
+      if (!d || d.ok !== true) return;          // HTML, erro ou sem rede: fica o que ja estava
       pintar(d, false);
       guardaGravar(CHAVE, d);
     });
