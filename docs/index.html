@@ -4,6 +4,8 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 04/10/2026, tarde (Ricardo) — SEM "COFRE" NA TELA: Cofre é backend; o vendedor lê "Facilita".
+       Os dois textos visíveis do Simulador que diziam Cofre agora dizem Facilita. Comentários seguem.
      Rev. 04/10/2026 (Ricardo) — ESCALA DE PREÇO NOS JAZIGOS DO SIMULADOR. Cada pílula de jazigo ganha
        a cor da sua faixa de preço DENTRO da quadra: contorno na cor cheia e fundo num tom dela, do
        marrom (o mais caro) ao bege claro (o mais barato), passando pelo dourado — pela posição da
@@ -3243,7 +3245,7 @@ function simPintarJazigos(){
   const falha = $('#jzFalha'), btn = $('#btnValorModo');
   if(!temAlguma && state.modoValor!=='mao'){
     falha.hidden = !estUltimaBusca;
-    falha.textContent = estCarregando ? 'Carregando os jazigos do Cofre…'
+    falha.textContent = estCarregando ? 'Carregando os jazigos do Facilita…'
       : 'Não foi possível carregar os jazigos agora. Digite o valor à mão — o Pocket tenta de novo quando você voltar ao Simulador.';
   } else falha.hidden = true;
   btn.parentNode.hidden = !temAlguma;
@@ -3313,7 +3315,7 @@ function simSyncValorCampo(){
   let h;
   if(res) h = pr
     ? `<b>Reserva:</b> valor fixo de ${brl(pr.valor)}; o jazigo é escolhido no fim, entre qualquer jazigo disponível, inclusive Retomadas — exceto os mistos (M-21). Estoque de ${escH(carimboCurto(pr.d.atualizado_em))}${pr.deCache ? ' · cópia do aparelho' : ''}.`
-    : `<b>Reserva:</b> o Cofre não trouxe um valor único da Reserva agora. Digite o valor.`;
+    : `<b>Reserva:</b> o Facilita não trouxe um valor único da Reserva agora. Digite o valor.`;
   else if(!j) h = 'O valor entra sozinho quando você escolher o jazigo.';
   else if(cong) h = `<b>${escH(j.quadra)} · ${escH(j.jazigo)} é do lote da ${escH(campResp.nome)}:</b> a base do Uso Temporário não segue o preço novo. Digite o valor da coluna <b>Uso Temporário</b> da tabela.`;
   else {
