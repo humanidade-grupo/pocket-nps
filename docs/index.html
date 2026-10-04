@@ -4,6 +4,12 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 04/10/2026 (Ricardo) — ESCALA DE PREÇO NOS JAZIGOS DO SIMULADOR. Cada pílula de jazigo ganha
+       a cor da sua faixa de preço DENTRO da quadra: contorno na cor cheia e fundo num tom dela, do
+       marrom (o mais caro) ao bege claro (o mais barato), passando pelo dourado — pela posição da
+       faixa, não pelos reais. Uma régua acima das pílulas mostra o maior e o menor preço da quadra.
+       O escolhido segue no marrom, com anel dourado; o reservado segue apagado e tracejado. Vale para
+       todas as quadras e se ajusta sozinho ao que o Cofre trouxer (M-20: 11 faixas; M-19: 6).
      Rev. 03/10/2026 (Ricardo) — M-20 INTEIRA À VENDA. Todos os jazigos da M-20 liberados: 326 na
        quadra, 315 à venda, 11 faixas, de R$ 15.699 (E-2) a R$ 25.299 (A-1). Só o card da M-20 na Tabela
        de Preços muda: o texto passa a "à vista de R$ 25.299 a R$ 15.699", os metas a "315 jazigos ·
@@ -484,6 +490,21 @@ input:focus{border-color:var(--dourado); box-shadow:0 0 0 3px rgba(204,144,11,.1
 .chips button[data-res] .s{text-decoration:none}
 .chips button[data-res][aria-pressed="true"]{opacity:1; text-decoration:none}
 .chips button[aria-pressed="true"]{background:var(--marrom); color:var(--off-white); border-color:var(--marrom)}
+/* ESCALA DE PREÇO (04/10, Ricardo): o fundo de cada pílula de jazigo segue a faixa de preço DA
+   QUADRA — o mais caro no marrom escuro, o mais barato no bege claro, passando pelo dourado
+   (simCorDaFaixa). A cor vem por variável (--jzc contorno, --jzf fundo) para o escolhido continuar
+   no marrom do .seg.gold, agora com um anel dourado: sem o anel ele se confundiria com o mais caro.
+   O preço segue escrito na pílula — a cor só ajuda a achar a faixa, não substitui o número. */
+#chipsJazigo button[data-jz]{background:var(--jzf,#fff); color:var(--marrom); border:2px solid var(--jzc,var(--border-strong));
+  padding:5px 10px}
+#chipsJazigo button[data-jz] .s{opacity:.85}
+#chipsJazigo button[data-jz][data-res]{border-style:dashed}   /* o reservado segue tracejado e apagado */
+#chipsJazigo button[data-jz][aria-pressed="true"]{background:var(--marrom); color:var(--off-white); border-color:var(--marrom);
+  box-shadow:0 0 0 2px var(--amarelo)}
+.jzEscala{display:flex; align-items:center; gap:8px; margin-top:10px; font-size:11px; color:var(--muted)}
+.jzEscala[hidden]{display:none}
+.jzEscala .faixa{flex:1; height:8px; border-radius:4px; min-width:60px}
+.jzEscala b{color:var(--marrom); font-weight:650; white-space:nowrap}
 #segQuadra{flex-wrap:wrap}
 #segQuadra button{flex:1 1 30%}
 .input-travado input{background:rgba(66,39,12,.05); color:var(--marrom)}
@@ -1352,6 +1373,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <div class="field" id="jzBox" hidden>
       <label>Quadra</label>
       <div class="seg" id="segQuadra" role="group" aria-label="Quadra"></div>
+      <div class="jzEscala" id="jzEscala" hidden></div>
       <div class="chips" id="chipsJazigo"></div>
       <p class="fieldnote" id="jzNota"></p>
     </div>
@@ -3196,6 +3218,21 @@ function simReconciliarJazigo(){
   j.reservado = u.situacao!=='disponivel';
   if(u.valor>0 && u.valor!==j.valor){ j.valor = u.valor; simAplicarValor(); }
 }
+/* A cor de cada faixa de preço DENTRO da quadra (04/10): os valores distintos da lista, do mais
+   caro (posição 0, marrom escuro) ao mais barato (bege claro), passando pelo dourado. Pela POSIÇÃO
+   da faixa, não pela distância em reais — na M-20 a faixa E fica longe das outras e, em escala
+   linear, as nove de cima sairiam quase da mesma cor. A cor cheia vai no CONTORNO e um tom dela no
+   fundo: com a cor cheia no fundo, a faixa do meio (dourado médio) não tinha contraste nem com
+   texto claro nem com escuro (testado em 04/10). */
+const JZ_ESCALA = [[0x7A,0x4A,0x14],[0xDC,0xA8,0x48],[0xFB,0xF3,0xE2]];
+function simCorDaFaixa(pos, n){
+  const t = n>1 ? pos/(n-1) : 0.5;
+  const [a,b,u] = t<=.5 ? [JZ_ESCALA[0],JZ_ESCALA[1],t*2] : [JZ_ESCALA[1],JZ_ESCALA[2],(t-.5)*2];
+  const c = a.map((x,i)=> Math.round(x+(b[i]-x)*u));
+  // contorno na cor cheia; fundo com 45% dela sobre branco — o texto marrom fica legível em todas
+  const f = c.map(x=> Math.round(255+(x-255)*0.45));
+  return {cor:'rgb('+c.join(',')+')', fundo:'rgb('+f.join(',')+')'};
+}
 function simPintarJazigos(){
   const temAlguma = temListaDeJazigo();
   if(!state.modoValor && temAlguma) state.modoValor = 'jazigo';
@@ -3217,18 +3254,30 @@ function simPintarJazigos(){
   if(state.quadraSel && !estListas[state.quadraSel]) state.quadraSel = '';
   $('#segQuadra').innerHTML = qs.map(q=>
     `<button type="button" data-quadra="${escH(q)}" aria-pressed="${q===state.quadraSel}">${escH(QUADRA_ROTULO[q]||q)}</button>`).join('');
-  const chips = $('#chipsJazigo'), nota = $('#jzNota');
+  const chips = $('#chipsJazigo'), nota = $('#jzNota'), escala = $('#jzEscala');
+  escala.hidden = true;
   if(!state.quadraSel){ chips.innerHTML = ''; nota.textContent = 'Escolha a quadra para ver os jazigos à venda.'; return; }
   const E = estListas[state.quadraSel], d = E.d;
   const nDisp = d.unidades.filter(u=> u.situacao==='disponivel').length, nRes = d.unidades.length - nDisp;
   // Escolhido o jazigo, a lista recolhe: na M-19 são ~200 pílulas, e o vendedor não pode
   // ter de rolar por elas até a forma de pagamento. "Trocar jazigo" abre de novo.
   const recolhe = !!state.jaz && state.jaz.quadra===state.quadraSel && !state.jzAberto;
+  // as faixas de preço da quadra, do mais caro ao mais barato (escala de cor, 04/10)
+  const faixas = [...new Set(d.unidades.filter(u=> u.valor>0).map(u=> u.valor))].sort((a,b)=> b-a);
   const pilula = u=>{
     const livre = u.situacao==='disponivel';
     const sel = !!state.jaz && state.jaz.quadra===state.quadraSel && state.jaz.jazigo===u.jazigo;
-    return `<button type="button" data-jz="${escH(u.jazigo)}" aria-pressed="${sel}"${livre?'':' data-res="1" title="Reservado no Facilita"'}>${escH(u.jazigo)}<span class="s">${livre ? 'R$ '+Math.round(u.valor).toLocaleString('pt-BR') : 'reservado'}</span></button>`;
+    const pos = faixas.indexOf(u.valor), cor = pos>=0 && faixas.length>1 ? simCorDaFaixa(pos, faixas.length) : null;
+    const estilo = cor ? ` style="--jzf:${cor.fundo};--jzc:${cor.cor}"` : '';
+    return `<button type="button" data-jz="${escH(u.jazigo)}" aria-pressed="${sel}"${estilo}${livre?'':' data-res="1" title="Reservado no Facilita"'}>${escH(u.jazigo)}<span class="s">${livre ? 'R$ '+Math.round(u.valor).toLocaleString('pt-BR') : 'reservado'}</span></button>`;
   };
+  if(!recolhe && faixas.length>1){
+    const stops = faixas.map((v,i)=> simCorDaFaixa(i, faixas.length).cor).join(',');
+    escala.innerHTML = `<b>R$ ${Math.round(faixas[0]).toLocaleString('pt-BR')}</b><span class="faixa" style="background:linear-gradient(90deg,${stops})"></span><b>R$ ${Math.round(faixas[faixas.length-1]).toLocaleString('pt-BR')}</b>`;
+    escala.title = 'Mais escuro = mais caro · ' + faixas.length + ' faixas de preço nesta quadra';
+    escala.setAttribute('aria-label', 'Escala de preço: do mais caro, mais escuro, ao mais barato, mais claro');
+    escala.hidden = false;
+  }
   chips.innerHTML = recolhe
     ? d.unidades.filter(u=> u.jazigo===state.jaz.jazigo).map(pilula).join('')
       + `<button type="button" data-trocar="1">Trocar jazigo<span class="s">${nDisp} disponíve${nDisp===1?'l':'is'}</span></button>`
