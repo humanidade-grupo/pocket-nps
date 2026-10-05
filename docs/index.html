@@ -1110,6 +1110,29 @@ input.an-plain{padding-left:14px; font-size:16px}
 .ct-as b{font-weight:600; overflow-wrap:anywhere}
 .ct-as span{color:var(--muted); font-size:12px; white-space:nowrap}
 .ct-as .ck{color:var(--ok); font-weight:700; margin-right:4px}
+/* (05/10) Meu extrato de comissão */
+.ex-item{display:grid; grid-template-columns:1fr auto; gap:4px 10px; width:100%; text-align:left; font:inherit; color:var(--marrom); cursor:pointer; margin-bottom:10px}
+.ex-item.sel{outline:2px solid var(--dourado); outline-offset:-2px}
+.ex-mes{font-weight:700; font-size:15px}
+.ex-total{font-size:13.5px; color:var(--muted)} .ex-total b{color:var(--marrom)}
+.ex-quando{font-size:12px; color:var(--muted); grid-column:1 / -1}
+.ex-chip{justify-self:end; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; border-radius:999px; padding:3px 9px; background:rgba(204,144,11,.14); color:#8a5f00}
+.ex-chip.ok{background:rgba(78,122,62,.14); color:var(--ok)}
+.ex-chip.rev{background:rgba(180,60,40,.12); color:#a33a22}
+.ex-folha-caixa{position:relative; overflow:hidden; background:#fff; border:1px solid var(--border-strong); border-radius:12px; margin:12px 0}
+.ex-folha-caixa iframe{border:0; display:block; transform-origin:0 0; background:#fff}
+.ex-folha-caixa.zoom{overflow:auto; -webkit-overflow-scrolling:touch}
+.ex-botoes{display:flex; gap:10px} .ex-botoes .cart-btn{flex:1; font-size:14.5px; padding:13px 10px}
+.ex-botoes[hidden]{display:none}
+.ex-carregando{margin:0; padding:22px 16px; font-size:14px; color:var(--muted)}
+.ex-pede{margin:4px 0 12px; font-size:14.5px}
+.ex-rot{display:block; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); margin-bottom:6px}
+#exRevTxt{width:100%; box-sizing:border-box; font:inherit; font-size:15px; padding:11px 12px; border-radius:12px; border:1.5px solid var(--border-strong); resize:vertical}
+.ex-feito{border-radius:12px; padding:13px 14px; font-size:14px; line-height:1.5}
+.ex-feito.ok{background:rgba(78,122,62,.12); color:var(--ok); font-weight:700}
+.ex-feito.rev{background:rgba(180,60,40,.08); color:#7a2c1a}
+.ex-feito span{display:block; font-style:italic; margin:6px 0}
+.ex-item[hidden],.ex-folha-caixa[hidden],.ex-feito[hidden]{display:none}
 .ct-vazio{text-align:center; padding:24px 18px}
 .ct-vazio .ok{width:44px; height:44px; margin:0 auto; border-radius:50%; display:grid; place-items:center; background:rgba(78,122,62,.14); color:var(--ok); font-size:21px; font-weight:700}
 .ct-vazio h3{font-family:"PF Marlet Display","Playfair Display",serif; font-size:18px; margin:12px 0 4px}
@@ -1283,6 +1306,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
          Contratos: só quando há contrato esperando o cliente do vendedor da sessão.
          (22/09) O card do Evento 50 Anos saiu daqui — o evento foi em 20/09. -->
     <div class="hm-agora">
+      <button class="hm-l" data-go="extrato" id="exAgora" hidden><span class="n" id="exAgoraN">0</span><span class="tx" id="exAgoraTx">Extrato de comissão para conferir</span><span class="arw">&rsaquo;</span></button>
       <button class="hm-l" data-go="contratos" id="ctAgora" hidden><span class="n" id="ctAgoraN">0</span><span class="tx" id="ctAgoraTx">Contratos esperando o seu cliente</span><span class="arw">&rsaquo;</span></button>
     </div>
 
@@ -1315,7 +1339,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
            e o PIN do papel consulta, que entra direto na conversa. -->
     </div>
 
-    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 28/09/2026 · 17:00</span></div>
+    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 05/10/2026 · 20:30</span></div>
   </main>
 </section>
 
@@ -2519,6 +2543,65 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
     <div class="inst">A situação dos contratos vem da D4Sign uma vez por dia. O botão abre o negócio no Facilita.</div>
+  </footer>
+</main>
+</section>
+
+<section class="view" id="view-extrato">
+<header>
+  <div class="deco"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="841.2131" height="910.218" viewBox="0 0 841.2131 910.218">
+<defs>
+<clipPath id="clip_1">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M539.3936 84.74298H1380.6067V994.961H539.3936Z" clip-rule="evenodd"/>
+</clipPath>
+<clipPath id="clip_2">
+<path transform="matrix(1,0,0,-1,-539.3936,994.961)" d="M0 1080H1920V0H0Z"/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip_1)">
+<g clip-path="url(#clip_2)">
+<path transform="matrix(1,0,0,-1,450.565,8)" stroke-width="2" stroke-linecap="butt" stroke-miterlimit="10" stroke-linejoin="miter" fill="none" stroke="#cc900b" d="M0 0 39.455-2.633C61.893-4.131 83.315-5.447 105.486-10.131 111.29-11.357 166.219-41.418 157.827-61.496L146.269-89.144C131.02-125.624 102.772-162.096 129.505-198.98 136.188-208.201 141.169-221.389 151.2-227.426 165.82-236.224 185.306-239.266 202.379-239.124 227.095-238.918 249.814-240.622 273.885-244.55 311.902-250.754 301.477-273.252 327.468-281.478 346.204-287.407 363.741-291.099 382.648-298.884 350.667-299.915 332.522-290.925 300.013-303.691 257.192-320.506 220.098-328.385 182.035-354.84 177.871-360.255 178.284-369.867 177.167-376.312 169.849-418.538 190.961-439.82 222.392-462.144 237.094-472.586 251.073-483.241 264.88-494.492 273.333-501.38 274.309-510.595 273.047-520.843 270.195-544.003 265.849-565.771 260.744-588.691 254.373-617.292 223.033-658.015 205.757-682.235L148.385-762.668C114.531-810.131 46.061-872.147-7.337-893.475-9.198-894.218-13.887-894.002-13.65-893.067-13.415-892.139-12.861-889.431-12.266-888.562L18.183-844.164C39.188-813.535 67.443-720.838 80.434-681.673L92.654-644.832C96.349-633.693 101.356-623.503 106.007-612.557 109.763-603.717 107.718-592.309 118.558-586.37 114.525-576.881 111.718-568.263 107.249-559.243 95.11-534.739 64.168-510.128 45.543-488.538 33.208-474.239 15.298-438.638 8.667-420.308 7.029-415.779 1.862-410.643-4.443-412.774-26.31-420.163-50.823-420.37-72.801-429.176L-408.043-595.624C-419.411-601.268-429.321-605.469-442.565-607.204-432.425-595.965-421.025-586.917-407.767-580.269L-300.965-526.711C-295.829-524.135-289.703-520.776-285.378-517.485L-225.259-471.73C-251.787-478.146-274.937-483.541-298.41-492.729L-382.242-525.545C-392.651-529.619-402.372-533.223-415.031-532.096-399.52-518.871-382.099-511.863-363.619-504.17L-180.964-428.141C-156.325-417.885-134.406-404.577-111.419-391.26-79.046-372.504-50.426-349.557-25.492-322.018-13.253-308.5-24.651-276.461-24.868-268.069L-25.665-237.32C-26.092-220.837-23.532-202.922-18.587-187.216L.804-125.621-4.837-99.897C-15.247-101.327-19.566-94.486-26.155-91.343L-52.34-78.85C-66.665-72.016-81.418-67.622-96.66-63.116-109.996-59.174-122.582-53.707-136.214-50.758-154.613-46.778-173.118-44.396-191.986-43.043-207.544-41.927-221.81-45.471-239.071-42.484-185.262-15.717-127.614-5.808-69.832 0H0Z"/>
+</g>
+</g>
+</svg>
+</div>
+  <div class="hwrap">
+    <button class="backbtn" data-go="home"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Ferramentas</button>
+    <div class="brandrow" style="margin-top:12px">
+      <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
+    </div>
+    <span class="apptag">Pocket NPS · Comissão</span>
+    <h1>Meu extrato de comissão</h1>
+    <p class="lead">Confira as vendas, a comissão e os demais valores do mês. Se estiver certo, aprove; se não, peça revisão.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="cart-aviso" id="exAviso" style="margin-top:14px"></div>
+
+  <!-- Portão: o PIN da Carteira. Quem é o vendedor sai da sessão, no servidor — nunca de uma escolha aqui. -->
+  <div id="exGate" hidden>
+    <section class="card">
+      <p style="margin:0 0 12px; font-size:14.5px; line-height:1.5">Entre com o seu PIN para ver o seu extrato de comissão.</p>
+      <button class="cart-btn" id="exBtnPin" type="button">Entrar com meu PIN</button>
+      <p class="fieldnote">É o mesmo PIN da Carteira do Dia. Depois de entrar, o app volta para cá.</p>
+    </section>
+  </div>
+
+  <div id="exCorpo" hidden>
+    <div id="exLista" style="margin-top:6px"></div>
+    <div id="exDetalhe" hidden>
+      <div class="ex-folha-caixa" id="exFolhaCaixa"></div>
+      <div class="ex-botoes"><button class="cart-btn sec" id="exBtnZoom" type="button">Ampliar a folha</button>
+      <button class="cart-btn sec" id="exBtnBaixar" type="button">Baixar o PDF</button></div>
+      <div id="exResposta" style="margin-top:16px"></div>
+    </div>
+    <div style="margin-top:18px"><button class="cart-btn sec" id="exBtnRecarregar" type="button">Conferir de novo</button></div>
+  </div>
+
+  <footer>
+    <div class="sens">O extrato é só seu: ninguém da equipe vê o de outro vendedor.</div>
+    <div class="inst">A coordenação libera o extrato do mês; se ela liberar uma versão nova, ela substitui a anterior.</div>
   </footer>
 </main>
 </section>
@@ -3995,9 +4078,11 @@ function go(view, push){
   if(view==='anuncio' && typeof anAoEntrar==='function') anAoEntrar();
   if(view==='evento' && typeof evAoEntrar==='function') evAoEntrar();
   if(view==='contratos' && typeof ctAoEntrar==='function') ctAoEntrar();
+  if(view==='extrato' && typeof exAoEntrar==='function') exAoEntrar();
   if(view==='assistente' && typeof asAoEntrar==='function') asAoEntrar();
   if(typeof asPintarTile==='function') asPintarTile();   // cartão da home + balão flutuante
   if(view==='home' && typeof ctPintarCard==='function') ctPintarCard();
+  if(view==='home' && typeof window.exBuscar==='function') window.exBuscar();   // (05/10) extrato de comissão
   if(view==='home' && typeof window.mvBuscar==='function') window.mvBuscar();   // (27/09) Minhas vendas: busca a cada volta
   if(view==='home' && typeof homeSaudar==='function') homeSaudar();
   if(view==='sim') estBuscar();
@@ -4715,6 +4800,7 @@ function cartSair(){
     // o que era da pessoa que saiu: os números do cartão Minhas vendas e o "pode perguntar"
     localStorage.removeItem('vendas_mes_ultimo');
     localStorage.removeItem('vendas_mes_ver');
+    localStorage.removeItem('extrato_ultimo');
     localStorage.removeItem('assistente_estado');
   }catch(e){}
   cartGuardarSessao(null); cartLote = []; cartPos = 0;
@@ -4908,6 +4994,9 @@ async function cartEntrar(){
     // Contratos para assinar: o card da home ganha o número com o token novo; quem veio do portão volta para a tela.
     try{ if(window.ctBuscar) window.ctBuscar(); }catch(e){}
     try{ if(sessionStorage.getItem('contratos_voltar')){ sessionStorage.removeItem('contratos_voltar'); go('contratos'); } }catch(e){}
+    // (05/10) Meu extrato de comissão: a faixa "Agora" ganha a contagem; quem veio do portão volta para a tela.
+    try{ if(window.exBuscar) window.exBuscar(); }catch(e){}
+    try{ if(sessionStorage.getItem('extrato_voltar')){ sessionStorage.removeItem('extrato_voltar'); go('extrato'); } }catch(e){}
     // (27/09) Minhas vendas: o cartão ganha os números com o token novo; quem veio do cartão volta para a home.
     try{ if(sessionStorage.getItem('minhasvendas_voltar')){ sessionStorage.removeItem('minhasvendas_voltar'); go('home'); } if(window.mvBuscar) window.mvBuscar(); }catch(e){}
     // Tirar dúvida: quem veio do portão volta para a conversa; o cartão da home acende conforme o Cofre (assistente_estado).
@@ -6326,6 +6415,262 @@ function cartConcluir(texto){
   ctBuscar();
 })();
 
+// ==================== MEU EXTRATO DE COMISSÃO (05/10/2026) ====================
+// O vendedor confere o extrato individual de comissão que o Ricardo liberou na Retrospectiva do Painel
+// e responde: aprovado, ou revisão com o texto do que está errado. Uma resposta por versão; se o Ricardo
+// liberar de novo, a versão nova substitui a anterior.
+// Backend: ações extrato_meus e extrato_responder no Cofre (ComissaoExtratos.gs) — portão = sessão do
+// PIN da Carteira; SÓ o papel vendedor, e SÓ os extratos dele. O extrato traz o Contrato (remuneração):
+// exceção autorizada pelo Ricardo em 05/10, só para o próprio vendedor.
+// A folha é o MESMO papel timbrado do PDF da Retrospectiva: o miolo vem pronto do servidor (a foto que o
+// Ricardo liberou), o cabeçalho e o timbrado.css vêm do repo ferramentas (o mesmo que o Painel lê), as
+// fontes Ingra e PF Marlet Display são as desta página. Mostrada num iframe SEM scripts (sandbox).
+(function(){
+  const $ex = id => document.getElementById(id);
+  const EX_K = 'extrato_ultimo';      // por aparelho: só a contagem de pendentes, para a faixa "Agora"
+  const EX_SESSAO_MORTA = ['TOKEN_INVALIDO','VENDEDOR_INATIVO'];
+  const EX_CSS = 'https://raw.githubusercontent.com/humanidade-grupo/ferramentas/main/timbrado/timbrado.css';
+  const EX_LOGO = 'https://raw.githubusercontent.com/humanidade-grupo/ferramentas/main/timbrado/andorinha.png';
+  const EX_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let exDados = null, exBuscando = false, exErro = '', exAberto = null, exEnviando = false, exRecursos = null;
+  let exZoom = false;   // false: a folha inteira cabe na largura · true: tamanho real, rolando dentro da caixa
+
+  const exEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function exSessao(){ try{ return JSON.parse(localStorage.getItem('carteira_sessao')||'null'); }catch(e){ return null; } }
+  function exMes(am){ const p = String(am||'').split('-'); return p.length === 2 ? EX_MESES[parseInt(p[1],10)-1] + ' de ' + p[0] : am; }
+  function exQuando(c){ const m = String(c||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/); return m ? m[3] + '/' + m[2] + ' às ' + m[4] + ':' + m[5] : ''; }
+  function exRS(n){ return 'R$ ' + Number(n||0).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+  function exPendentes(d){ return ((d && d.extratos) || []).filter(x => !x.resposta).length; }
+  function exGravar(d){ try{ d ? localStorage.setItem(EX_K, JSON.stringify({ vendedor: d.vendedor, pendentes: exPendentes(d) })) : localStorage.removeItem(EX_K); }catch(e){} }
+  function exLer(vend){ try{ const c = JSON.parse(localStorage.getItem(EX_K)||'null'); return (c && c.vendedor === vend) ? c : null; }catch(e){ return null; } }
+
+  // ---- o papel timbrado: timbrado.css + andorinha (ferramentas) e as fontes desta página ----
+  function exFontes(){
+    const faces = [];
+    for(const sh of Array.from(document.styleSheets)){
+      let regras; try{ regras = sh.cssRules; }catch(e){ continue; }
+      for(const r of Array.from(regras || [])){
+        if(r.type === 5 && /Ingra|PF Marlet Display/.test(r.cssText)) faces.push(r.cssText);
+      }
+    }
+    return faces.join('\n');
+  }
+  function exCarregar(){
+    if(exRecursos) return exRecursos;
+    exRecursos = Promise.all([
+      fetch(EX_CSS).then(r => { if(!r.ok) throw new Error('timbrado.css ' + r.status); return r.text(); }),
+      fetch(EX_LOGO).then(r => { if(!r.ok) throw new Error('andorinha ' + r.status); return r.blob(); })
+        .then(b => new Promise((ok, nao) => { const f = new FileReader(); f.onload = () => ok(f.result); f.onerror = nao; f.readAsDataURL(b); }))
+    ]).then(a => {
+      const fontes = exFontes();
+      if((fontes.match(/@font-face/g) || []).length < 2) throw new Error('as fontes do Pocket não foram achadas');
+      return { css: a[0], logo: a[1], fontes };
+    }).catch(e => { exRecursos = null; throw e; });
+    return exRecursos;
+  }
+  function exFolha(rec, doc){
+    const moldura = '@page{size:A4;margin:0}html,body{margin:0;padding:0;background:#fff}' +
+      'table.moldura{width:100%;border-collapse:collapse}table.moldura>thead>tr>td{height:34.5pt;padding:0}' +
+      'table.moldura>tfoot>tr>td{height:30pt;padding:0}table.moldura>tbody>tr>td{padding:0 34.5pt;vertical-align:top}' +
+      '@media screen{body{width:595pt}}';
+    const cab = '<header class="cab"><div class="marca"><img src="' + rec.logo + '" alt="">' +
+      '<div><div class="nome">Parque da Saudade</div><div class="sub">Cemitério Parque · Juiz de Fora</div></div></div>' +
+      '<div class="doc"><div class="titulo">' + exEsc(doc.titulo) + '</div><div class="sub">' + exEsc(doc.sub) + '</div></div></header>';
+    return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>' + exEsc(doc.arquivo) + '</title><style>' +
+      rec.fontes + '\n' + rec.css + '\n' + moldura + '</style></head><body><table class="moldura"><thead><tr><td></td></tr></thead>' +
+      '<tfoot><tr><td></td></tr></tfoot><tbody><tr><td>' + cab + doc.miolo + '</td></tr></tbody></table></body></html>';
+  }
+  // A folha tem a largura do A4 (595pt ≈ 793px); no celular ela é reduzida para caber, sem rolar de lado.
+  function exAjustar(){
+    const f = $ex('exFolha'), caixa = $ex('exFolhaCaixa');
+    if(!f || !caixa || !f.contentDocument || !f.contentDocument.body) return;
+    if(!caixa.clientWidth) return;   // tela escondida (a busca roda na home): o encaixe espera a tela abrir
+    const larg = 794, esc = exZoom ? 1 : Math.min(1, caixa.clientWidth / larg);
+    const alt = f.contentDocument.documentElement.scrollHeight;
+    f.style.width = larg + 'px'; f.style.height = alt + 'px';
+    f.style.transform = esc === 1 ? 'none' : 'scale(' + esc + ')';
+    caixa.classList.toggle('zoom', exZoom);
+    caixa.style.height = exZoom ? Math.min(alt, Math.round(window.innerHeight * 0.72)) + 'px' : Math.ceil(alt * esc) + 'px';
+    const bz = $ex('exBtnZoom'); if(bz) bz.textContent = exZoom ? 'Ver a folha inteira' : 'Ampliar a folha';
+  }
+  window.addEventListener('resize', () => { if(exAberto) exAjustar(); });
+
+  // ---- a tela ----
+  function exChip(x){
+    if(x.resposta === 'aprovado') return '<span class="ex-chip ok">Aprovado</span>';
+    if(x.resposta === 'revisao') return '<span class="ex-chip rev">Revisão pedida</span>';
+    return '<span class="ex-chip pend">Para conferir</span>';
+  }
+  function exPintar(){
+    const s = exSessao(), tem = !!(s && s.token);
+    $ex('exGate').hidden = tem;
+    $ex('exCorpo').hidden = !tem;
+    const av = $ex('exAviso');
+    av.textContent = exErro || '';
+    av.className = 'cart-aviso' + (exErro ? ' on erro' : '');
+    if(!tem) return;
+    const lista = $ex('exLista'), det = $ex('exDetalhe');
+    const d = exDados;
+    if(!d){
+      lista.innerHTML = '<div class="card ct-vazio"><h3>' + (exBuscando ? 'Buscando os seus extratos…' : 'Ainda sem resposta do servidor.') + '</h3></div>';
+      det.hidden = true; return;
+    }
+    const xs = d.extratos || [];
+    if(!xs.length){
+      lista.innerHTML = '<div class="card ct-vazio"><h3>Nenhum extrato para conferir</h3>' +
+        '<p>Quando a coordenação liberar o seu extrato de comissão do mês, ele aparece aqui.</p></div>';
+      det.hidden = true; return;
+    }
+    if(!exAberto || !xs.some(x => x.id === exAberto)) exAberto = (xs.find(x => !x.resposta) || xs[0]).id;
+    lista.innerHTML = xs.map(x => '<button type="button" class="card ex-item' + (x.id === exAberto ? ' sel' : '') + '" data-ex="' + exEsc(x.id) + '">' +
+      '<span class="ex-mes">' + exEsc(exMes(x.mes)) + '</span>' + exChip(x) +
+      '<span class="ex-total">Total do mês <b>' + exRS(x.total) + '</b></span>' +
+      '<span class="ex-quando">Enviado em ' + exEsc(exQuando(x.liberado_em)) + '</span></button>').join('');
+    lista.querySelectorAll('[data-ex]').forEach(b => b.addEventListener('click', () => { exAberto = b.dataset.ex; exErro = ''; exPintar(); }));
+    exPintarDetalhe(xs.find(x => x.id === exAberto));
+  }
+  function exPintarDetalhe(x){
+    const det = $ex('exDetalhe');
+    det.hidden = !x;
+    if(!x) return;
+    const resp = $ex('exResposta');
+    if(x.resposta === 'aprovado'){
+      resp.innerHTML = '<div class="ex-feito ok">✓ Você aprovou este extrato em ' + exEsc(exQuando(x.respondido_em)) + '.</div>';
+    } else if(x.resposta === 'revisao'){
+      resp.innerHTML = '<div class="ex-feito rev">Você pediu revisão em ' + exEsc(exQuando(x.respondido_em)) + ':<span>“' + exEsc(x.texto) + '”</span>' +
+        'A coordenação vai conferir e, se precisar, liberar uma versão nova aqui.</div>';
+    } else {
+      resp.innerHTML = '<p class="ex-pede">Confira linha a linha. Está tudo certo?</p>' +
+        '<button class="cart-btn" type="button" id="exAprovar">Aprovar o extrato</button>' +
+        '<button class="cart-btn sec" type="button" id="exPedir" style="margin-top:10px">Pedir revisão</button>' +
+        '<div id="exRevBox" hidden style="margin-top:12px"><label class="ex-rot" for="exRevTxt">O que precisa ser revisto?</label>' +
+        '<textarea id="exRevTxt" rows="3" maxlength="500" placeholder="Ex.: falta a venda do jazigo M-19-200, de 12/09."></textarea>' +
+        '<button class="cart-btn" type="button" id="exEnviarRev" style="margin-top:10px">Enviar pedido de revisão</button></div>';
+      $ex('exAprovar').addEventListener('click', () => {
+        if(confirm('Aprovar o extrato de ' + exMes(x.mes) + ', total ' + exRS(x.total) + '?')) exResponder(x, 'aprovado', '');
+      });
+      $ex('exPedir').addEventListener('click', () => { $ex('exRevBox').hidden = false; $ex('exRevTxt').focus(); });
+      $ex('exEnviarRev').addEventListener('click', () => {
+        const t = $ex('exRevTxt').value.replace(/\s+/g, ' ').trim();
+        if(t.length < 3){   // avisa SEM redesenhar: redesenhar fecharia a caixa que ele está escrevendo
+          const av = $ex('exAviso'); av.textContent = 'Escreva o que precisa ser revisto.'; av.className = 'cart-aviso on erro';
+          $ex('exRevTxt').focus(); return;
+        }
+        exResponder(x, 'revisao', t);
+      });
+    }
+    const caixa = $ex('exFolhaCaixa');
+    if(caixa.dataset.id === x.id){ setTimeout(exAjustar, 0); return; }
+    caixa.dataset.id = x.id;
+    caixa.innerHTML = '<p class="ex-carregando">Montando o extrato…</p>';
+    if(!x.documento){ caixa.innerHTML = '<p class="ex-carregando">O extrato não veio inteiro do servidor. Toque em "Conferir de novo".</p>'; return; }
+    exCarregar().then(rec => {
+      if(caixa.dataset.id !== x.id) return;
+      const f = document.createElement('iframe');
+      f.id = 'exFolha'; f.title = 'Extrato de comissão';
+      f.setAttribute('sandbox', 'allow-same-origin allow-modals');   // sem scripts: o miolo é só leitura
+      f.srcdoc = exFolha(rec, x.documento);
+      f.addEventListener('load', () => {
+        const fs = f.contentDocument && f.contentDocument.fonts;
+        (fs ? fs.ready : Promise.resolve()).then(exAjustar);
+      });
+      caixa.innerHTML = ''; caixa.appendChild(f);
+    }).catch(e => {
+      caixa.innerHTML = '<p class="ex-carregando">Não consegui montar o papel timbrado (' + exEsc(e && e.message || e) + '). Confira a conexão e toque em "Conferir de novo".</p>';
+    });
+  }
+
+  // Baixar o PDF: a impressão do próprio celular ("Salvar como PDF" / "Compartilhar").
+  function exBaixar(){
+    const f = $ex('exFolha');
+    if(!f || !f.contentWindow){ exErro = 'O extrato ainda está sendo montado.'; exPintar(); return; }
+    const fs = f.contentDocument && f.contentDocument.fonts;
+    const ok = !fs || (fs.check('10px "Ingra"') && fs.check('10px "PF Marlet Display"'));
+    if(!ok){ exErro = 'As fontes do extrato ainda não carregaram. Tente de novo em instantes.'; exPintar(); return; }
+    try{ f.contentWindow.focus(); f.contentWindow.print(); }
+    catch(e){ exErro = 'Este aparelho não deixou imprimir o extrato daqui.'; exPintar(); }
+  }
+
+  async function exResponder(x, resposta, texto){
+    const s = exSessao();
+    if(!s || !s.token || exEnviando) return;
+    exEnviando = true; exErro = '';
+    try{
+      const r = await fetch(CARTEIRA_API, { method:'POST', body: JSON.stringify({ acao:'extrato_responder', token: s.token, id: x.id, resposta, texto }) });
+      const j = await r.json();
+      if(j && j.ok === true){
+        const i = exDados.extratos.findIndex(e => e.id === x.id);
+        if(i >= 0) exDados.extratos[i] = j.extrato;
+        exGravar(exDados);
+      } else if(j && EX_SESSAO_MORTA.indexOf(String(j.erro || '')) >= 0){
+        exErro = j.msg || 'Sua sessão expirou. Entre de novo com o seu PIN.';
+        try{ cartSessaoCaiu(exErro); }catch(e){}
+      } else {
+        exErro = (j && j.msg) || 'O servidor não aceitou a resposta agora.';
+        if(j && (j.erro === 'SUBSTITUIDO' || j.erro === 'JA_RESPONDIDO')) exBuscar();
+      }
+    }catch(e){
+      exErro = 'Sem conexão com o servidor. Sua resposta não foi enviada.';
+    }finally{
+      exEnviando = false; exPintar(); exPintarCard();
+    }
+  }
+
+  // ---- a home: a linha da faixa "Agora" (só quando há extrato esperando resposta) ----
+  function exPintarCard(){
+    const agora = $ex('exAgora'); if(!agora) return;
+    const s = exSessao(), tem = !!(s && s.token);
+    const n = !tem ? 0 : exDados ? exPendentes(exDados) : ((exLer(s.vendedor) || {}).pendentes || 0);
+    agora.hidden = !n;
+    $ex('exAgoraN').textContent = String(n);
+    $ex('exAgoraTx').innerHTML = '<b>' + (n === 1 ? 'Extrato de comissão' : 'Extratos de comissão') + '</b> para conferir';
+  }
+  window.exPintarCard = exPintarCard;
+
+  async function exBuscar(){
+    const s = exSessao();
+    if(!s || !s.token || exBuscando){ exPintarCard(); return; }
+    // gestão e consulta não têm extrato no Pocket: nem pergunta ao servidor
+    if(s.papel === 'gestao' || s.papel === 'consulta'){ exDados = { vendedor: s.vendedor, extratos: [] }; exPintarCard(); return; }
+    exBuscando = true; exPintar();
+    try{
+      const r = await fetch(CARTEIRA_API, { method:'POST', body: JSON.stringify({ acao:'extrato_meus', token: s.token }) });
+      const j = await r.json();
+      if(j && j.ok === true){ exDados = j; exErro = ''; exGravar(j); }
+      else if(j && j.erro === 'SO_VENDEDOR'){ exDados = { vendedor: s.vendedor, extratos: [] }; exErro = j.msg; }
+      else if(j && EX_SESSAO_MORTA.indexOf(String(j.erro || '')) >= 0){
+        exDados = null; exGravar(null);
+        exErro = j.msg || 'Sua sessão expirou. Entre de novo com o seu PIN.';
+        try{ cartSessaoCaiu(exErro); }catch(e){}
+      } else exErro = 'O servidor não respondeu direito agora' + ((j && j.msg) ? ' (' + j.msg + ')' : '') + '.';
+    }catch(e){
+      exErro = 'Sem conexão com o servidor. Tente de novo em instantes.';
+    }finally{
+      exBuscando = false; exPintar(); exPintarCard();
+    }
+  }
+  window.exBuscar = exBuscar;
+
+  function exAoEntrar(){
+    const s = exSessao();
+    if(!(s && s.token)) exDados = null;
+    exPintar();
+    exBuscar();
+  }
+  window.exAoEntrar = exAoEntrar;
+
+  $ex('exBtnPin').addEventListener('click', () => {
+    try{ sessionStorage.setItem('extrato_voltar', '1'); }catch(e){}
+    exErro = ''; go('carteira');
+  });
+  $ex('exBtnRecarregar').addEventListener('click', () => { $ex('exFolhaCaixa').dataset.id = ''; exBuscar(); });
+  $ex('exBtnBaixar').addEventListener('click', exBaixar);
+  $ex('exBtnZoom').addEventListener('click', () => { exZoom = !exZoom; exAjustar(); });
+
+  exPintarCard();
+  exBuscar();
+})();
+
 // ==================== MINHAS VENDAS DO MÊS (27/09/2026) ====================
 // O cartão da home e a folha de detalhe. Pedido do Ricardo, 27/09; layout: mockups/pocket-minhas-vendas-v1.html.
 // Backend: ação vendas_mes no Cofre (VendasPocket.gs) — portão = sessão do PIN da Carteira, e os números
@@ -6518,9 +6863,11 @@ function cartConcluir(texto){
       const q = mvQuando(d.atualizado_em);
       h += '<div class="mv-nota"><span>' + (q ? 'Facilita conferido ' + mvEsc(q) + ' · ' : '') + 'vendas pela Data da Venda</span></div>';
     }
-    h += '<div class="macts"><button type="button" class="m-keep" id="mvFechar">Fechar</button></div>';
+    h += '<div class="macts">' + (esc ? '' : '<button type="button" class="m-keep" id="mvExtrato">Meu extrato de comissão</button>') +
+         '<button type="button" class="m-keep" id="mvFechar">Fechar</button></div>';
     box.innerHTML = h;
     $mv('mvFechar').addEventListener('click', mvFecharFolha);
+    if($mv('mvExtrato')) $mv('mvExtrato').addEventListener('click', () => { mvFecharFolha(); go('extrato'); });
   }
   let mvFocoAnt = null;
   function mvAbrirFolha(){
