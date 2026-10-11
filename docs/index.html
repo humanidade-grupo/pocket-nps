@@ -4,6 +4,16 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 10/10/2026, noite (Ricardo e Rodrigo) — REGRAS COMERCIAIS DE 10/10. (1) Desconto máximo por
+       meio E condição: Pix à vista 3% · cartão à vista (1x) 1% · cartão 2x–21x sem desconto · boleto
+       2x–21x 1% · boleto 22x–72x sem. O CARTÃO À VISTA VOLTA, mas não como seletor no À vista: é o
+       Cartão em 1x do A prazo — o slider de prazo desce a 1x só no cartão (no boleto segue em 2x).
+       state.meioAV segue fixo em 'pix'. (2) +3% adicional: jazigo a partir de R$ 24.000, sem teto
+       (bandExtra() era 24.000–25.999). (3) Fim do cartão recorrente: sai dos textos. (4) Temporário
+       pago 100% no ato, SEM boleto — MAXP.temporario perde o boleto, o botão Boleto some e o meio vira
+       cartão (pendência de 04/10) — e UM JAZIGO POR FALECIDO, mesmo com as duas gavetas: nas Regras,
+       na observação da M-19, na nota do campo e nas notas do WhatsApp e da carta. A Price, o
+       vencimento e state.coord/#coordChk não mudam.
      Rev. 04/10/2026, tarde (Ricardo) — SEM "COFRE" NA TELA: Cofre é backend; o vendedor lê "Facilita".
        Os dois textos visíveis do Simulador que diziam Cofre agora dizem Facilita. Comentários seguem.
      Rev. 04/10/2026 (Ricardo) — ESCALA DE PREÇO NOS JAZIGOS DO SIMULADOR. Cada pílula de jazigo ganha
@@ -430,6 +440,7 @@ main{margin-top:-14px; position:relative; z-index:3}
 
 /* ---------- Segmented ---------- */
 .seg{display:flex; gap:6px; background:rgba(66,39,12,.06); padding:4px; border-radius:12px}
+.seg button[hidden]{display:none}   /* o Boleto some no Temporário (10/10) */
 .seg button{
   flex:1; border:0; background:transparent; color:var(--muted); font-family:inherit;
   font-size:13.5px; font-weight:600; padding:10px 6px; border-radius:9px; cursor:pointer;
@@ -1410,7 +1421,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
         <input type="tel" inputmode="numeric" id="valor" placeholder="0,00" autocomplete="off">
       </div>
       <div class="chips" id="chipsValor"></div>
-      <p class="fieldnote" id="notaTemporario" hidden>* Informe o valor da coluna <b>Uso Temporário</b> da tabela (20% do valor do Perpétuo).</p>
+      <p class="fieldnote" id="notaTemporario" hidden>* Informe o valor da coluna <b>Uso Temporário</b> da tabela (20% do valor do Perpétuo). Um jazigo por falecido, mesmo com duas gavetas.</p>
       <p class="fieldnote" id="notaMista">* Se o financiamento for na <b>Quadra Mista</b>, informe apenas <b>50%</b> do valor total do jazigo — ou o valor <b>total</b>, se o cliente pagar as duas etapas agora.</p>
       <p class="fieldnote" id="jzValorNota" hidden></p>
       <!-- M-21 (14/09): o cliente pode pagar só a 1ª etapa (50%) ou as duas de uma vez (100%).
@@ -1428,7 +1439,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <div class="step"><span class="n">3</span><h2>Forma de pagamento</h2></div>
     <div class="seg" id="segForma" role="group" aria-label="Forma de pagamento">
       <button data-forma="prazo" aria-pressed="true">A prazo<span class="s" id="formaPrazoHint">até 72x</span></button>
-      <button data-forma="avista" aria-pressed="false">À vista<span class="s">somente Pix</span></button>
+      <button data-forma="avista" aria-pressed="false">À vista<span class="s">Pix</span></button>
     </div>
 
     <!-- A PRAZO -->
@@ -1458,7 +1469,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
           <div class="parc">parcela de<b id="prazoParc">—</b></div>
         </div>
         <input type="range" id="prazo" min="2" max="72" step="1" value="60">
-        <div class="rangeticks"><span>2x</span><span id="tickMax">72x</span></div>
+        <div class="rangeticks"><span id="tickMin">2x</span><span id="tickMax">72x</span></div>
         <div class="prazojuros ok" id="prazoJuros">—</div>
       </div>
 
@@ -1484,9 +1495,10 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
            O aviso reaproveita a caixa .prazojuros.warn do slider de prazo: nenhum CSS novo.
            state.meioAV continua existindo, fixo em 'pix': é ele que mantém corretos os rótulos
            do resumo, do WhatsApp, da carta e do Anúncio sem mexer em nenhum deles. -->
-      <div class="prazojuros warn" style="margin-top:0">À vista é <b>somente por Pix</b> — o Parque não recebe à vista no cartão.</div>
+      <!-- 10/10: o cartão à vista voltou (1%), mas mora no A prazo › Cartão em 1x — não aqui. -->
+      <div class="prazojuros warn" style="margin-top:0">À vista aqui é o <b>Pix</b> (até −3%).</div>
       <!-- 18/09: vendedor pôs um cartão em 21x aqui e a proposta saiu com os 20% do à vista. -->
-      <p class="fieldnote">Cartão, só parcelado. Vai pagar no cartão? Volte e escolha <b>A prazo › Cartão</b> (até 21x sem juros).</p>
+      <p class="fieldnote">Cartão à vista? Volte e escolha <b>A prazo › Cartão</b> em <b>1x</b> (até −1%). Cartão de 2x a 21x: sem desconto.</p>
     </div>
 
     <!-- Campanha comercial (12/09). Regra, percentuais, datas e escopo vêm da rota pública
@@ -1509,11 +1521,11 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       </label>
     </div>
 
-    <!-- Desconto adicional — faixa 24–25k -->
+    <!-- Desconto adicional — jazigo a partir de R$ 24 mil -->
     <div class="field" id="coordField" hidden>
       <label class="switchrow">
         <input type="checkbox" id="coordChk">
-        <span>Desconto adicional <b>3%</b> — faixa 24–25k <span class="opt">(opcional)</span></span>
+        <span>Desconto adicional <b>3%</b> — a partir de R$ 24 mil <span class="opt">(opcional)</span></span>
       </label>
     </div>
 
@@ -1526,16 +1538,18 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <div class="rbody">
       <div class="rgrp">
         <h4>Desconto — teto de alçada</h4>
-        <div class="rrow"><span class="rk">À vista no Pix <b>(o único à vista)</b></span><span class="rv">3%</span></div>
-        <div class="rrow"><span class="rk">Parcelado até 21x (cartão ou boleto)</span><span class="rv">1%</span></div>
-        <div class="rrow"><span class="rk">Jazigo na faixa 24–25k · desconto adicional</span><span class="rv">+3%</span></div>
+        <div class="rrow"><span class="rk">À vista no Pix</span><span class="rv">3%</span></div>
+        <div class="rrow"><span class="rk">Cartão de crédito à vista (1x)</span><span class="rv">1%</span></div>
+        <div class="rrow"><span class="rk">Boleto de 2x a 21x</span><span class="rv">1%</span></div>
+        <div class="rrow"><span class="rk">Cartão de 2x a 21x · boleto de 22x a 72x</span><span class="rv">sem</span></div>
+        <div class="rrow"><span class="rk">Jazigo a partir de R$ 24 mil · desconto adicional</span><span class="rv">+3%</span></div>
       </div>
       <div class="rgrp juros">
         <h4>Juros do parcelamento</h4>
         <div class="rrow"><span class="rk">Até 21x (cartão ou boleto)</span><span class="rv">sem juros</span></div>
         <div class="rrow"><span class="rk">De 22x a 72x (boleto)</span><span class="rv">1% a.m.*</span></div>
       </div>
-      <p class="rnote">* No financiamento de 22–72x, a <b>1ª parcela é paga no ato</b> (sem juros) e o 1% incide da 2ª parcela em diante. Descontos são <b>tetos de alçada e opcionais</b> — o padrão é vender pelo valor cheio. <b>Quadra Mista:</b> informe 50% do valor total do jazigo. <b>Jazigo Temporário:</b> uso imediato, teto de 21x sem juros, e o valor corresponde a <b>20%</b> do Perpétuo.</p>
+      <p class="rnote">* No financiamento de 22–72x, a <b>1ª parcela é paga no ato</b> (sem juros) e o 1% incide da 2ª parcela em diante. Descontos são <b>tetos de alçada e opcionais</b> — o padrão é vender pelo valor cheio. <b>Quadra Mista:</b> informe 50% do valor total do jazigo. <b>Jazigo Temporário:</b> uso imediato, pago 100% no ato (Pix à vista ou cartão até 21x — <b>sem boleto</b>), <b>um jazigo por falecido</b>, mesmo com duas gavetas; o valor corresponde a <b>20%</b> do Perpétuo.</p>
     </div>
   </details>
 
@@ -1547,7 +1561,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
 
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
-    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. À vista: <b>somente Pix</b>, −3% — o Parque não recebe à vista no cartão. Descontos são tetos e são opcionais; há +3% adicional na faixa 24–25k. Quadra Mista: informar 50% do valor. Jazigo Temporário: 20% do Perpétuo, uso imediato, até 21x sem juros.</div>
+    <div>Até 21x (cartão ou boleto): sem juros. De 22x a 72x (boleto): 1% a.m. (Price), com a 1ª parcela no ato — juros só a partir da 2ª. Desconto máximo: à vista no Pix −3% · cartão à vista (1x) −1% · cartão parcelado sem desconto · boleto até 21x −1% · boleto de 22x a 72x sem desconto. Descontos são tetos e são opcionais; há +3% adicional para jazigo a partir de R$ 24 mil. Quadra Mista: informar 50% do valor. Jazigo Temporário: 20% do Perpétuo, uso imediato, pago no ato (Pix ou cartão até 21x, sem boleto), um jazigo por falecido.</div>
     <div class="inst" style="margin-top:8px">Parque da Saudade · Grupo Humanidade · uso interno da equipe de vendas.</div>
   </footer>
 </main>
@@ -1710,8 +1724,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   <div class="notecard">
     <div class="lbl">M-19 &middot; observações</div>
     <ol>
-      <li><b>Jazigo Perpétuo (uso imediato):</b> à vista <b>somente via Pix</b>, ou parcelado em até 21x sem juros no cartão de crédito.</li>
-      <li><b>Jazigo Temporário (uso imediato):</b> mesmas condições. O valor do Uso Temporário corresponde a <b>20%</b> do valor do Uso Perpétuo.</li>
+      <li><b>Jazigo Perpétuo (uso imediato):</b> à vista via Pix ou no cartão de crédito (1x), ou parcelado em até 21x sem juros no cartão de crédito.</li>
+      <li><b>Jazigo Temporário (uso imediato):</b> pago 100% no ato — à vista via Pix ou no cartão de crédito em até 21x; <b>não se vende no boleto</b>. <b>Um jazigo por falecido</b>, mesmo com as duas gavetas. O valor do Uso Temporário corresponde a <b>20%</b> do valor do Uso Perpétuo.</li>
       <li><b>Boleto até 72x (com juros):</b> o jazigo poderá ser utilizado somente após a quitação integral.</li>
     </ol>
   </div>
@@ -1719,7 +1733,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   <div class="notecard">
     <div class="lbl">M-20 &middot; observações</div>
     <ol>
-      <li><b>Jazigo Perpétuo em pré-venda:</b> entrega prevista a partir de <b>outubro/2027</b>; o uso começa na entrega da quadra — à vista ou no cartão de crédito, a partir da entrega; no boleto ou cartão recorrente, a partir da entrega e depois de quitado. À vista <b>somente via Pix</b>, ou até 21x sem juros no cartão de crédito.</li>
+      <li><b>Jazigo Perpétuo em pré-venda:</b> entrega prevista a partir de <b>outubro/2027</b>; o uso começa na entrega da quadra — à vista ou no cartão de crédito, a partir da entrega; no boleto, a partir da entrega e depois de quitado. À vista via Pix ou no cartão de crédito (1x), ou até 21x sem juros no cartão de crédito.</li>
       <li><b>Não há Uso Temporário na M-20.</b></li>
       <li><b>Boleto até 72x (com juros):</b> o jazigo poderá ser utilizado somente após a entrega e a quitação integral.</li>
     </ol>
@@ -1729,7 +1743,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <div class="lbl">M-21 (Mista) &middot; observações</div>
     <ol>
       <li><b>Duas etapas:</b> 50% no ato e os 50% restantes na entrega do jazigo, prevista a partir de dezembro/2026 (quadra mista provisória).</li>
-      <li>Os valores da tabela referem-se à <b>1ª etapa</b>, que pode ser paga à vista <b>somente via Pix</b>, ou parcelada em até 21x sem juros ou 72x com juros. A 2ª etapa é paga na entrega, nas mesmas condições.</li>
+      <li>Os valores da tabela referem-se à <b>1ª etapa</b>, que pode ser paga à vista via Pix ou no cartão de crédito (1x), ou parcelada em até 21x sem juros ou 72x com juros. A 2ª etapa é paga na entrega, nas mesmas condições.</li>
     </ol>
   </div>
 
@@ -2944,7 +2958,8 @@ function escJSONP(params){
 }
 
 const state = {
-  // meioAV: fixo em 'pix' desde 22/09 — o à vista no cartão saiu. Não vira constante porque
+  // meioAV: fixo em 'pix' desde 22/09. O cartão à vista (10/10) é o A prazo › Cartão em 1x, não
+  // um meioAV 'cartao'. Não vira constante porque
   // é ele que alimenta os rótulos do resumo, do WhatsApp, da carta e do Anúncio.
   produto:'perpetuo', forma:'prazo', meio:'boleto', meioAV:'pix', coord:false, descOn:false,
   valor:0, entrada:0, prazo:60, dia:0,
@@ -2964,7 +2979,8 @@ function diaSugerido(hoje){
 function syncDia(){
   [...document.querySelectorAll('#segDia button')].forEach(b => b.setAttribute('aria-pressed', parseInt(b.dataset.dia,10)===state.dia));
 }
-const MAXP = {perpetuo:{boleto:72,cartao:21}, reserva:{boleto:60,cartao:21}, temporario:{boleto:21,cartao:21}};
+// Temporário sem boleto (04/10 e 10/10): pago 100% no ato, Pix à vista ou cartão até 21x.
+const MAXP = {perpetuo:{boleto:72,cartao:21}, reserva:{boleto:60,cartao:21}, temporario:{cartao:21}};
 // Rótulo do produto — usado no passo 2, no resumo, na carta e no texto de WhatsApp.
 const PRODUTO_NOME = {perpetuo:'Perpétuo', reserva:'Reserva', temporario:'Temporário'};
 
@@ -3034,11 +3050,23 @@ $('#descChk').addEventListener('change', e=>{ state.descOn = e.target.checked; r
 const prazoEl = $('#prazo');
 prazoEl.addEventListener('input', ()=>{ state.prazo = +prazoEl.value; render(); });
 function clampPrazo(){
+  // Produto sem boleto (o Temporário, 10/10): o botão Boleto some e o meio vira cartão.
+  const semBoleto = !MAXP[state.produto].boleto;
+  const bb = document.querySelector('#segMeio button[data-meio="boleto"]');
+  if(bb) bb.hidden = semBoleto;
+  if(semBoleto && state.meio!=='cartao'){
+    state.meio = 'cartao';
+    [...document.querySelectorAll('#segMeio button')].forEach(b=>b.setAttribute('aria-pressed', b.dataset.meio==='cartao'));
+  }
   const max = MAXP[state.produto][state.meio];
+  // Cartão em 1x = cartão à vista (10/10, desconto de 1%). No boleto o prazo segue começando em 2x.
+  const min = state.meio==='cartao' ? 1 : 2;
+  prazoEl.min = min; $('#tickMin').textContent = min+'x';
   prazoEl.max = max; $('#tickMax').textContent = max+'x';
   if(state.prazo>max){ state.prazo=max; prazoEl.value=max; }
-  // sublabels honestos: teto de boleto do produto (Perpétuo 72x, Reserva 60x)
-  const pmax = MAXP[state.produto].boleto;
+  if(state.prazo<min){ state.prazo=min; prazoEl.value=min; }
+  // sublabels honestos: teto de boleto do produto (Perpétuo 72x, Reserva 60x; Temporário, o do cartão)
+  const pmax = MAXP[state.produto].boleto || MAXP[state.produto].cartao;
   const fh = $('#formaPrazoHint'); if(fh) fh.textContent = 'até '+pmax+'x';
   const bh = $('#meioBoletoHint'); if(bh) bh.textContent = 'até '+pmax+'x';
 }
@@ -3148,7 +3176,7 @@ function campPctForma(){
   if(state.forma==='avista') return ds.avista;
   return state.prazo<=21 ? ds.ate_21x : ds.acima_21x;
 }
-function campFormaTxt(){ return state.forma==='avista' ? 'à vista' : (state.prazo<=21 ? '2x a 21x' : '22x a 72x'); }
+function campFormaTxt(){ return state.forma==='avista' ? 'à vista' : (state.prazo<=21 ? (state.prazo===1 ? 'em 1x' : '2x a 21x') : '22x a 72x'); }
 // O estado da campanha para a simulação de agora.
 //   mostra: o interruptor aparece · aplica: o desconto entra · motivo: por que não entra
 function campSituacao(){
@@ -3181,7 +3209,7 @@ const QUADRA_ROTULO = {'M-21':'M-21 (Mista)'};
 const QUADRA_MISTA = 'M-21';          // paga em 2 etapas: a rota dá o TOTAL, simula-se 50%
 const ETAPA_MISTA = 0.5;
 // Quadras sem uso imediato (Ricardo, 24/09/2026): a M-20 é pré-venda e a M-21 é a quadra mista
-// provisória — nas duas o uso começa na entrega da quadra (no boleto/recorrente, depois de quitado), e por
+// provisória — nas duas o uso começa na entrega da quadra (no boleto, depois de quitado), e por
 // isso nenhuma tem Temporário. A data é texto da decisão, a mesma da tela Tabela de Preços: a rota
 // do estoque não a traz. Quadra entregue sai daqui.
 const ENTREGA_QUADRA = {'M-20':'outubro/2027', 'M-21':'dezembro/2026'};
@@ -3473,18 +3501,22 @@ const cent = x => Math.round(x*100)/100;
 function vpAnnuity(parc,n,r){ if(n<=0) return 0; if(r===0) return parc*n; return parc*(1-Math.pow(1+r,-n))/r; }
 const RATE = 0.01;
 
-// faixa 24–25k (valor informado): habilita o desconto adicional de 3%.
+// jazigo a partir de R$ 24.000 (valor informado), sem teto desde 10/10: habilita o desconto adicional de 3%.
 // NÃO existe alçada de coordenador aqui — confirmado por Ricardo em 22/08/2026. O adicional
 // é escolha do vendedor, como os demais descontos, e não depende de aprovação de ninguém.
 // Os identificadores `state.coord` / `#coordChk` / `#coordField` mantiveram o nome velho
 // de propósito: renomeá-los mexeria em HTML, CSS e JS num deploy que é só de texto.
-function bandExtra(){ return state.valor>=24000 && state.valor<26000; }
-// desconto aplicado (teto automático por meio) + o adicional da faixa 24–25k
-// teto de desconto do meio escolhido (alçada máxima) — NÃO aplicado por padrão
+function bandExtra(){ return state.valor>=24000; }
+// desconto aplicado (teto automático por meio) + o adicional do jazigo a partir de R$ 24 mil
+// teto de desconto do meio e da condição (alçada máxima) — NÃO aplicado por padrão.
+// Regras Comerciais de 10/10/2026: Pix à vista 3% · cartão à vista (1x) 1% · cartão 2x–21x sem ·
+// boleto 2x–21x 1% · boleto 22x–72x sem.
 function descTetoMeio(){
-  if(state.forma==='avista') return 0.03;      // (22/09) só Pix; o teto de 2% do cartão à vista saiu
-  return (state.prazo<=21) ? 0.01 : 0;           // parcelado até 21x: 1%; 22–72x: sem desconto
+  if(state.forma==='avista') return 0.03;                     // à vista no Pix
+  if(state.meio==='cartao') return state.prazo===1 ? 0.01 : 0; // cartão à vista (1x) 1%; parcelado, sem
+  return (state.prazo<=21) ? 0.01 : 0;                          // boleto até 21x 1%; 22–72x sem
 }
+const cartaoAvista = () => state.forma==='prazo' && state.meio==='cartao' && state.prazo===1;
 function descInfo(){
   const teto = descTetoMeio();
   // Campanha ligada SUBSTITUI a alçada: nada de descOn nem adicional por cima (não somam).
@@ -3498,7 +3530,7 @@ function descInfo(){
 function descLabelText(d){
   if(d.camp) return d.camp.nome;
   const p=[];
-  if(d.base>0) p.push(state.forma==='avista' ? 'Pix 3%' : 'parcelado 1%');
+  if(d.base>0) p.push(state.forma==='avista' ? 'Pix 3%' : (cartaoAvista() ? 'cartão à vista 1%' : 'boleto 1%'));
   if(d.extraOn) p.push('adicional 3%');   // sem citar a faixa: este rótulo vai ao cliente
   return p.join(' + ');
 }
@@ -3555,7 +3587,7 @@ function alcada(){
   const lbl=descLabelText(d);
   // Segue em âmbar, mas o âmbar deixou de significar "peça aprovação": significa "você está
   // no máximo da faixa". Não há autorização a pedir — o adicional é do próprio vendedor.
-  if(d.extraOn){ el.className='alcada coord'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — no máximo da faixa 24–25k.`; }
+  if(d.extraOn){ el.className='alcada coord'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — no máximo, com o adicional de R$ 24 mil.`; }
   else { el.className='alcada self'; t.textContent=`Desconto ${(d.total*100).toFixed(0)}% (${lbl}) — dentro da alçada do vendedor.`; }
 }
 
@@ -3591,7 +3623,7 @@ function render(){
   if(df){
     if(_teto>0){
       df.hidden=false;
-      const lbl = state.forma==='avista' ? 'Pix à vista: até 3%' : 'parcelado até 21x: até 1%';
+      const lbl = state.forma==='avista' ? 'Pix à vista: até 3%' : (cartaoAvista() ? 'cartão à vista (1x): até 1%' : 'boleto até 21x: até 1%');
       $('#descTeto').textContent = cs.aplica ? '— não soma com a '+cs.nome : '— '+lbl;
       $('#descChk').checked=state.descOn;
     } else { df.hidden=true; }
@@ -3603,7 +3635,7 @@ function render(){
   $('#prazoN').textContent = state.prazo;
   const pj=$('#prazoJuros');
   if(pj){
-    if(state.prazo<=21){ pj.className='prazojuros ok'; pj.textContent='Até 21x: sem juros · '+(cs.aplica ? cs.nome+' −'+pctTxt(campPctForma()) : '1% de desconto'); }
+    if(state.prazo<=21){ pj.className='prazojuros ok'; pj.textContent=(cartaoAvista() ? 'Cartão à vista (1x)' : 'Até 21x: sem juros')+' · '+(cs.aplica ? cs.nome+' −'+pctTxt(campPctForma()) : (_teto>0 ? '1% de desconto' : 'sem desconto')); }
     else { pj.className='prazojuros warn'; pj.textContent='22–72x: juros 1% a.m. · 1ª parcela no ato'; }
   }
   const r = calc();
@@ -3638,17 +3670,17 @@ function render(){
         ${descRow}
         <div class="row tot"><span class="k">Total à vista</span><span class="v">${brl(r.total)}</span></div>
       </div>
-      <div class="avnote">${r.di.camp ? '<b>'+escH(descLinha(r.di))+'</b> sobre o valor de tabela, sem juros.' : avn}${r.di.extraOn?' <b>+3% adicional da faixa 24–25k aplicado.</b>':''}</div>
+      <div class="avnote">${r.di.camp ? '<b>'+escH(descLinha(r.di))+'</b> sobre o valor de tabela, sem juros.' : avn}${r.di.extraOn?' <b>+3% adicional (jazigo a partir de R$ 24 mil) aplicado.</b>':''}</div>
       ${vpBlock(r)}
       ${actions()}`;
   } else {
-    const meioLbl = r.meio==='cartao' ? 'cartão · sem juros'
+    const meioLbl = r.meio==='cartao' ? (r.nparc===1 ? 'cartão à vista' : 'cartão · sem juros')
       : (r.semJuros ? 'boleto · sem juros'
                     : 'boleto · 1% a.m. '+(r.entrada>0 ? '(1ª em 30 dias)' : '(1ª no ato)'));
     box.innerHTML = `
       <div class="res-hero">
-        <div><div class="l">${r.nparc}× no ${meioLbl}${r.entrada>0?' + entrada adicional':''}</div><div class="parcela">${brl(r.parcela)}<small>/mês</small></div></div>
-        <div class="nx">${r.nparc}<br>parcelas</div>
+        <div><div class="l">${r.nparc}× no ${meioLbl}${r.entrada>0?' + entrada adicional':''}</div><div class="parcela">${brl(r.parcela)}${r.nparc>1?'<small>/mês</small>':''}</div></div>
+        <div class="nx">${r.nparc}<br>${r.nparc>1?'parcelas':'parcela'}</div>
       </div>
       <div class="rows">
         ${descRow}
@@ -3947,7 +3979,7 @@ function propostaTexto(){
     L.push('*À vista — '+(r.meioAV==='pix'?'Pix':'cartão 1x')+' (sem juros)*');
     L.push('Total: '+brl(r.total));
   } else {
-    L.push('*A prazo — '+(r.meio==='cartao'?'cartão':'boleto')+'*');
+    L.push(r.meio==='cartao' && r.nparc===1 ? '*Cartão de crédito à vista (1x)*' : '*A prazo — '+(r.meio==='cartao'?'cartão':'boleto')+'*');
     if(r.entrada>0){ L.push('Entrada adicional: '+brl(r.entrada)+' (hoje)'); L.push('Saldo a parcelar: '+brl(r.saldo)); }
     L.push(r.nparc+'x de '+brl(r.parcela)
            +(r.semJuros ? '  (sem juros)' : '  (1% a.m., 1ª '+(r.entrada>0?'em 30 dias':'no ato')+')'));
@@ -3958,7 +3990,7 @@ function propostaTexto(){
   if(r.di.camp) L.push(r.di.camp.nome+': condição para fechamento até '+ddmm(campResp.vigencia.fechamento_ate)+'.');
   L.push('');
   if(state.produto==='temporario'){
-    L.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
+    L.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo. Um jazigo por falecido, mesmo com duas gavetas.');
   } else if(r.forma==='prazo' && r.meio==='boleto' && !r.semJuros){
     L.push(notaBoleto() || 'No boleto parcelado, o jazigo é liberado para uso após a quitação integral.');
   }
@@ -3998,7 +4030,8 @@ function cartaPropostaHTML(r){
     condTitulo = 'À vista — '+(r.meioAV==='pix'?'Pix':'cartão 1x')+' (sem juros)';
     cond.push(['Total à vista', brl(r.total)]);
   } else {
-    condTitulo = 'A prazo — '+(r.meio==='cartao'?'cartão de crédito (sem juros)':(r.semJuros?'boleto (sem juros)':'boleto (1% a.m.)'));
+    condTitulo = r.meio==='cartao' && r.nparc===1 ? 'Cartão de crédito à vista (1x)'
+      : 'A prazo — '+(r.meio==='cartao'?'cartão de crédito (sem juros)':(r.semJuros?'boleto (sem juros)':'boleto (1% a.m.)'));
     if(r.entrada>0){ cond.push(['Entrada adicional (hoje)', brl(r.entrada)]); cond.push(['Saldo a parcelar', brl(r.saldo)]); }
     cond.push([r.nparc+'× de', brl(r.parcela)]);
     if(!r.semJuros) cond.push(['Juros (1% a.m. · 1ª parcela '+(r.entrada>0?'em 30 dias':'no ato')+')', brl(r.juros)]);
@@ -4014,7 +4047,7 @@ function cartaPropostaHTML(r){
   } else if(fraseEntrega()){
     notas.push(fraseEntrega());
   }
-  if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo.');
+  if(state.produto==='temporario') notas.push('O Jazigo Temporário é de uso imediato e corresponde a 20% do valor do Jazigo Perpétuo. Um jazigo por falecido, mesmo com duas gavetas.');
   if(state.produto==='perpetuo') notas.push('Em Quadra Mista (jazigo humano + pet), os valores referem-se a 50% do valor total do jazigo.');
   if(r.di.camp) notas.push(r.di.camp.nome+': condição para fechamento até '+ddmm(campResp.vigencia.fechamento_ate)+'.');
   notas.push('Proposta sujeita a confirmação e à disponibilidade de jazigos. Valores em reais (R$).');
