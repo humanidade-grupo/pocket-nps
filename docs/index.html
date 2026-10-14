@@ -4,6 +4,15 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 14/10/2026 (Ricardo, decisão de 02/10) — TRAVAS DA ORIGEM NO ANÚNCIO. A revisão de setembro
+       achou 30 origens duvidosas em 94 vendas. (A) Proposta NOVA depois de um envio limpa a tela
+       (menos o vendedor), como o "Novo anúncio"; a MESMA proposta (reenvio) mantém tudo. (B) Sem
+       jazigo do Simulador (modo valor e Reserva), o jazigo sai da MESMA lista do Simulador (estListas);
+       "Não está na lista" abre a digitação com aviso que exige o "Entendi". (C) Visita ao Parque pede
+       o motivo em botões fechados (Velório · Necessidade imediata · Família já sepultada no Parque ·
+       Mora perto ou já conhecia), gravado em origem_detalhe. (D) Meta vira UMA opção na lista; a
+       pergunta "do Parque ou seu?" grava `Meta Ads` ou `Meta Ads do vendedor`. (E) Apoio novo em Já é
+       cliente, Evento e Visita ao Parque. Sem "Não informado".
      Rev. 10/10/2026, noite (Ricardo e Rodrigo) — REGRAS COMERCIAIS DE 10/10. (1) Desconto máximo por
        meio E condição: Pix à vista 3% · cartão à vista (1x) 1% · cartão 2x–21x sem desconto · boleto
        2x–21x 1% · boleto 22x–72x sem. O CARTÃO À VISTA VOLTA, mas não como seletor no À vista: é o
@@ -2690,6 +2699,10 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       </div>
       <div class="field">
         <label id="anJzLabel">Jazigo nº</label>
+        <!-- Sem jazigo do Simulador (14/10): o número sai da MESMA lista do Simulador.
+             "Não está na lista" abre o campo de baixo, com aviso a confirmar. -->
+        <select id="anJzSel" class="an-sel vazio" hidden></select>
+        <p class="fieldnote" id="anJzForaNota" hidden></p>
         <input type="text" inputmode="text" autocapitalize="characters" id="anJazigo" class="an-plain" placeholder="ex.: 373 ou 454A" autocomplete="off" maxlength="10">
         <p class="fieldnote" id="anJzNota" hidden>Veio do jazigo escolhido no Simulador. Para trocar, volte e escolha outro.</p>
       </div>
@@ -2750,6 +2763,12 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
         <select id="anOrigem" class="an-sel vazio"></select>
         <p class="fieldnote">O que fez ele procurar a gente.</p>
         <p class="fieldnote an-apoio" id="anOrigemApoio" hidden></p>
+      </div>
+      <!-- Pergunta fechada da origem (14/10): o motivo da Visita ao Parque e o dono do
+           anúncio no Instagram/Facebook. Botões exclusivos, empilhados (rótulos longos). -->
+      <div class="field" id="anFOrigemPerg" hidden>
+        <label id="anOrigemPergLbl"></label>
+        <div class="seg" id="anSegOrigemPerg" role="group" style="flex-direction:column"></div>
       </div>
       <div class="field" id="anFOrigemSub" hidden>
         <label id="anOrigemSubLbl">Qual</label>
@@ -5228,6 +5247,26 @@ function cartConcluir(texto){
   // Sem "Não informado" de propósito: quem não sabe usa "Outro" e escreve o que houve.
   const AN_ORIGENS = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Rádio','Panfletagem','Evento','Captação própria','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
   const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Rádio':'Qual','Panfletagem':'Local','Evento':'Qual','Captação própria':'Local','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
+  // (14/10) Travas da origem, decisão do Ricardo de 02/10. Os RÓTULOS GRAVADOS não mudam — a lista
+  // acima segue sendo o que vai para o payload, a mensagem e a AN_MATRIZ. Muda só o que a TELA oferece:
+  //  · Meta é UMA opção na lista (AN_META); a pergunta "do Parque ou seu?" decide o rótulo gravado.
+  //    Em setembro, 5 das origens duvidosas eram o vendedor escolhendo entre as duas sem saber.
+  //  · Visita ao Parque pede o motivo em botões FECHADOS; o valor vai em origem_detalhe, igual ao que
+  //    a revisão de setembro gravou. 7 vendas tinham a porta no lugar da origem.
+  // Sem "não soube dizer": quem não sabe pergunta ao cliente.
+  const AN_META = 'Anúncio no Instagram ou Facebook';
+  const AN_ORIGENS_TELA = AN_ORIGENS.filter(o=> o!=='Meta Ads do vendedor').map(o=> o==='Meta Ads' ? AN_META : o);
+  // campo: onde a resposta grava — 'origem' (o próprio rótulo) ou 'origemSub' (origem_detalhe).
+  const AN_ORIGEM_PERG = {
+    'Visita ao Parque': {perg:'O que fez a pessoa vir?', falta:'o que fez a pessoa vir (origem)', campo:'origemSub', ops:[
+      ['Veio a um velório ou sepultamento', 'Velório'],
+      ['Necessidade imediata (falecimento ou parente internado)', 'Necessidade imediata'],
+      ['Família já sepultada no Parque', 'Família já sepultada no Parque'],
+      ['Mora perto ou já conhecia', 'Mora perto ou já conhecia']]},
+    [AN_META]: {perg:'O anúncio era do Parque ou seu?', falta:'de quem era o anúncio (origem)', campo:'origem', ops:[
+      ['Do Parque', 'Meta Ads'],
+      ['Meu — eu paguei o impulsionamento', 'Meta Ads do vendedor']]}
+  };
   const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Captação própria':'Onde? ex.: comércio do bairro Benfica','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Rádio':'ex.: Itatiaia','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
   // "WhatsApp do Parque" e não "WhatsApp (SATI)": SATI é nome de plataforma,
   // vocabulário interno que o vendedor não conhece. Este campo não espelha o
@@ -5279,19 +5318,19 @@ function cartConcluir(texto){
   const AN_ORIGEM_APOIO = {
     'Google / Site':'Ele pesquisou e achou a gente, ou clicou num anúncio do Google. O site em si não é origem — é destino.',
     'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook.',
-    'Meta Ads do vendedor':'Você pagou o impulsionamento do seu bolso. Se o anúncio não é seu, a opção é a de cima.',
+    'Meta Ads do vendedor':'Você pagou o impulsionamento do seu bolso. Se o anúncio não é seu, a resposta é "Do Parque".',
     'Outdoor':'Ele citou ter visto a peça. Diga qual.',
     'Painel de LED':'Ele citou ter visto a peça. Diga qual.',
     'Busdoor':'Ele citou ter visto a peça. Diga qual.',
     'Rádio':'Ele ouviu o anúncio no rádio. Diga qual rádio.',
     'Panfletagem':'Ele recebeu ou viu o panfleto. Diga onde.',
-    'Evento':'Conheceu a gente num evento. Diga qual.',
+    'Evento':'Veio a um evento do Parque. Desconto de campanha não é origem: se ele chegou por outdoor, panfleto ou anúncio e fechou com o desconto, a origem é o que o trouxe.',
     'Captação própria':'Você abordou a pessoa na sua captação — rua, bairro, comércio —, sem anúncio. Diga onde. Se você pagou impulsionamento, a origem é Meta Ads do vendedor.',
-    'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
+    'Visita ao Parque':'Viu o outdoor da portaria? Então a origem é Outdoor, não Visita ao Parque.',
     'Disparo WhatsApp':'A mensagem que o Parque mandou. Não confundir com a porta WhatsApp do Parque — a porta é por onde ele falou; esta é o que o fez agir. Diga qual disparo.',
     'Email Marketing':'E-mail enviado pelo Parque. Diga qual campanha.',
     'Indicação':'Alguém falou da gente para ele. Diga quem.',
-    'Já é cliente':'Ele ou a família já compraram aqui.',
+    'Já é cliente':'O próprio comprador já tem jazigo aqui. Família sepultada no Parque não é esta opção: é Visita ao Parque.',
     'Outro':"Só quando nada acima descreve. Se 'Outro' virar hábito, o dado morre."
   };
   const $an = id => document.getElementById(id);
@@ -5301,7 +5340,8 @@ function cartConcluir(texto){
   // NÃO são mais digitados: chegam do retrato da proposta em anCarregarProposta().
   const anSt = {quadra:'', jazigo:'', produto:'', cliente:'', valor:0, forma:'', qtde:0,
                 nat:'', entrada:0, dia:0, parcela:0, origem:'', origemSub:'',
-                chegou:'', chegouSub:'', detalhe:'', vendedor:'', confere:false};
+                chegou:'', chegouSub:'', detalhe:'', vendedor:'', confere:false,
+                origemSel:''};   // o que está escolhido na LISTA (AN_META não é rótulo gravado)
 
   // ---- selects (opções via JS, para os rótulos morarem num lugar só) ----
   function anPovoar(sel, opcoes, rotuloVazio){
@@ -5309,7 +5349,7 @@ function cartConcluir(texto){
     opcoes.forEach(o=>{ h += '<option>'+anEsc(o)+'</option>'; });
     sel.innerHTML = h;
   }
-  anPovoar($an('anOrigem'), AN_ORIGENS, 'Escolha a origem…');
+  anPovoar($an('anOrigem'), AN_ORIGENS_TELA, 'Escolha a origem…');
   anPovoar($an('anChegou'), AN_CHEGOU, 'Escolha…');
   // Vendedores: a lista da CARTEIRA (espelha a Config_Carteira do Cofre) — quem
   // pode ter token pode anunciar. A da Escala é o rodízio de postos do mês e
@@ -5325,7 +5365,32 @@ function cartConcluir(texto){
   // Mudou origem, chegou ou um subcampo dos dois: a frase de confirmação já é
   // outra e o "Confere." anterior não vale mais.
   function anConfDerruba(){ anSt.confere = false; const c = $an('anConfChk'); if(c) c.checked = false; }
-  anSel($an('anOrigem'), 'origem', anConfDerruba);
+  // Origem: a lista guarda a ESCOLHA (origemSel); o rótulo gravado (origem) só existe quando a
+  // pergunta fechada, se houver, decide. Resposta fechada não vaza para outra origem, nem texto
+  // livre de outra origem vira motivo da Visita.
+  $an('anOrigem').addEventListener('change', ()=>{
+    const sel = $an('anOrigem'), antes = AN_ORIGEM_PERG[anSt.origemSel], agora = AN_ORIGEM_PERG[sel.value];
+    anSt.origemSel = sel.value; sel.classList.toggle('vazio', !sel.value);
+    anSt.origem = (agora && agora.campo==='origem') ? '' : sel.value;
+    if((antes && antes.campo==='origemSub') || (agora && agora.campo==='origemSub')){ anSt.origemSub = ''; $an('anOrigemSub').value = ''; }
+    anPintarPerg(); anConfDerruba(); anRender();
+  });
+  function anPintarPerg(){
+    const P = AN_ORIGEM_PERG[anSt.origemSel], seg = $an('anSegOrigemPerg');
+    $an('anFOrigemPerg').hidden = !P;
+    if(!P){ seg.innerHTML = ''; return; }
+    $an('anOrigemPergLbl').textContent = P.perg;
+    seg.setAttribute('aria-label', P.perg);
+    seg.innerHTML = P.ops.map(o=> '<button type="button" data-v="'+escH(o[1])+'" aria-pressed="'+(anSt[P.campo]===o[1])+'">'+escH(o[0])+'</button>').join('');
+  }
+  $an('anSegOrigemPerg').addEventListener('click', e=>{
+    const b = e.target.closest('button'), P = AN_ORIGEM_PERG[anSt.origemSel];
+    if(!b || !P) return;
+    anSt[P.campo] = b.dataset.v;
+    anPintarPerg(); anConfDerruba(); anRender();
+  });
+  // A origem tem detalhe (texto livre do AN_ORIGEM_SUB ou o motivo fechado da Visita)?
+  const anOrigemTemSub = ()=>{ const P = AN_ORIGEM_PERG[anSt.origemSel]; return !!AN_ORIGEM_SUB[anSt.origem] || (!!P && P.campo==='origemSub'); };
   anSel($an('anChegou'), 'chegou', anConfDerruba);
   $an('anConfChk').addEventListener('change', e=>{ anSt.confere = e.target.checked; anRender(); });
   anSel($an('anVendedor'), 'vendedor', ()=>{ try{ localStorage.setItem('anuncio_vendedor', anSt.vendedor); }catch(e){} });
@@ -5344,7 +5409,56 @@ function cartConcluir(texto){
       anSt[key] = b.dataset[attr]; cb && cb(); anRender();
     });
   }
-  anSeg('anSegQuadra','q','quadra');               // grava sempre normalizado: "M-19"
+  // grava sempre normalizado: "M-19". Trocou a quadra, o jazigo da outra não serve.
+  anSeg('anSegQuadra','q','quadra', ()=>{
+    if(anJzTravado) return;
+    anSt.jazigo = ''; $an('anJazigo').value = ''; anJzFora = false;
+  });
+
+  // ---- jazigo pela lista (14/10) ----
+  // Sem jazigo escolhido no Simulador (modo valor, e toda Reserva), o número sai da MESMA lista do
+  // Simulador (estListas, estoque do Facilita): em setembro, 8 anúncios foram gravados no jazigo
+  // errado por digitação. Fora da lista: "Não está na lista" abre a digitação de antes, e o anúncio
+  // leva um aviso que exige o "Entendi" (vai em avisos_confirmados). Lista que não carregou neste
+  // aparelho: digita, com o mesmo aviso. Jazigo de venda ganha sai da lista do Facilita — esse é o
+  // caso comum do "Não está na lista", e o aviso diz isso.
+  const AN_JZ_FORA = '__fora';
+  let anJzFora = false;
+  const anJzUnidades = ()=>{ const E = anSt.quadra && estListas[anSt.quadra]; return E ? E.d.unidades : null; };
+  const anJzPelaLista = ()=> !anJzTravado && !!anSt.quadra && !!anJzUnidades() && !anJzFora;
+  function anPintarJz(){
+    const sel = $an('anJzSel'), inp = $an('anJazigo'), nota = $an('anJzForaNota');
+    const us = anJzTravado ? null : anJzUnidades();
+    const usaSel = !anJzTravado && !!anSt.quadra && !!us;
+    sel.hidden = !usaSel;
+    if(usaSel){
+      const E = estListas[anSt.quadra], res = anSt.quadra==='Reserva';
+      const k = anSt.quadra+'|'+E.d.atualizado_em+'|'+us.length;
+      if(sel.dataset.k!==k){
+        let h = '<option value="" disabled hidden>'+(res ? 'Escolha o nº da reserva…' : 'Escolha o jazigo…')+'</option>';
+        us.forEach(u=>{ const j = normJazigo(u.jazigo); h += '<option value="'+escH(j)+'">'+escH(j)+(u.situacao!=='disponivel' ? ' · reservado' : '')+'</option>'; });
+        h += '<option value="'+AN_JZ_FORA+'">Não está na lista</option>';
+        sel.innerHTML = h; sel.dataset.k = k;
+      }
+      // o jazigo escolhido saiu da lista (foto nova do estoque): vira "fora", com o aviso
+      if(!anJzFora && anSt.jazigo && !us.some(u=> normJazigo(u.jazigo)===anSt.jazigo)) anJzFora = true;
+      sel.value = anJzFora ? AN_JZ_FORA : (anSt.jazigo || '');
+      sel.classList.toggle('vazio', !sel.value);
+    }
+    inp.hidden = !anJzTravado && (!anSt.quadra || (usaSel && !anJzFora));
+    const digita = !anJzTravado && !!anSt.quadra && (anJzFora || !us);
+    nota.hidden = !digita;
+    if(digita) nota.textContent = us
+      ? 'Digite o número. Ele vai com um aviso para conferência.'
+      : 'A lista '+(anSt.quadra==='Reserva' ? 'das reservas' : 'da '+anSt.quadra)+' não carregou neste aparelho: digite o número. Ele vai com um aviso para conferência.';
+  }
+  $an('anJzSel').addEventListener('change', ()=>{
+    const v = $an('anJzSel').value, inp = $an('anJazigo');
+    anJzFora = v===AN_JZ_FORA;
+    anSt.jazigo = anJzFora ? '' : v; inp.value = anSt.jazigo;
+    anRender();
+    if(anJzFora){ try{ inp.focus(); }catch(e){} }
+  });
 
   function anInt(el, key){
     el.addEventListener('input', ()=>{
@@ -5415,18 +5529,18 @@ function cartConcluir(texto){
     if(p.produtoNome==='Reserva'){
       const b = anBotaoReserva(seg);
       b.style.display = '';
-      if(!anReservaAtiva || anSt.quadra!=='Reserva'){ anSt.jazigo = ''; inp.value = ''; }
+      if(!anReservaAtiva || anSt.quadra!=='Reserva'){ anSt.jazigo = ''; inp.value = ''; anJzFora = false; }
       anSt.quadra = 'Reserva';
       botoes().forEach(x=>{ const meu = x===b; x.setAttribute('aria-pressed', meu); x.disabled = !meu; });
       $an('anJzLabel').textContent = 'Nº da reserva no Facilita';
       inp.placeholder = 'ex.: 15'; inp.inputMode = 'numeric'; inp.readOnly = false;
-      nota.textContent = 'Reserva não tem jazigo físico: informe o número da reserva que o Facilita deu nesta venda.';
+      nota.textContent = 'Reserva não tem jazigo físico: escolha o número da reserva que o Facilita deu nesta venda.';
       nota.hidden = false;
       anJzTravado = false; anReservaAtiva = true;
       return;
     }
     if(anReservaAtiva){
-      anSt.quadra = ''; anSt.jazigo = ''; inp.value = '';
+      anSt.quadra = ''; anSt.jazigo = ''; inp.value = ''; anJzFora = false;
       botoes().forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; });
       nota.hidden = true;
       anSairDaReserva();
@@ -5438,13 +5552,13 @@ function cartConcluir(texto){
         b = document.createElement('button'); b.type = 'button'; b.dataset.q = p.jaz.quadra;
         b.textContent = p.jaz.quadra; seg.appendChild(b);
       }
-      anSt.quadra = p.jaz.quadra; anSt.jazigo = p.jaz.jazigo;
+      anSt.quadra = p.jaz.quadra; anSt.jazigo = p.jaz.jazigo; anJzFora = false;
       botoes().forEach(x=>{ const meu = x===b; x.setAttribute('aria-pressed', meu); x.disabled = !meu; });
       inp.value = p.jaz.jazigo; inp.readOnly = true; nota.hidden = false;
       anJzTravado = true;
     } else if(anJzTravado){
       // a proposta anterior trazia jazigo; esta foi de valor digitado — solta e limpa
-      anSt.quadra = ''; anSt.jazigo = '';
+      anSt.quadra = ''; anSt.jazigo = ''; anJzFora = false;
       botoes().forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; });
       inp.value = ''; inp.readOnly = false; nota.hidden = true;
       anJzTravado = false;
@@ -5505,11 +5619,21 @@ function cartConcluir(texto){
     $an('anResumo').innerHTML = R.join('');
   }
 
+  // (14/10) Campos herdados: quem enviava, voltava ao Simulador e simulava outra venda entrava aqui
+  // com cliente, chegou, origem, detalhe e "Confere." da anterior (setembro: três anúncios seguidos
+  // com "Panfletagem · Centro"; o M-19 · 213 anunciado com o cliente do M-19 · 125). Agora: proposta
+  // NOVA depois de um envio limpa tudo menos o vendedor, como o "Novo anúncio", sem sair da tela.
+  // A MESMA proposta (reenvio, ou "Anunciar" de novo sem mudar nada) não limpa. "A mesma" é pelo
+  // conteúdo: cada toque em Anunciar cria um retrato novo, mesmo sem nada mudar.
+  let anEnviadoChave = '';
+  const anChaveProposta = p => p ? JSON.stringify([p.produtoNome, p.jaz && p.jaz.quadra, p.jaz && p.jaz.jazigo,
+    p.tabela, p.comDesc, p.forma, p.formaNome, p.nparc, p.entrada, p.parcela, p.total, p.dia, p.etapasM21]) : '';
   function anAoEntrar(){
     anPintarFila();
     const tem = !!anPropostaAtual;
     $an('anGate').hidden = tem;
     $an('anCorpo').hidden = !tem;
+    if(tem && anEnviadoChave && anChaveProposta(anPropostaAtual)!==anEnviadoChave){ anLimpar(); anEnviadoChave = ''; }
     if(tem){ anCarregarProposta(); anRender(); }
   }
   // go() chama pelo nome global — mesmo padrão do cartAoEntrar().
@@ -5553,7 +5677,9 @@ function cartConcluir(texto){
       if(!anSt.chegouSub.trim()) faltas.push('especificar (chegou por)');
       else if(anSt.chegouSub.trim().length<3) erros.push('Chegou por — especificar: mínimo de 3 caracteres.');
     }
-    if(!anSt.origem) faltas.push('origem do lead');
+    const perg = AN_ORIGEM_PERG[anSt.origemSel];
+    if(!anSt.origemSel) faltas.push('origem do lead');
+    else if(perg && !anSt[perg.campo]) faltas.push(perg.falta);
     const sub = AN_ORIGEM_SUB[anSt.origem];
     if(sub){
       if(!anSt.origemSub.trim()) faltas.push(sub.toLowerCase()+' (origem)');
@@ -5565,6 +5691,13 @@ function cartConcluir(texto){
       else if(det.length<40) erros.push('Detalhe da captura: mínimo de 40 caracteres neste caso ('+det.length+' até aqui).');
     }
     if(!anSt.vendedor) faltas.push('vendedor');
+    // A5 (14/10) — jazigo digitado fora da lista do Facilita, ou sem lista neste aparelho
+    if(anSt.quadra && anSt.jazigo && !anJzTravado && !anJzPelaLista()){
+      const res = anSt.quadra==='Reserva', nome = res ? 'Reserva nº '+anSt.jazigo : anSt.quadra+' · '+anSt.jazigo;
+      avisos.push(anJzUnidades()
+        ? nome+' não está na lista '+(res ? 'das reservas' : 'de jazigos')+' do Facilita. Se a venda já está como ganha no Facilita, ela sai da lista e é isso mesmo; se não, confira o número.'
+        : nome+' não foi conferido: a lista '+(res ? 'das reservas' : 'da '+anSt.quadra)+' não carregou neste aparelho. Confira o número.');
+    }
     // A2 — jazigo já anunciado neste aparelho (últimos 20)
     if(anSt.quadra && anSt.jazigo){
       const ja = anUltimos().find(u=> u.q===anSt.quadra && String(u.j)===String(anSt.jazigo));   // registros antigos guardam número
@@ -5650,8 +5783,7 @@ function cartConcluir(texto){
       L.push('💵 *Pago:* '+brl(anSt.parcela));
     }
     L.push('');
-    const sub = AN_ORIGEM_SUB[anSt.origem];
-    L.push('🚸 *Origem:* '+(anSt.origem? anSt.origem+(sub? ' — '+(anSt.origemSub.trim()||'—') : '') : '—'));
+    L.push('🚸 *Origem:* '+(anSt.origem? anSt.origem+(anOrigemTemSub()? ' — '+(anSt.origemSub.trim()||'—') : '') : '—'));
     L.push('🚪 *Chegou:* '+(anSt.chegou==='Outro'? 'Outro — '+(anSt.chegouSub.trim()||'—') : (anSt.chegou||'—')));
     if(anSt.detalhe.trim()) L.push('📝 *Detalhe:* '+anSt.detalhe.trim());
     L.push('');
@@ -5715,7 +5847,8 @@ function cartConcluir(texto){
       dia_vencimento: anSt.dia||'',
       valor_parcela: anSt.parcela,
       origem: anSt.origem,                       // string EXATA — o Cofre grava como está
-      origem_detalhe: anSt.origemSub.trim(),
+      // só quando a origem TEM detalhe: o texto de uma origem anterior não vaza para a seguinte
+      origem_detalhe: anOrigemTemSub() ? anSt.origemSub.trim() : '',
       entrada: anSt.chegou,                      // por onde chegou — coluna própria no Cofre
       entrada_detalhe: anSt.chegou==='Outro'? anSt.chegouSub.trim() : '',
       detalhe_captura: anSt.detalhe.trim(),
@@ -5791,6 +5924,7 @@ function cartConcluir(texto){
     // envio entraria em avisos_confirmados sem nunca ter sido confirmado.
     try{ anEnfileirar(anPayload()); }catch(e){}
     anRegistrar();
+    anEnviadoChave = anChaveProposta(anPropostaAtual);
     $an('anNovo').hidden = false;
     // O registro recém-gravado faria o aviso de repetição travar o REENVIO do
     // próprio anúncio; confirma de ofício o conjunto atual de avisos — qualquer
@@ -5816,12 +5950,13 @@ function cartConcluir(texto){
       anAposEnvio();
     }catch(e){ toast('Não deu para copiar — tente de novo'); }
   });
-  // A tela NÃO limpa sozinha depois do envio (pode ser preciso reenviar).
-  // "Novo anúncio" limpa tudo menos o vendedor e volta ao Simulador: anúncio
-  // novo é venda nova, e venda nova começa por uma proposta nova.
-  $an('anNovo').addEventListener('click', ()=>{
+  // A tela NÃO limpa sozinha depois do envio (pode ser preciso reenviar). Limpa quando
+  // entra uma proposta NOVA (anAoEntrar, 14/10) ou no "Novo anúncio", que também volta
+  // ao Simulador: anúncio novo é venda nova, e venda nova começa por uma proposta nova.
+  // anLimpar() apaga tudo menos o vendedor.
+  function anLimpar(){
     ['anJazigo','anCliente','anOrigemSub','anChegouSub','anDetalhe'].forEach(id=>{ $an(id).value=''; });
-    $an('anJazigo').readOnly = false; $an('anJzNota').hidden = true; anJzTravado = false;
+    $an('anJazigo').readOnly = false; $an('anJzNota').hidden = true; anJzTravado = false; anJzFora = false;
     if(anReservaAtiva) anSairDaReserva();
     $an('anJzNota').textContent = 'Veio do jazigo escolhido no Simulador. Para trocar, volte e escolha outro.';
     ['anSegQuadra','anSegDia'].forEach(id=>{ [...$an(id).querySelectorAll('button')].forEach(x=>{ x.setAttribute('aria-pressed','false'); x.disabled = false; }); });
@@ -5830,12 +5965,17 @@ function cartConcluir(texto){
     Object.keys(anSt).forEach(k=>{ anSt[k] = (typeof anSt[k]==='number')? 0 : ''; });
     anSt.vendedor = vend;
     anSt.confere = false; $an('anConfChk').checked = false;
-    anAck = ''; $an('anNovo').hidden = true;
+    anPintarPerg();
+    anAck = ''; anIdAtual = null; $an('anNovo').hidden = true;
+  }
+  $an('anNovo').addEventListener('click', ()=>{
+    anLimpar(); anEnviadoChave = '';
     anPropostaAtual = null;
     go('sim');
   });
 
   function anRender(){
+    anPintarJz();
     $an('anFDia').hidden = !anParcelado();
 
     // Origem só EXISTE depois do Chegou (não é disabled: não renderiza).
@@ -5866,7 +6006,7 @@ function cartConcluir(texto){
     $an('anConf').hidden = !temPar;
     if(temPar){
       const oSub = anSt.origemSub.trim();
-      const origemTxt = anSt.origem + (AN_ORIGEM_SUB[anSt.origem] && oSub ? ' ('+oSub+')' : '');
+      const origemTxt = anSt.origem + (anOrigemTemSub() && oSub ? ' ('+oSub+')' : '');
       const f = AN_CHEGOU_FRASE[anSt.chegou] || {pre:'com você ', frag:anSt.chegou};
       let frag = f.frag;
       if(anSt.chegou==='Outro' && anSt.chegouSub.trim()) frag += ' ('+anSt.chegouSub.trim()+')';
