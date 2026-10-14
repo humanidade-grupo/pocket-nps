@@ -86,9 +86,10 @@ gravada no cache como a home ('./'), o que podia servir outra página no
 lugar do app offline; o SW agora ignora tudo sob /gestao/ (área da gestão,
 fora do app do time) e só regrava './' quando a navegação é a própria home.
 Rev. 12/08/2026 — só bump de cache (mudança na home: tela IQ desabilitada).
+Rev. 14/10/2026, noite — bump: cobrança da origem (tarefa 2).
 IMPORTANTE: a cada novo deploy, troque a versão em CACHE (abaixo) para que a
 equipe receba a atualização. Basta bumpar a data/hora do sufixo. */
-const CACHE = 'pocket-nps-261014-1';
+const CACHE = 'pocket-nps-261014-2';
 
 const CORE = [
 './',

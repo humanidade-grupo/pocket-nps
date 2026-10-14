@@ -4,6 +4,17 @@
      Pocket NPS — Simulador de Financiamento de Jazigos
      App de bolso para a equipe de vendas. PWA offline, mobile-first.
      Lógica idêntica a Simulador_parque.xlsx (Price, PMT 1% a.m.).
+     Rev. 14/10/2026, noite (Ricardo, decisões de 02/10 e respostas de 14/10) — COBRANÇA DA ORIGEM, tarefa 2.
+       (1) Minhas vendas mostra a origem de cada venda; venda sem anúncio ganha "sem origem" e o botão
+       "Informar origem" — formulário curto (#maskIo), sem Simulador: Chegou, Origem com as travas da
+       tarefa 1, detalhe e "Confere.", pela MESMA régua do Anúncio (window.AN_ORIGEM / anOrigemValida).
+       Grava pela ação informar_origem do Cofre, sem mensagem no grupo. (4) "Corrigir origem" até 15 dias
+       do 1º anúncio; a gestão corrige sempre (o Cofre decide). (2) Pedágio (#maskPd, ação
+       origem_pendencias): até 24 h só o aviso no cartão; depois de 24 h tela cheia na home com "Estou em
+       atendimento" (registrado, libera a abertura); depois de 72 h só Simulador e Tabela de Preços (o go()
+       devolve o pedágio). Estado só do servidor; sem resposta, nada bloqueia; só o papel vendedor; LIGA pela
+       Config do Cofre (cobranca.pedagio.desde). (6) Gestão da Carteira: cartão "Origem das vendas" por
+       vendedor, só para quem o Cofre deixa ver (o Ricardo, no 1º mês).
      Rev. 14/10/2026 (Ricardo, decisão de 02/10) — TRAVAS DA ORIGEM NO ANÚNCIO. A revisão de setembro
        achou 30 origens duvidosas em 94 vendas. (A) Proposta NOVA depois de um envio limpa a tela
        (menos o vendedor), como o "Novo anúncio"; a MESMA proposta (reenvio) mantém tudo. (B) Sem
@@ -1235,6 +1246,31 @@ input.an-plain{padding-left:14px; font-size:16px}
 .mv-lista .meta .tag{border:1px solid var(--border-strong); border-radius:6px; padding:0 5px; font-size:10.5px}
 .mv-wa{grid-column:3; grid-row:1 / span 2; width:34px; height:34px; border-radius:10px; border:1px solid var(--border); background:#fff; display:grid; place-items:center; padding:0; cursor:pointer}
 .mv-wa svg{width:17px; height:17px; stroke:var(--dourado); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+/* (14/10) Cobrança da origem — tarefa 2: a origem de cada venda em Minhas vendas, o formulário curto
+   (#maskIo), o pedágio (#maskPd) e o aviso no cartão (#mvSem). */
+.mv-lista .meta .sem{border-color:rgba(154,59,42,.45); color:var(--danger); font-weight:700}
+.mv-lista .org{grid-column:1 / span 2; grid-row:3; font-size:11.5px; color:var(--muted); line-height:1.4}
+.mv-lista .org b{color:var(--marrom); font-weight:600}
+.mv-io{grid-column:1 / span 3; grid-row:4; justify-self:start; margin:4px 0 2px; border:1.5px solid var(--dourado); background:#fff; color:var(--cta-hover); border-radius:10px; padding:7px 12px; font-family:inherit; font-size:13px; font-weight:700; cursor:pointer}
+.mv-io.sec{border-color:var(--border-strong); color:var(--marrom); font-weight:600}
+.mv-sem{margin-top:8px; font-size:12.5px; font-weight:700; color:var(--danger); text-align:left}
+#modalIo .field:first-of-type{margin-top:12px}
+#modalIo .an-perg{border-radius:12px; padding:12px 13px; margin-top:12px}
+#modalIo .an-conf{border:1.5px solid var(--border-strong); border-radius:12px; padding:12px 13px}
+#modalIo .io-erro{margin-top:10px}
+#maskIo{z-index:75}
+#maskPd{z-index:70}
+#maskPd .modal{max-height:100vh; min-height:88vh}
+.pd-lista{margin:12px 0 0; padding:0; list-style:none; border-top:1px solid var(--border)}
+.pd-lista li{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border)}
+.pd-lista .pd-t{flex:1; min-width:0; font-size:14px; line-height:1.3}
+.pd-lista .pd-t small{display:block; font-size:11.5px; color:var(--muted)}
+.pd-lista .pd-t small.d2{color:var(--danger); font-weight:700}
+.pd-lista button{border:0; border-radius:10px; background:var(--dourado); color:#fff; font-family:inherit; font-weight:700; font-size:13px; padding:9px 12px; cursor:pointer}
+.cg-org{width:100%; border-collapse:collapse; margin-top:8px; font-size:12.5px}
+.cg-org th, .cg-org td{padding:6px 4px; border-bottom:1px solid var(--border); text-align:right}
+.cg-org th:first-child, .cg-org td:first-child{text-align:left}
+.cg-org th{font-size:11px; color:var(--muted); font-weight:600}
 .mv-vazio{font-size:13px; color:var(--muted); padding:12px 0; border-bottom:1px solid var(--border)}
 .mv-res{display:flex; justify-content:space-between; gap:10px; margin-top:10px; font-size:12.5px; color:var(--muted); flex-wrap:wrap}
 .mv-res b{color:var(--marrom-2); font-variant-numeric:tabular-nums}
@@ -1319,6 +1355,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       </div>
       <div class="mv-bar" id="mvBar" hidden></div>
       <div class="mv-eq" id="mvEq">Entre com o PIN para ver o seu mês</div>
+      <div class="mv-sem" id="mvSem" hidden></div>
     </button>
 
     <!-- "Agora": só o que pede ação. Cada linha nasce escondida; a faixa inteira some quando
@@ -1359,7 +1396,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
            e o PIN do papel consulta, que entra direto na conversa. -->
     </div>
 
-    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 05/10/2026 · 21:43</span></div>
+    <div class="hm-rodape">Conduza com calma e respeito · <span id="deployStamp">Atualizado em 14/10/2026 · 21:00</span></div>
   </main>
 </section>
 
@@ -1949,6 +1986,16 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   <div class="modal" id="modalMv"></div>
 </div>
 
+<!-- (14/10) Informar / Corrigir origem — o formulário curto de Minhas vendas, montado por ioAbrir() -->
+<div class="mask" id="maskIo" role="dialog" aria-modal="true" aria-labelledby="ioTit" hidden>
+  <div class="modal" id="modalIo"></div>
+</div>
+
+<!-- (14/10) O pedágio da origem: venda sem origem há mais de 24 h (tela cheia) ou 72 h (trava) — pdPintar() -->
+<div class="mask" id="maskPd" role="dialog" aria-modal="true" aria-labelledby="pdTit" hidden>
+  <div class="modal" id="modalPd"></div>
+</div>
+
 
 <!-- ==================== TIRAR DÚVIDA (Assistente do Parque, 24/09) ==================== -->
 <section class="view" id="view-assistente">
@@ -2313,6 +2360,13 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
         <tbody id="cg-equipe"></tbody>
       </table>
       <p class="fieldnote"><b>Na fila</b> = leads já entregues a ele e ainda não abordados, somando todas as listas.</p>
+    </div>
+
+    <!-- (14/10) Origem das vendas por vendedor — tarefa 2, item 6. Só aparece para quem o Cofre
+         deixa ver (cobranca.painel.quem; no 1º mês, só o Ricardo). -->
+    <div class="card" id="cg-origem" hidden>
+      <div class="lbl">Origem das vendas</div>
+      <div id="cg-origem-corpo"></div>
     </div>
 
     <div style="margin-top:14px"><button class="cart-btn sec" id="cg-btn-carteira">Ver minha carteira do dia</button></div>
@@ -5502,7 +5556,8 @@ function cartConcluir(texto){
   // Detalhe da captura: OBRIGATÓRIO (mínimo 40) só nos três casos em que a
   // origem escolhida é a menos confiável e o texto livre é o que permite
   // recuperá-la depois; opcional em todo o resto.
-  const anDetObrig = ()=> anSt.origem==='Google / Site' || anSt.origem==='Outro' || anSt.chegou==='Ligação para a recepção';
+  const anDetObrigDe = st=> st.origem==='Google / Site' || st.origem==='Outro' || st.chegou==='Ligação para a recepção';
+  const anDetObrig = ()=> anDetObrigDe(anSt);
 
   // ---- carga da proposta (retrato do calc(), tirado no clique de Anunciar) ----
   // Jazigo travado: veio escolhido na lista do Simulador (porta única, como o valor).
@@ -5671,25 +5726,7 @@ function cartConcluir(texto){
     if(!nome) faltas.push('cliente');
     else if(nome.length<5 || nome.split(/\s+/).length<2) erros.push('Nome e sobrenome do cliente.');
     if(parc && !anSt.dia) faltas.push('dia do vencimento');
-    // ordem das faltas = ordem da tela: o Chegou vem antes da origem
-    if(!anSt.chegou) faltas.push('chegou por');
-    if(anSt.chegou==='Outro'){
-      if(!anSt.chegouSub.trim()) faltas.push('especificar (chegou por)');
-      else if(anSt.chegouSub.trim().length<3) erros.push('Chegou por — especificar: mínimo de 3 caracteres.');
-    }
-    const perg = AN_ORIGEM_PERG[anSt.origemSel];
-    if(!anSt.origemSel) faltas.push('origem do lead');
-    else if(perg && !anSt[perg.campo]) faltas.push(perg.falta);
-    const sub = AN_ORIGEM_SUB[anSt.origem];
-    if(sub){
-      if(!anSt.origemSub.trim()) faltas.push(sub.toLowerCase()+' (origem)');
-      else if(anSt.origemSub.trim().length<3) erros.push('Origem — '+sub.toLowerCase()+': mínimo de 3 caracteres.');
-    }
-    const det = anSt.detalhe.trim();
-    if(anDetObrig()){
-      if(!det) faltas.push('detalhe da captura');
-      else if(det.length<40) erros.push('Detalhe da captura: mínimo de 40 caracteres neste caso ('+det.length+' até aqui).');
-    }
+    anOrigemValida(anSt, faltas, erros, avisos);
     if(!anSt.vendedor) faltas.push('vendedor');
     // A5 (14/10) — jazigo digitado fora da lista do Facilita, ou sem lista neste aparelho
     if(anSt.quadra && anSt.jazigo && !anJzTravado && !anJzPelaLista()){
@@ -5703,16 +5740,41 @@ function cartConcluir(texto){
       const ja = anUltimos().find(u=> u.q===anSt.quadra && String(u.j)===String(anSt.jazigo));   // registros antigos guardam número
       if(ja) avisos.push(anSt.quadra+'-'+anSt.jazigo+' já foi anunciado neste aparelho em '+ja.d.slice(8,10)+'/'+ja.d.slice(5,7)+'.');
     }
+    return {faltas, erros, avisos};
+  }
+
+  // (14/10) A régua da ORIGEM, num lugar só: o Anúncio (acima) e o formulário curto "Informar origem"
+  // de Minhas vendas (tarefa 2) chamam esta mesma função — a trava não pode divergir entre as duas
+  // telas. `st` tem chegou · chegouSub · origemSel · origem · origemSub · detalhe.
+  function anOrigemValida(st, faltas, erros, avisos){
+    // ordem das faltas = ordem da tela: o Chegou vem antes da origem
+    if(!st.chegou) faltas.push('chegou por');
+    if(st.chegou==='Outro'){
+      if(!st.chegouSub.trim()) faltas.push('especificar (chegou por)');
+      else if(st.chegouSub.trim().length<3) erros.push('Chegou por — especificar: mínimo de 3 caracteres.');
+    }
+    const perg = AN_ORIGEM_PERG[st.origemSel];
+    if(!st.origemSel) faltas.push('origem do lead');
+    else if(perg && !st[perg.campo]) faltas.push(perg.falta);
+    const sub = AN_ORIGEM_SUB[st.origem];
+    if(sub){
+      if(!st.origemSub.trim()) faltas.push(sub.toLowerCase()+' (origem)');
+      else if(st.origemSub.trim().length<3) erros.push('Origem — '+sub.toLowerCase()+': mínimo de 3 caracteres.');
+    }
+    const det = st.detalhe.trim();
+    if(anDetObrigDe(st)){
+      if(!det) faltas.push('detalhe da captura');
+      else if(det.length<40) erros.push('Detalhe da captura: mínimo de 40 caracteres neste caso ('+det.length+' até aqui).');
+    }
     // A4 — matriz de coerência origem × chegou. As regras moram em AN_MATRIZ,
     // no topo do bloco: contradição vira ERRO (trava sem "Entendi"), improvável
     // vira AVISO (trava até o "Entendi, é isso mesmo"). O resto passa.
-    if(anSt.origem && anSt.chegou){
+    if(st.origem && st.chegou){
       AN_MATRIZ.forEach(r=>{
-        if(r.origem===anSt.origem && r.chegou.indexOf(anSt.chegou)>=0)
+        if(r.origem===st.origem && r.chegou.indexOf(st.chegou)>=0)
           (r.nivel==='contradicao' ? erros : avisos).push(r.msg);
       });
     }
-    return {faltas, erros, avisos};
   }
 
   function anChecks(erros, faltas, avisos){
@@ -6021,6 +6083,16 @@ function cartConcluir(texto){
     $an('anPrev').textContent = anMsg();
   }
   // Sem anRender() na carga: a tela nasce no gate; quem liga o corpo é anAoEntrar().
+
+  // (14/10) As listas e a régua da origem para o formulário curto de Minhas vendas (tarefa 2).
+  // Exposição, não cópia: mudou aqui, muda lá.
+  window.AN_ORIGEM = {
+    ORIGENS_TELA: AN_ORIGENS_TELA, SUB: AN_ORIGEM_SUB, SUB_PH: AN_SUB_PH, PERG: AN_ORIGEM_PERG,
+    APOIO: AN_ORIGEM_APOIO, CHEGOU: AN_CHEGOU, CHEGOU_REMOTO: AN_CHEGOU_REMOTO,
+    CHEGOU_PRESENCIAL: AN_CHEGOU_PRESENCIAL, PERGUNTA: AN_PERGUNTA, CHEGOU_FRASE: AN_CHEGOU_FRASE,
+    VERSAO_MSG: AN_VERSAO_MSG, valida: anOrigemValida, detObrig: anDetObrigDe, uuid: anUuid,
+    temSub: st=>{ const P = AN_ORIGEM_PERG[st.origemSel]; return !!AN_ORIGEM_SUB[st.origem] || (!!P && P.campo==='origemSub'); }
+  };
 })();
 
 // ==================== EVENTO 50 ANOS — CADASTRO DE VISITANTES (16/09/2026) ====================
@@ -6996,6 +7068,19 @@ function cartConcluir(texto){
       '💰 ' + (Number(v.valor) === 0 ? 'R$ 0 (cortesia)' : mvRS(v.valor)) + '\n' +
       '🔗 deal ' + v.deal;
   }
+  // (14/10) A origem da venda e o botão da tarefa 2 (Informar / Corrigir). Quem decide o que cabe é o
+  // Cofre (`v.origem.informar` / `corrigir`): o prazo de 15 dias e o papel são conta de lá.
+  function mvOrigemLinha(v){
+    const o = v.origem; if(!o || o.fonte !== 'anuncio' || !o.texto) return '';
+    return '<span class="org">Origem <b>' + mvEsc(o.texto) + '</b>' + (o.detalhe ? ' · ' + mvEsc(o.detalhe) : '') +
+      (o.chegou ? ' · chegou por ' + mvEsc(o.chegou) : '') + '</span>';
+  }
+  function mvOrigemBotao(v, i){
+    const o = v.origem; if(!o || typeof window.ioAbrir !== 'function') return '';
+    if(o.informar) return '<button class="mv-io" type="button" data-mv-io="' + i + '" data-modo="informar">Informar origem</button>';
+    if(o.corrigir) return '<button class="mv-io sec" type="button" data-mv-io="' + i + '" data-modo="corrigir">Corrigir origem</button>';
+    return '';
+  }
   function mvPintarFolha(){
     const box = $mv('modalMv'); if(!box) return;
     const s = mvSessao(), esc = mvEscolhe(s);
@@ -7028,8 +7113,11 @@ function cartConcluir(texto){
             '<span>deal <b>' + mvEsc(v.deal) + '</b></span>' +
             (jz && !mvEhReserva(v) ? '<span>' + mvEsc(v.quadra) + (v.jazigo ? ' · <b>' + mvEsc(v.jazigo) + '</b>' : '') + '</span>' : '') +
             (v.modalidade ? '<span class="tag">' + mvEsc(v.modalidade) + '</span>' : '') +
+            (v.origem && v.origem.fonte === 'sem' ? '<span class="tag sem">sem origem</span>' : '') +
             '<span>' + mvEsc(mvDiaBR(v.data)) + '</span></span>' +
-            '<button class="mv-wa" type="button" data-mv-i="' + i + '" aria-label="Copiar esta venda e enviar no WhatsApp">' + ico + '</button></li>';
+            mvOrigemLinha(v) +
+            '<button class="mv-wa" type="button" data-mv-i="' + i + '" aria-label="Copiar esta venda e enviar no WhatsApp">' + ico + '</button>' +
+            mvOrigemBotao(v, i) + '</li>';
         }).join('') + '</ul>';
       } else {
         h += '<div class="mv-lista"><div class="mv-vazio">' + (esc ? 'Nenhuma venda neste mês, até agora.' : 'Nenhuma venda sua neste mês, até agora.') + '</div></div>';
@@ -7135,6 +7223,12 @@ function cartConcluir(texto){
     if(e.target === $mv('maskMv')){ mvFecharFolha(); return; }
     const ch = e.target.closest && e.target.closest('[data-mv-ver]');
     if(ch){ mvEscolher(ch.dataset.mvVer); mvErro = ''; mvPintarCard(); mvPintarFolha(); mvBuscar(); return; }
+    const io = e.target.closest && e.target.closest('[data-mv-io]');
+    if(io){
+      const dd = mvAtual(), vv = dd && (dd.vendas || [])[Number(io.dataset.mvIo)];
+      if(vv) window.ioAbrir(vv, io.dataset.modo, () => { mvBuscar(); if(typeof window.pdBuscar === 'function') window.pdBuscar(); });
+      return;
+    }
     const b = e.target.closest && e.target.closest('.mv-wa');
     const d = mvAtual();
     if(!b || !d) return;
@@ -7147,12 +7241,289 @@ function cartConcluir(texto){
     try{ toast('Venda copiada'); }catch(e){}
   });
   document.addEventListener('keydown', e => {
-    if(e.key === 'Escape' && !$mv('maskMv').hidden) mvFecharFolha();
+    if(e.key === 'Escape' && !$mv('maskMv').hidden && $mv('maskIo').hidden && $mv('maskPd').hidden) mvFecharFolha();
   });
 
   // Uma busca por abertura do app e outra a cada volta para a home (go('home') chama mvBuscar).
   mvPintarCard();
   mvBuscar();
+})();
+
+// ==================== COBRANÇA DA ORIGEM — tarefa 2 (14/10/2026) ====================
+// Decisões do Ricardo de 02/10, com as respostas de 14/10 (doc da tarefa 2 em 02-parque-da-saudade/sistemas/).
+// (1) "Informar origem": formulário curto em Minhas vendas, sem Simulador. Quadra, jazigo, cliente e data vêm
+//     da VENDA, no servidor; aqui só o Chegou, a Origem (com as travas da tarefa 1 — window.AN_ORIGEM, a MESMA
+//     régua do Anúncio, sem cópia das listas), o detalhe e o "Confere.". Grava na Anuncios_Venda (ação
+//     informar_origem do Cofre, CobrancaOrigem.gs) sem mensagem no grupo: a venda já foi comemorada.
+// (4) "Corrigir origem": o mesmo formulário; o Cofre diz quem pode (vendedor até 15 dias, gestão sempre).
+// (2) O pedágio: o Cofre diz o degrau (ação origem_pendencias) — 0: só o aviso no cartão · 1 (24 h): tela cheia
+//     com "Estou em atendimento", que libera esta abertura e fica registrado · 2 (72 h): só Simulador e Tabela
+//     de Preços até informar. O relógio é o do servidor; SEM RESPOSTA, NADA BLOQUEIA (o /exec cai às vezes).
+//     Pedágio desligado no Cofre (cobranca.pedagio.desde vazia) = nada acontece. Só o papel vendedor.
+(function(){
+  const $c = id => document.getElementById(id);
+  const cEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function cSessao(){ try{ return JSON.parse(localStorage.getItem('carteira_sessao')||'null'); }catch(e){ return null; } }
+  const C_SESSAO_MORTA = ['TOKEN_INVALIDO','VENDEDOR_INATIVO'];
+  async function cPost(corpo){
+    const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+    const timer = ctl ? setTimeout(() => ctl.abort(), 25000) : null;
+    try{
+      // sem Content-Type de propósito: header customizado dispara preflight que o GAS não responde
+      const r = await fetch(CARTEIRA_API, { method:'POST', signal: ctl ? ctl.signal : undefined, body: JSON.stringify(corpo) });
+      return await r.json();
+    } finally { if(timer) clearTimeout(timer); }
+  }
+  const cDia = iso => { const m = String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '/' + m[2] : ''; };
+  function cRotulo(v){
+    if(v._rotulo) return v._rotulo;   // do pedágio: o rótulo vem pronto do Cofre ("M-19 · 450", "Reserva 7")
+    if(/^reserva$/i.test(v.quadra || '') || /^reserva$/i.test(v.modalidade || '')) return 'Reserva' + (v.jazigo ? ' ' + v.jazigo : '');
+    return [v.quadra, v.jazigo].filter(Boolean).join(' · ') || 'Venda';
+  }
+
+  // ---------------------------------------------------------------- o formulário curto
+  let ioV = null, ioModo = 'informar', ioDepois = null, ioAck = '', ioEnviando = false, ioId = '', ioSig = '', ioFocoAnt = null;
+  const ioSt = { chegou:'', chegouSub:'', origemSel:'', origem:'', origemSub:'', detalhe:'', confere:false };
+
+  function ioAbrir(v, modo, depois){
+    const A = window.AN_ORIGEM; if(!A || !v) return;
+    ioV = v; ioModo = modo === 'corrigir' ? 'corrigir' : 'informar'; ioDepois = depois || null;
+    Object.assign(ioSt, { chegou:'', chegouSub:'', origemSel:'', origem:'', origemSub:'', detalhe:'', confere:false });
+    ioAck = ''; ioId = ''; ioSig = ''; ioEnviando = false;
+    const opc = (l, vazio) => '<option value="" disabled selected hidden>' + vazio + '</option>' + l.map(o => '<option>' + cEsc(o) + '</option>').join('');
+    const o = v.origem || {};
+    $c('modalIo').innerHTML =
+      '<div class="mtag" id="ioTit">' + (ioModo === 'corrigir' ? 'Corrigir origem' : 'Informar origem') + '</div>' +
+      '<h3>' + cEsc(cRotulo(v)) + (v.cliente ? ' · ' + cEsc(v.cliente) : '') + '</h3>' +
+      '<p class="mlead">Venda de <b>' + cEsc(cDia(v.data)) + '</b>' + (v.deal ? ' · deal <b>' + cEsc(v.deal) + '</b>' : '') +
+        (ioModo === 'corrigir' && o.texto ? '<br>Origem de agora: <b>' + cEsc(o.texto) + '</b>' + (o.detalhe ? ' · ' + cEsc(o.detalhe) : '') : '') + '</p>' +
+      '<div class="field"><label for="ioChegou">Chegou</label><select id="ioChegou" class="an-sel vazio">' + opc(A.CHEGOU, 'Escolha…') + '</select>' +
+        '<p class="fieldnote">O caminho por onde o contato chegou — não o que o trouxe.</p></div>' +
+      '<div class="field" id="ioFChegouSub" hidden><label for="ioChegouSub">Especificar</label><input type="text" id="ioChegouSub" class="an-plain" autocomplete="off"></div>' +
+      '<div class="an-perg" id="ioPergunta" hidden><p id="ioPerguntaTxt"></p></div>' +
+      '<div id="ioCardOrigem" hidden>' +
+        '<div class="field"><label for="ioOrigem">Origem</label><select id="ioOrigem" class="an-sel vazio">' + opc(A.ORIGENS_TELA, 'Escolha a origem…') + '</select>' +
+          '<p class="fieldnote an-apoio" id="ioApoio" hidden></p></div>' +
+        '<div class="field" id="ioFPerg" hidden><label id="ioPergLbl"></label><div class="seg" id="ioSegPerg" role="group" style="flex-direction:column"></div></div>' +
+        '<div class="field" id="ioFSub" hidden><label id="ioSubLbl" for="ioSub">Qual</label><input type="text" id="ioSub" class="an-plain" autocomplete="off"></div>' +
+      '</div>' +
+      '<div class="field"><label for="ioDetalhe">Detalhe da captura <span class="opt" id="ioDetMin">(opcional)</span></label><textarea id="ioDetalhe" class="an-ta"></textarea></div>' +
+      '<div class="an-checks" id="ioChecks"></div>' +
+      '<div class="an-conf" id="ioConf" hidden><p id="ioConfOrigem"></p><p id="ioConfChegou"></p><label><input type="checkbox" id="ioConfChk"> Confere.</label></div>' +
+      '<div class="an-checks io-erro" id="ioErro"></div>' +
+      '<div class="macts"><button type="button" class="m-fix" id="ioEnviar" disabled>Gravar origem</button>' +
+      '<button type="button" class="m-keep" id="ioCancelar">Cancelar</button></div>' +
+      '<p class="mfoot">Nada vai para o grupo — a venda já foi anunciada. A origem fica registrada no Cofre' + (ioModo === 'corrigir' ? ', e a anterior continua no histórico.' : '.') + '</p>';
+
+    const conf = () => { ioSt.confere = false; $c('ioConfChk').checked = false; };
+    $c('ioChegou').addEventListener('change', e => { ioSt.chegou = e.target.value; e.target.classList.remove('vazio'); conf(); ioRender(); });
+    $c('ioChegouSub').addEventListener('input', e => { ioSt.chegouSub = e.target.value; conf(); ioRender(); });
+    $c('ioOrigem').addEventListener('change', e => {
+      const sel = e.target, antes = A.PERG[ioSt.origemSel], agora = A.PERG[sel.value];
+      ioSt.origemSel = sel.value; sel.classList.remove('vazio');
+      ioSt.origem = (agora && agora.campo === 'origem') ? '' : sel.value;
+      if((antes && antes.campo === 'origemSub') || (agora && agora.campo === 'origemSub')){ ioSt.origemSub = ''; $c('ioSub').value = ''; }
+      ioPintarPerg(); conf(); ioRender();
+    });
+    $c('ioSegPerg').addEventListener('click', e => {
+      const b = e.target.closest('button'), P = A.PERG[ioSt.origemSel]; if(!b || !P) return;
+      ioSt[P.campo] = b.dataset.v; ioPintarPerg(); conf(); ioRender();
+    });
+    $c('ioSub').addEventListener('input', e => { ioSt.origemSub = e.target.value; conf(); ioRender(); });
+    $c('ioDetalhe').addEventListener('input', e => { ioSt.detalhe = e.target.value; ioRender(); });
+    $c('ioConfChk').addEventListener('change', e => { ioSt.confere = e.target.checked; ioRender(); });
+    $c('ioCancelar').addEventListener('click', ioFechar);
+    $c('ioEnviar').addEventListener('click', ioEnviar);
+
+    ioFocoAnt = document.activeElement;
+    const m = $c('maskIo'); m.hidden = false; m.classList.add('show');
+    document.body.classList.add('no-scroll');
+    ioRender();
+    try{ $c('ioChegou').focus({preventScroll:true}); }catch(e){}
+  }
+  window.ioAbrir = ioAbrir;
+
+  function ioFechar(){
+    const m = $c('maskIo'); m.classList.remove('show'); m.hidden = true;
+    const outra = !$c('maskMv').hidden || !$c('maskPd').hidden;
+    if(!outra) document.body.classList.remove('no-scroll');
+    if(ioFocoAnt){ try{ ioFocoAnt.focus({preventScroll:true}); }catch(e){} ioFocoAnt = null; }
+  }
+  function ioPintarPerg(){
+    const A = window.AN_ORIGEM, P = A.PERG[ioSt.origemSel], seg = $c('ioSegPerg');
+    $c('ioFPerg').hidden = !P;
+    if(!P){ seg.innerHTML = ''; return; }
+    $c('ioPergLbl').textContent = P.perg; seg.setAttribute('aria-label', P.perg);
+    seg.innerHTML = P.ops.map(o => '<button type="button" data-v="' + cEsc(o[1]) + '" aria-pressed="' + (ioSt[P.campo] === o[1]) + '">' + cEsc(o[0]) + '</button>').join('');
+  }
+  function ioRender(){
+    const A = window.AN_ORIGEM;
+    $c('ioFChegouSub').hidden = ioSt.chegou !== 'Outro';
+    const perg = A.CHEGOU_REMOTO.indexOf(ioSt.chegou) >= 0 ? 'remoto' : A.CHEGOU_PRESENCIAL.indexOf(ioSt.chegou) >= 0 ? 'presencial' : '';
+    $c('ioPergunta').hidden = !perg;
+    if(perg) $c('ioPerguntaTxt').innerHTML = A.PERGUNTA[perg];
+    $c('ioCardOrigem').hidden = !ioSt.chegou;
+    const apoio = A.APOIO[ioSt.origem];
+    $c('ioApoio').hidden = !apoio; if(apoio) $c('ioApoio').textContent = apoio;
+    const sub = A.SUB[ioSt.origem];
+    $c('ioFSub').hidden = !sub;
+    if(sub){ $c('ioSubLbl').textContent = sub; $c('ioSub').placeholder = A.SUB_PH[ioSt.origem] || ''; }
+    const obrig = A.detObrig(ioSt);
+    $c('ioDetMin').textContent = obrig ? '(mínimo 40 caracteres — ' + ioSt.detalhe.trim().length + ' até aqui)' : '(opcional)';
+
+    const temPar = !!(ioSt.origem && ioSt.chegou);
+    $c('ioConf').hidden = !temPar;
+    if(temPar){
+      const oSub = ioSt.origemSub.trim();
+      const f = A.CHEGOU_FRASE[ioSt.chegou] || {pre:'com você ', frag:ioSt.chegou};
+      let frag = f.frag; if(ioSt.chegou === 'Outro' && ioSt.chegouSub.trim()) frag += ' (' + ioSt.chegouSub.trim() + ')';
+      $c('ioConfOrigem').innerHTML = '🚸 Foi o <b>' + cEsc(ioSt.origem + (A.temSub(ioSt) && oSub ? ' (' + oSub + ')' : '')) + '</b> que trouxe o cliente.';
+      $c('ioConfChegou').innerHTML = '🚪 Ele falou ' + f.pre + '<b>' + cEsc(frag) + '</b>.';
+    }
+    const faltas = [], erros = [], avisos = [];
+    A.valida(ioSt, faltas, erros, avisos);
+    let h = '';
+    if(faltas.length) h += '<div class="an-check err">Falta preencher: ' + cEsc(faltas.join(' · ')) + '.</div>';
+    erros.forEach(m => { h += '<div class="an-check err">' + cEsc(m) + '</div>'; });
+    avisos.forEach(m => { h += '<div class="an-check warn">' + cEsc(m) + '</div>'; });
+    const sig = avisos.join('§'), pendente = avisos.length > 0 && ioAck !== sig;
+    if(pendente) h += '<button type="button" class="an-btn sec" id="ioEntendi">Entendi, é isso mesmo</button>';
+    $c('ioChecks').innerHTML = h;
+    if(pendente) $c('ioEntendi').onclick = () => { ioAck = sig; ioRender(); };
+    const pronto = !faltas.length && !erros.length && (!avisos.length || ioAck === sig) && ioSt.confere === true;
+    $c('ioEnviar').disabled = !pronto || ioEnviando;
+    $c('ioEnviar').textContent = ioEnviando ? 'Gravando…' : 'Gravar origem';
+    return avisos;
+  }
+  async function ioEnviar(){
+    const A = window.AN_ORIGEM, s = cSessao();
+    if(!s || !s.token){ $c('ioErro').innerHTML = '<div class="an-check err">Entre com o seu PIN para gravar.</div>'; return; }
+    const avisos = ioRender();
+    const anuncio = {
+      ts_cliente: new Date().toISOString(),
+      origem: ioSt.origem, origem_detalhe: A.temSub(ioSt) ? ioSt.origemSub.trim() : '',
+      entrada: ioSt.chegou, entrada_detalhe: ioSt.chegou === 'Outro' ? ioSt.chegouSub.trim() : '',
+      detalhe_captura: ioSt.detalhe.trim(), avisos_confirmados: avisos, confere: true,
+      versao_msg: 'form-' + A.VERSAO_MSG
+    };
+    // o id nasce aqui e não muda entre tentativas do MESMO conteúdo (o Cofre é idempotente por ele)
+    const sig = JSON.stringify([ioModo, ioV.deal, anuncio.origem, anuncio.origem_detalhe, anuncio.entrada, anuncio.entrada_detalhe, anuncio.detalhe_captura]);
+    if(!ioId || sig !== ioSig){ ioId = A.uuid(); ioSig = sig; }
+    anuncio.id = ioId;
+    ioEnviando = true; $c('ioErro').innerHTML = ''; ioRender();
+    let j = null;
+    try{ j = await cPost({ acao:'informar_origem', token: s.token, modo: ioModo, deal: ioV.deal, anuncio }); }
+    catch(e){ j = null; }
+    ioEnviando = false;
+    if(j && j.ok){
+      ioFechar();
+      try{ toast(j.ja_existia && j.motivo ? 'Esta venda já tinha origem' : 'Origem gravada'); }catch(e){}
+      if(ioDepois) try{ ioDepois(); }catch(e){}
+      return;
+    }
+    if(j && C_SESSAO_MORTA.indexOf(String(j.erro || '')) >= 0){
+      ioFechar(); try{ cartSessaoCaiu(j.msg); }catch(e){} return;
+    }
+    $c('ioErro').innerHTML = '<div class="an-check err">' + cEsc(j && j.msg ? j.msg : 'Sem conexão com o servidor agora. Tente de novo.') + '</div>';
+    ioRender();
+  }
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$c('maskIo').hidden) ioFechar(); });
+  $c('maskIo').addEventListener('click', e => { if(e.target === $c('maskIo')) ioFechar(); });
+
+  // ---------------------------------------------------------------- o pedágio
+  const PD_ABERTAS = ['sim', 'tabelas'];   // o luto não espera: estas nunca fecham
+  let pdEstado = null;       // SÓ a última resposta boa do servidor; nunca do aparelho
+  let pdLiberado = false;    // "Estou em atendimento" usado nesta abertura do app
+  let pdBuscando = false;
+  const pdTrava = () => !!(pdEstado && pdEstado.ativo && pdEstado.degrau === 2 && pdEstado.pendentes.length);
+  const pdCheia = () => !!(pdEstado && pdEstado.ativo && pdEstado.pendentes.length &&
+                          (pdEstado.degrau === 2 || (pdEstado.degrau === 1 && !pdLiberado)));
+  function pdVistaAtual(){ const v = document.querySelector('.view.active'); return v ? v.id.replace(/^view-/, '') : 'home'; }
+
+  async function pdBuscar(){
+    const s = cSessao();
+    if(!s || !s.token || s.papel !== 'vendedor' || !CARTEIRA_API){ pdEstado = null; pdPintar(); return; }
+    if(pdBuscando) return;
+    pdBuscando = true;
+    try{
+      const j = await cPost({ acao:'origem_pendencias', token: s.token });
+      pdEstado = (j && j.ok && j.ativo) ? j : null;
+    }catch(e){
+      pdEstado = null;   // sem resposta, não bloqueia
+    }finally{
+      pdBuscando = false;
+      pdPintar();
+    }
+  }
+  window.pdBuscar = pdBuscar;
+
+  function pdHoras(h){
+    if(h === null || h === undefined || h < 1) return 'hoje';
+    if(h < 48) return 'há ' + h + ' h';
+    return 'há ' + Math.floor(h / 24) + ' dias';
+  }
+  function pdPintar(){
+    // o aviso no cartão de Minhas vendas (degrau 0 em diante)
+    const n = pdEstado && pdEstado.ativo ? pdEstado.pendentes.length : 0;
+    const av = $c('mvSem');
+    if(av){ av.hidden = !n; av.textContent = n ? '⚠ ' + n + (n === 1 ? ' venda sem origem' : ' vendas sem origem') + ' — toque para informar' : ''; }
+
+    const m = $c('maskPd');
+    const mostrar = pdCheia() && (pdTrava() ? PD_ABERTAS.indexOf(pdVistaAtual()) < 0 : pdVistaAtual() === 'home');
+    if(!mostrar){
+      if(!m.hidden){ m.classList.remove('show'); m.hidden = true; if($c('maskMv').hidden && $c('maskIo').hidden) document.body.classList.remove('no-scroll'); }
+      return;
+    }
+    const d2 = pdTrava();
+    let h = '<div class="mtag" id="pdTit">Origem das vendas</div>' +
+      '<h3>' + (n === 1 ? 'Uma venda sua está sem origem' : n + ' vendas suas estão sem origem') + '</h3>' +
+      '<p class="mlead">' + (d2
+        ? 'Uma delas passou de <b>72 horas</b>. Até informar, só o <b>Simulador</b> e a <b>Tabela de Preços</b> ficam abertos.'
+        : 'Passou de <b>24 horas</b>. Informe agora — leva um minuto. Se está com um cliente, use "Estou em atendimento".') + '</p>' +
+      '<ul class="pd-lista">' + pdEstado.pendentes.map((p, i) =>
+        '<li><span class="pd-t"><b>' + cEsc(p.rotulo) + '</b><small' + (p.degrau === 2 ? ' class="d2"' : '') + '>venda de ' + cEsc(cDia(p.data)) + ' · ' + cEsc(pdHoras(p.horas)) + '</small></span>' +
+        '<button type="button" data-pd-i="' + i + '">Informar</button></li>').join('') + '</ul>' +
+      '<div class="macts">' + (d2
+        ? '<button type="button" class="m-keep" data-pd-go="sim">Abrir o Simulador</button><button type="button" class="m-keep" data-pd-go="tabelas">Tabela de Preços</button>'
+        : '<button type="button" class="m-keep" id="pdAtend">Estou em atendimento</button>') + '</div>' +
+      '<p class="mfoot">' + (d2 ? 'O "Estou em atendimento" não vale depois de 72 horas.' : 'O "Estou em atendimento" libera o app agora e fica registrado.') + '</p>';
+    $c('modalPd').innerHTML = h;
+    if(m.hidden){ m.hidden = false; m.classList.add('show'); document.body.classList.add('no-scroll'); }
+  }
+  $c('maskPd').addEventListener('click', async e => {
+    const b = e.target.closest && e.target.closest('[data-pd-i]');
+    if(b && pdEstado){
+      const p = pdEstado.pendentes[Number(b.dataset.pdI)];
+      if(p) ioAbrir({ deal: p.deal, quadra: '', jazigo: '', data: p.data, cliente: '', modalidade: '', origem: null, _rotulo: p.rotulo }, 'informar', () => {
+        pdBuscar(); if(typeof window.mvBuscar === 'function') window.mvBuscar();
+      });
+      return;
+    }
+    const g = e.target.closest && e.target.closest('[data-pd-go]');
+    if(g){ go(g.dataset.pdGo); return; }
+    if(e.target.id === 'pdAtend'){
+      pdLiberado = true;
+      const s = cSessao(), deals = pdEstado ? pdEstado.pendentes.map(p => p.deal) : [];
+      pdPintar();
+      try{ await cPost({ acao:'origem_atendimento', token: s && s.token, deals, degrau: pdEstado ? pdEstado.degrau : '' }); }catch(err){}
+    }
+  });
+
+  // A porta do pedágio no go(): no degrau 2, só Simulador e Tabela de Preços abrem. A home abre (é onde
+  // o pedágio aparece). O resto (Anúncio, Carteira, Escala, FAQ, Tirar dúvida…) devolve o pedágio.
+  const goOriginal = go;
+  go = function(view, push){
+    if(pdTrava() && view !== 'home' && PD_ABERTAS.indexOf(view) < 0){
+      if(pdVistaAtual() !== 'home') goOriginal('home', push);
+      pdPintar();
+      return;
+    }
+    goOriginal(view, push);
+    if(view === 'home') pdBuscar(); else pdPintar();
+  };
+
+  // Uma consulta por abertura do app (e outra a cada volta para a home, no go acima).
+  pdBuscar();
 })();
 
 // ==================== GESTAO DA CARTEIRA (22/09/2026) ====================
@@ -7279,7 +7650,28 @@ function cgAoEntrar(){
   cgCarregarPainel();
 }
 
+// (14/10) Origem das vendas por vendedor — tarefa 2, item 6. O Cofre decide quem vê (no 1º mês, só o
+// Ricardo): para os outros a resposta é {visivel:false} e o cartão não aparece. Erro aqui não toca o painel.
+async function cgOrigem(){
+  const box = document.getElementById('cg-origem');
+  let r = null;
+  try{ r = await cgPost({ token: cartSes && cartSes.token, acao:'origem_painel' }); }catch(e){ r = null; }
+  if(!r || !r.ok || !r.visivel){ box.hidden = true; return; }
+  const pct = n => n === null || n === undefined ? '—' : n + '%';
+  const dia = iso => String(iso||'').slice(8,10) + '/' + String(iso||'').slice(5,7);
+  const linhas = r.linhas || [];
+  document.getElementById('cg-origem-corpo').innerHTML =
+    '<table class="cg-org"><thead><tr><th>Vendedor</th><th>Vendas</th><th>Com origem</th><th>Em 24 h</th><th>Atend.</th><th>Marcas</th></tr></thead><tbody>' +
+    (linhas.length ? linhas.map(l => '<tr><td>' + escH(l.vendedor) + '</td><td>' + l.vendas + '</td><td><b>' + pct(l.pct) + '</b></td><td>' + pct(l.pct24) +
+      '</td><td>' + l.atendimentos + '</td><td>' + l.marcas + '</td></tr>').join('')
+      : '<tr><td colspan="6" style="text-align:left">Nenhuma venda desde ' + dia(r.desde) + '.</td></tr>') + '</tbody></table>' +
+    '<p class="fieldnote">Vendas confirmadas desde <b>' + dia(r.desde) + '</b>' + (r.pedagio ? '' : ' (pedágio ainda desligado)') +
+    '. <b>Em 24 h</b> = origem informada até 24 h depois do dia da venda. <b>Atend.</b> = "Estou em atendimento". <b>Marcas</b> = origem fora da lista ou Visita sem motivo.</p>';
+  box.hidden = false;
+}
+
 async function cgCarregarPainel(){
+  cgOrigem();
   const r = await cgAPI({ acao:'lista_painel' }, 'cg-erro-painel');
   if(!r) return;
 
