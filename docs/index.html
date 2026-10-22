@@ -15,6 +15,13 @@
        devolve o pedágio). Estado só do servidor; sem resposta, nada bloqueia; só o papel vendedor; LIGA pela
        Config do Cofre (cobranca.pedagio.desde). (6) Gestão da Carteira: cartão "Origem das vendas" por
        vendedor, só para quem o Cofre deixa ver (o Ricardo, no 1º mês).
+     Rev. 22/10/2026 (Ricardo) — GOOGLE (BUSCA) SEPARADO DE "ENTROU PELO SITE". Das 6 vendas "Google / Site"
+       de outubro, 4 eram leads do Meta que passaram pelo site (provado pelo nº do negócio na SATI). (1) A origem
+       `Google / Site` vira `Google (busca)`, com pergunta fechada: "Ele pesquisou no Google e achou o Parque?" —
+       Sim grava `Google (busca)`; Não (viu anúncio no Instagram/Facebook e foi ao site) grava `Meta Ads`; sem
+       resposta, trava. (2) Porta nova `Pelo site do Parque` (AN_CHEGOU, remota). (3) Matriz: `Google (busca)` ×
+       Contato direto com o vendedor é improvável; Meta Ads × Pelo site passa limpo. O Cofre aceita os dois
+       textos (AN_ORIGEM_ALIAS); as linhas antigas não mudam. No Facilita o Ricardo renomeia o ID 59.
      Rev. 14/10/2026 (Ricardo, decisão de 02/10) — TRAVAS DA ORIGEM NO ANÚNCIO. A revisão de setembro
        achou 30 origens duvidosas em 94 vendas. (A) Proposta NOVA depois de um envio limpa a tela
        (menos o vendedor), como o "Novo anúncio"; a MESMA proposta (reenvio) mantém tudo. (B) Sem
@@ -5299,7 +5306,10 @@ function cartConcluir(texto){
 // opcional como o da Panfletagem. Só no Anúncio: a lista EV_* é a do Evento 50, encerrado.
 (function(){
   // Sem "Não informado" de propósito: quem não sabe usa "Outro" e escreve o que houve.
-  const AN_ORIGENS = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Rádio','Panfletagem','Evento','Captação própria','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
+  // (22/10, Ricardo) `Google / Site` virou `Google (busca)`: das 6 vendas "Google / Site" de outubro, 4 eram
+  // leads do Meta que passaram pelo site — a palavra "Site" no rótulo convidava a usar a origem como porta.
+  // O texto antigo segue válido no Cofre (alias); a tela só oferece o novo, com a pergunta-guia abaixo.
+  const AN_ORIGENS = ['Google (busca)','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Rádio','Panfletagem','Evento','Captação própria','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
   const AN_ORIGEM_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Rádio':'Qual','Panfletagem':'Local','Evento':'Qual','Captação própria':'Local','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
   // (14/10) Travas da origem, decisão do Ricardo de 02/10. Os RÓTULOS GRAVADOS não mudam — a lista
   // acima segue sendo o que vai para o payload, a mensagem e a AN_MATRIZ. Muda só o que a TELA oferece:
@@ -5319,17 +5329,23 @@ function cartConcluir(texto){
       ['Mora perto ou já conhecia', 'Mora perto ou já conhecia']]},
     [AN_META]: {perg:'O anúncio era do Parque ou seu?', falta:'de quem era o anúncio (origem)', campo:'origem', ops:[
       ['Do Parque', 'Meta Ads'],
-      ['Meu — eu paguei o impulsionamento', 'Meta Ads do vendedor']]}
+      ['Meu — eu paguei o impulsionamento', 'Meta Ads do vendedor']]},
+    // (22/10) Quem "entrou pelo site" depois de ver anúncio no Instagram/Facebook é Meta Ads, não Google.
+    // Sem opção "não sei": quem não sabe pergunta ao cliente (a pergunta sem resposta trava o envio).
+    'Google (busca)': {perg:'Ele pesquisou no Google e achou o Parque?', falta:'se ele veio da busca do Google (origem)', campo:'origem', ops:[
+      ['Sim — pesquisou no Google', 'Google (busca)'],
+      ['Não — viu anúncio no Instagram ou Facebook e foi ao site', 'Meta Ads']]}
   };
   const AN_SUB_PH = {'Outdoor':'ex.: Av. Olegário','Captação própria':'Onde? ex.: comércio do bairro Benfica','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Rádio':'ex.: Itatiaia','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
   // "WhatsApp do Parque" e não "WhatsApp (SATI)": SATI é nome de plataforma,
   // vocabulário interno que o vendedor não conhece. Este campo não espelha o
   // CRM (a porta não existe no Facilita), então renomear aqui é seguro.
-  const AN_CHEGOU = ['Presencial no Parque','Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor','Outro'];
+  // (22/10) "Pelo site do Parque" é PORTA (formulário ou WhatsApp vindo do site) — nunca origem.
+  const AN_CHEGOU = ['Presencial no Parque','Ligação para a recepção','WhatsApp do Parque','Pelo site do Parque','Contato direto com o vendedor','Outro'];
   // ---- a pergunta que ensina a origem (bloco fixo entre Chegou e Origem) ----
   // Remoto: o cliente chegou por um número/canal — o número é caminho, não
   // origem. Presencial: o lugar onde ele apareceu pode não ser o que o trouxe.
-  const AN_CHEGOU_REMOTO = ['Ligação para a recepção','WhatsApp do Parque','Contato direto com o vendedor'];
+  const AN_CHEGOU_REMOTO = ['Ligação para a recepção','WhatsApp do Parque','Pelo site do Parque','Contato direto com o vendedor'];
   const AN_CHEGOU_PRESENCIAL = ['Presencial no Parque'];
   const AN_PERGUNTA = {
     remoto: '<b>❓ Você perguntou como ele chegou até esse número?</b>'+
@@ -5355,8 +5371,12 @@ function cartConcluir(texto){
      msg:'Anúncio da empresa cai no WhatsApp do Parque ou no site. Se ele te chamou no seu número, ou o anúncio era seu, ou alguém te passou o contato.'},
     {origem:'Meta Ads do vendedor', chegou:['WhatsApp do Parque'], nivel:'improvavel',
      msg:'Seu impulsionamento aponta para o seu número. Confirme se o anúncio era mesmo seu.'},
-    {origem:'Google / Site', chegou:['Presencial no Parque'], nivel:'improvavel',
-     msg:'Quem veio da busca costuma chamar antes. Ele chegou direto?'}
+    {origem:'Google (busca)', chegou:['Presencial no Parque'], nivel:'improvavel',
+     msg:'Quem veio da busca costuma chamar antes. Ele chegou direto?'},
+    // (22/10) quem pesquisa no Google cai no site ou liga para a recepção; se chamou o vendedor direto, alguém passou o número
+    {origem:'Google (busca)', chegou:['Contato direto com o vendedor'], nivel:'improvavel',
+     msg:'Quem vem da busca cai no site do Parque ou na recepção. Se ele te chamou no seu número, alguém passou seu contato — a origem pode ser Indicação.'}
+    // Meta Ads × Pelo site do Parque passa limpo: é o caminho normal do anúncio da empresa.
   ];
   // Frase de confirmação por porta, escrita à mão — preposição por concatenação
   // sai errada ("pela Contato direto...", "com você direto com você"). A frase
@@ -5364,14 +5384,15 @@ function cartConcluir(texto){
   const AN_CHEGOU_FRASE = {
     'Ligação para a recepção':          {pre:'com você ', frag:'pela ligação para a recepção'},
     'WhatsApp do Parque':               {pre:'com você ', frag:'pelo WhatsApp do Parque'},
+    'Pelo site do Parque':              {pre:'com você ', frag:'pelo site do Parque'},
     'Presencial no Parque':             {pre:'com você ', frag:'pessoalmente no Parque'},
     'Contato direto com o vendedor':    {pre:'', frag:'direto com você'},
     'Outro':                            {pre:'com você ', frag:'por outro caminho'}
   };
   // Linha de apoio de cada origem — aparece DEPOIS de selecionada, abaixo do campo.
   const AN_ORIGEM_APOIO = {
-    'Google / Site':'Ele pesquisou e achou a gente, ou clicou num anúncio do Google. O site em si não é origem — é destino.',
-    'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook.',
+    'Google (busca)':'Ele digitou no Google e achou a gente, ou clicou num anúncio do Google. Se viu anúncio no Instagram ou Facebook e por isso entrou no site, a origem é Meta Ads — o site é só o caminho (a porta "Pelo site do Parque").',
+    'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook — inclusive quando a pessoa foi ao site depois de ver o anúncio.',
     'Meta Ads do vendedor':'Você pagou o impulsionamento do seu bolso. Se o anúncio não é seu, a resposta é "Do Parque".',
     'Outdoor':'Ele citou ter visto a peça. Diga qual.',
     'Painel de LED':'Ele citou ter visto a peça. Diga qual.',
@@ -5556,7 +5577,7 @@ function cartConcluir(texto){
   // Detalhe da captura: OBRIGATÓRIO (mínimo 40) só nos três casos em que a
   // origem escolhida é a menos confiável e o texto livre é o que permite
   // recuperá-la depois; opcional em todo o resto.
-  const anDetObrigDe = st=> st.origem==='Google / Site' || st.origem==='Outro' || st.chegou==='Ligação para a recepção';
+  const anDetObrigDe = st=> st.origem==='Google (busca)' || st.origem==='Outro' || st.chegou==='Ligação para a recepção';
   const anDetObrig = ()=> anDetObrigDe(anSt);
 
   // ---- carga da proposta (retrato do calc(), tirado no clique de Anunciar) ----
@@ -6114,11 +6135,11 @@ function cartConcluir(texto){
   // Facilita caractere a caractere, com o mesmo detalhe e o mesmo texto de apoio. Cópia das
   // constantes AN_ORIGENS / AN_ORIGEM_SUB / AN_SUB_PH / AN_ORIGEM_APOIO, que vivem na IIFE do
   // anúncio e não são alcançáveis daqui. Mudou lá, muda aqui (e no Evento50.gs e no form).
-  const EV_COMO_SOUBE = ['Google / Site','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
+  const EV_COMO_SOUBE = ['Google (busca)','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
   const EV_COMO_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
   const EV_COMO_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
   const EV_COMO_APOIO = {
-    'Google / Site':'Ele pesquisou e achou a gente, ou clicou num anúncio do Google. O site em si não é origem — é destino.',
+    'Google (busca)':'Ele digitou no Google e achou a gente, ou clicou num anúncio do Google. Se viu anúncio no Instagram ou Facebook e foi ao site, a origem é Meta Ads.',
     'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook.',
     'Meta Ads do vendedor':'Você pagou o impulsionamento do seu bolso. Se o anúncio não é seu, a opção é a de cima.',
     'Outdoor':'Ele citou ter visto a peça. Diga qual.',
