@@ -1368,8 +1368,10 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <!-- "Agora": só o que pede ação. Cada linha nasce escondida; a faixa inteira some quando
          nenhuma está à mostra (:has).
          Contratos: só quando há contrato esperando o cliente do vendedor da sessão.
-         (22/09) O card do Evento 50 Anos saiu daqui — o evento foi em 20/09. -->
+         (22/09) O card do Evento 50 Anos saiu daqui — o evento foi em 20/09.
+         (27/10) Volta para Finados 2026: aparece de 27/10 a 07/11 (EV_JANELA_CARD). -->
     <div class="hm-agora">
+      <button class="hm-l" data-go="evento" id="evCardHome" hidden><span class="n ev">&#9733;</span><span class="tx"><b>Finados 2026</b> — cadastro de visitantes</span><span class="arw">&rsaquo;</span></button>
       <button class="hm-l" data-go="extrato" id="exAgora" hidden><span class="n" id="exAgoraN">0</span><span class="tx" id="exAgoraTx">Extrato de comissão para conferir</span><span class="arw">&rsaquo;</span></button>
       <button class="hm-l" data-go="contratos" id="ctAgora" hidden><span class="n" id="ctAgoraN">0</span><span class="tx" id="ctAgoraTx">Contratos esperando o seu cliente</span><span class="arw">&rsaquo;</span></button>
     </div>
@@ -2914,8 +2916,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     <div class="brandrow" style="margin-top:12px">
       <img class="brandlogo" src="logo-ps.svg" width="179" height="68" alt="Parque da Saudade · Cemitério-Parque">
     </div>
-    <span class="apptag">Pocket NPS · Evento 50 Anos</span>
-    <h1>Cadastro do Evento</h1>
+    <span class="apptag">Pocket NPS · Finados 2026</span>
+    <h1>Cadastro de visitantes</h1>
     <p class="lead">Um visitante por vez. O cadastro fica guardado no celular e sobe sozinho quando houver sinal.</p>
   </div>
 </header>
@@ -2962,8 +2964,8 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     </section>
 
     <section class="card">
-      <div class="step"><span class="n">2</span><h2>Como soube do evento?</h2></div>
-      <div class="chips" id="evComoSoube" role="group" aria-label="Como soube do evento?" style="margin-top:0"></div>
+      <div class="step"><span class="n">2</span><h2>Como soube da campanha?</h2></div>
+      <div class="chips" id="evComoSoube" role="group" aria-label="Como soube da campanha?" style="margin-top:0"></div>
       <p class="fieldnote an-apoio" id="evComoApoio" hidden></p>
       <div class="field" id="evFComoSub" hidden>
         <label for="evComoSub" id="evComoSubLbl">Qual</label>
@@ -2987,7 +2989,9 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       </div>
     </section>
 
-    <section class="card">
+    <!-- (27/10) Finados não tem sorteio: indicações e cupons ficam escondidos (EV_INDICACOES).
+         O bloco fica para o próximo evento que tiver sorteio. -->
+    <section class="card" id="evSecInd" hidden>
       <div class="step"><span class="n">4</span><h2>Indicações</h2></div>
       <p class="fieldnote" style="margin:-6px 2px 10px">Opcional. Até 3 — cada uma com telefone vale 1 cupom a mais.</p>
       <div class="ev-ind"><input type="text" class="an-plain" id="evI1n" placeholder="Nome" autocomplete="off" autocapitalize="words"><input type="tel" class="an-plain" id="evI1t" inputmode="numeric" placeholder="Telefone" autocomplete="off"></div>
@@ -2998,7 +3002,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
     </section>
 
     <section class="card an-conf">
-      <label style="margin-top:0; align-items:flex-start; font-size:14px; line-height:1.45"><input type="checkbox" id="evConsent" style="flex:0 0 auto; margin-top:1px"> Autorizo o Parque da Saudade a usar meus dados para o sorteio e para contato sobre a campanha.</label>
+      <label style="margin-top:0; align-items:flex-start; font-size:14px; line-height:1.45"><input type="checkbox" id="evConsent" style="flex:0 0 auto; margin-top:1px"> Autorizo o Parque da Saudade a usar meus dados para contato sobre a campanha.</label>
     </section>
 
     <div class="an-checks" id="evChecks"></div>
@@ -3013,7 +3017,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
 
   <footer>
     <div class="sens">Negócio que acolhe famílias em momento de luto. Conduza com calma e respeito.</div>
-    <div class="inst">O cadastro não envia mensagem a ninguém — nem ao visitante, nem aos indicados.</div>
+    <div class="inst">O cadastro não envia mensagem a ninguém.</div>
   </footer>
 </main>
 </section>
@@ -6151,7 +6155,7 @@ function cartConcluir(texto){
   };
 })();
 
-// ==================== EVENTO 50 ANOS — CADASTRO DE VISITANTES (16/09/2026) ====================
+// ==================== CADASTRO DE VISITANTES — EVENTO 50 ANOS (16/09/2026) · FINADOS 2026 (27/10) ====================
 // O evento é domingo, 20/09. O molde é o do Anúncio de Venda, de propósito: mesmo token da
 // Carteira (o vendedor é resolvido NO SERVIDOR — o payload não diz quem é), id nascido no
 // aparelho e fila offline em localStorage. Grava primeiro, envia na hora, reenvia em lote na
@@ -6161,18 +6165,24 @@ function cartConcluir(texto){
 // As listas são cópia rótulo a rótulo das do Evento50.gs (cofre) e do form de plano B.
 (function(){
   const $ev = id => document.getElementById(id);
-  const EV_K_FILA = 'evento50_fila';
-  const EV_K_MEUS = 'evento50_meus';          // histórico do aparelho: aviso de telefone repetido + lista do dia
+  // (27/10) A tela serve à Campanha de Finados. O evento é parâmetro no Cofre (_evDef no Evento50.gs):
+  // o POST leva `evento: EV_ID` e grava na Visitantes_Finados2026. Fila com chave PRÓPRIA — o que
+  // tenha sobrado na evento50_fila de algum celular não sobe como Finados (fica lá, inerte).
+  const EV_ID = 'finados2026';
+  const EV_K_FILA = 'finados2026_fila';
+  const EV_K_MEUS = 'finados2026_meus';       // histórico do aparelho: aviso de telefone repetido + lista do dia
   const EV_MEUS_DIAS = 7;                      // nome e telefone de visitante não ficam no celular além disso
-  const EV_JANELA_CARD = ['2026-09-16', '2026-09-23'];   // registro: a janela do card na home, retirado em 22/09 (o evento foi 20/09)
+  const EV_JANELA_CARD = ['2026-10-27', '2026-11-07'];   // o card na home: a campanha de Finados inteira
+  const EV_INDICACOES = false;                 // Finados não tem sorteio: sem indicações e sem cupons
   const EV_LOTE = 25;
   // (16/09, 2º tempo) "Como soube" = a lista de ORIGEM do Anúncio de Venda, que espelha o CRM
   // Facilita caractere a caractere, com o mesmo detalhe e o mesmo texto de apoio. Cópia das
   // constantes AN_ORIGENS / AN_ORIGEM_SUB / AN_SUB_PH / AN_ORIGEM_APOIO, que vivem na IIFE do
   // anúncio e não são alcançáveis daqui. Mudou lá, muda aqui (e no Evento50.gs e no form).
-  const EV_COMO_SOUBE = ['Google (busca)','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Panfletagem','Evento','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
-  const EV_COMO_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Panfletagem':'Local','Evento':'Qual','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
-  const EV_COMO_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Disparo WhatsApp':'Qual mensagem? ex.: 50 anos · 16/09','Email Marketing':'Qual e-mail/campanha?'};
+  // (27/10) Para Finados, a AN_ORIGENS de hoje: entram Rádio e Captação própria (FINADOS_COMO_SOUBE no Cofre).
+  const EV_COMO_SOUBE = ['Google (busca)','Meta Ads','Meta Ads do vendedor','Outdoor','Painel de LED','Busdoor','Rádio','Panfletagem','Evento','Captação própria','Visita ao Parque','Disparo WhatsApp','Email Marketing','Indicação','Já é cliente','Outro'];
+  const EV_COMO_SUB = {'Outdoor':'Qual','Painel de LED':'Qual','Busdoor':'Qual linha','Rádio':'Qual','Panfletagem':'Local','Evento':'Qual','Captação própria':'Local','Disparo WhatsApp':'Qual','Email Marketing':'Qual','Indicação':'Quem indicou','Outro':'Especificar'};
+  const EV_COMO_PH = {'Outdoor':'ex.: Av. Olegário','Busdoor':'ex.: 207 - Marumbi/Via Rio Branco','Rádio':'ex.: Itatiaia, Libertempo','Captação própria':'Onde? ex.: bairro, rua, comércio','Disparo WhatsApp':'Qual mensagem? ex.: Finados · 27/10','Email Marketing':'Qual e-mail/campanha?'};
   const EV_COMO_APOIO = {
     'Google (busca)':'Ele digitou no Google e achou a gente, ou clicou num anúncio do Google. Se viu anúncio no Instagram ou Facebook e foi ao site, a origem é Meta Ads.',
     'Meta Ads':'Anúncio pago pela empresa no Instagram ou Facebook.',
@@ -6180,9 +6190,11 @@ function cartConcluir(texto){
     'Outdoor':'Ele citou ter visto a peça. Diga qual.',
     'Painel de LED':'Ele citou ter visto a peça. Diga qual.',
     'Busdoor':'Ele citou ter visto a peça. Diga qual.',
+    'Rádio':'Ele ouviu o anúncio no rádio. Diga qual emissora.',
     'Panfletagem':'Ele recebeu ou viu o panfleto. Diga onde.',
     'Evento':'Conheceu a gente num evento. Diga qual.',
-    'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior.',
+    'Captação própria':'Você o abordou na rua, no bairro ou no comércio. Diga onde.',
+    'Visita ao Parque':'Veio ao parque por conta própria, sem estímulo anterior — em Finados, quem veio visitar um jazigo e soube da campanha aqui.',
     'Disparo WhatsApp':'A mensagem que o Parque mandou. Não confundir com a porta WhatsApp do Parque — a porta é por onde ele falou; esta é o que o fez agir. Diga qual disparo.',
     'Email Marketing':'E-mail enviado pelo Parque. Diga qual campanha.',
     'Indicação':'Alguém falou da gente para ele. Diga quem.',
@@ -6190,8 +6202,8 @@ function cartConcluir(texto){
     'Outro':"Só quando nada acima descreve. Se 'Outro' virar hábito, o dado morre."
   };
   const EV_RESULTADO = ['Só visitou','Interessado, sem proposta','Recebeu proposta','Comprou'];
-  const EV_PRODUTO = ['M-19 Lote 50 Anos','M-19','M-20','M-21 Mista','Retomada','Outro'];
-  const EV_MOTIVO = ['Preço','Vai decidir com a família','Sem condição agora','Já tem jazigo','Só veio ao evento','Outro'];
+  const EV_PRODUTO = ['M-19','M-21 Mista','Retomada','M-20','Reserva','Temporário','Outro'];
+  const EV_MOTIVO = ['Preço','Vai decidir com a família','Sem condição agora','Já tem jazigo','Só veio visitar','Outro'];
   const EV_PEDE_PRODUTO = ['Recebeu proposta','Comprou'];
   const EV_SESSAO_MORTA = ['TOKEN_INVALIDO','VENDEDOR_INATIVO'];
 
@@ -6200,11 +6212,16 @@ function cartConcluir(texto){
   let evErroSessao = '';     // msg do servidor quando a sessão caiu — o aviso fica até entrar de novo
   let evErroEnvio = '';      // outra recusa do lote inteiro (ex.: ERRO_INTERNO) — a fila fica e o aviso diz
 
-  // ---- card sazonal da home (22/09/2026: retirado) ----
-  // O evento acabou em 20/09 e o Ricardo pediu o card fora da home. A TELA #evento e a fila
-  // offline continuam aqui — elas guardam o cadastro dos visitantes e o que ainda não subiu —,
-  // mas a home não tem mais porta para ela. Para reabrir: devolver o <button id="evCardHome">
-  // na faixa "Agora" e o toggle pela janela EV_JANELA_CARD que ficava aqui.
+  // ---- card sazonal da home ----
+  // (22/09) retirado depois do Evento 50; (27/10) de volta para Finados, só dentro da janela.
+  // Avaliado ao abrir e ao voltar ao app: o Pocket fica aberto dias no celular.
+  function evCardJanela(){
+    const hoje = escHojeISO();
+    $ev('evCardHome').hidden = !(hoje >= EV_JANELA_CARD[0] && hoje <= EV_JANELA_CARD[1]);
+  }
+  evCardJanela();
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') evCardJanela(); });
+  $ev('evSecInd').hidden = !EV_INDICACOES;
 
   // ---- sessão da Carteira (a mesma do anúncio) ----
   function evSessao(){
@@ -6287,6 +6304,7 @@ function cartConcluir(texto){
   // ---- regras (as mesmas do servidor; o servidor confere de novo) ----
   function evIndicacoes(){
     const out = [];
+    if(!EV_INDICACOES) return out;
     for(let n = 1; n <= 3; n++){
       const nome = $ev('evI'+n+'n').value.replace(/\s+/g,' ').trim();
       const bruto = $ev('evI'+n+'t').value.replace(/\D/g,'');
@@ -6307,7 +6325,7 @@ function cartConcluir(texto){
     if(!tBruto) f.push('Telefone do visitante.');
     else if(!evTel(tBruto)) f.push('Telefone do visitante incompleto — confira o DDD e o número.');
     if(!evSt.jaCliente) f.push('Já é cliente do Parque?');
-    if(!evSt.comoSoube) f.push('Como soube do evento?');
+    if(!evSt.comoSoube) f.push('Como soube da campanha?');
     else if(EV_COMO_SUB[evSt.comoSoube] && $ev('evComoSub').value.trim().length < 3)
       f.push('Como soube — ' + EV_COMO_SUB[evSt.comoSoube].toLowerCase() + ' (mínimo 3 caracteres).');
     if(!evSt.resultado) f.push('Resultado do atendimento.');
@@ -6380,15 +6398,15 @@ function cartConcluir(texto){
       resultado: evSt.resultado,
       produto: evSt.produto,
       motivo: evSt.motivo,
-      indicacoes: evIndicacoes().map(i => ({ nome: i.nome, telefone: i.tel || i.bruto })),
       consentimento: $ev('evConsent').checked === true
     };
+    if(EV_INDICACOES) item.indicacoes = evIndicacoes().map(i => ({ nome: i.nome, telefone: i.tel || i.bruto }));
     evFila.push(item); evGravarFila();
     evMeus.unshift({ id: item.id, dia: escHojeISO(), hora: new Date().toTimeString().slice(0,5),
                      nome: nome, tel: tel, resultado: item.resultado, cupons: cupons, status: 'aguardando', motivo: '' });
     evGravarMeus();
 
-    evAvisar('evAvisoOk', '✔ Cadastrado: ' + nome + ' · ' + cupons + (cupons === 1 ? ' cupom' : ' cupons') + ' no sorteio.', false);
+    evAvisar('evAvisoOk', '✔ Cadastrado: ' + nome + (EV_INDICACOES ? ' · ' + cupons + (cupons === 1 ? ' cupom' : ' cupons') + ' no sorteio.' : '.'), false);
     evLimpar();
     evPintar();
     window.scrollTo({top:0, behavior:'smooth'});
@@ -6426,7 +6444,7 @@ function cartConcluir(texto){
         try{
           // sem Content-Type de propósito: header customizado dispara preflight que o GAS não responde
           const r = await fetch(CARTEIRA_API, { method:'POST', signal: ctl ? ctl.signal : undefined,
-            body: JSON.stringify({ acao:'registrar_visitante', token: token, visitantes: lote }) });
+            body: JSON.stringify({ acao:'registrar_visitante', evento: EV_ID, token: token, visitantes: lote }) });
           j = await r.json();
         } finally { if(timer) clearTimeout(timer); }
 
