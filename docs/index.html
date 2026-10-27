@@ -1564,6 +1564,11 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       </label>
       <p class="fieldnote" id="campPrazo"></p>
       <p class="fieldnote" id="campObs" hidden></p>
+      <!-- Bônus do período (Finados, 02/11 a 07/11): só aparece no período, com a campanha aplicando. -->
+      <label class="switchrow" id="bonusRow" hidden>
+        <input type="checkbox" id="bonusChk">
+        <span>Bônus <span id="bonusVal"></span> <span class="opt">— só com o cliente no Parque e contrato assinado hoje</span></span>
+      </label>
     </div>
 
     <!-- Desconto (opcional — padrão: valor cheio) -->
@@ -2178,6 +2183,7 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
   <section class="faq-sec">
     <h2><span class="num">14</span>Campanha e quadras</h2>
     <details class="faq"><summary><span class="q">O desconto da campanha soma com o meu desconto?</span><span class="chev">›</span></summary><div class="a"><p><strong>Não.</strong> A campanha substitui o desconto de alçada; os dois não se somam.</p></div></details>
+    <details class="faq"><summary><span class="q">Como funciona o bônus de R$ 2.000 do Finados?</span><span class="chev">›</span></summary><div class="a"><p>Vale <strong>de 02/11 a 07/11</strong>, para o cliente que está no Parque e assina o contrato no mesmo dia. O bônus é abatido da tabela <strong>primeiro</strong> e o desconto da forma de pagamento incide sobre o restante: (tabela − R$ 2.000) × (1 − desconto). No Simulador, marque o interruptor do bônus apenas com essas duas condições cumpridas. A campanha vai até 07/11; em 08/11 tudo volta às condições normais.</p></div></details>
     <details class="faq"><summary><span class="q">O que é a quadra Retomada?</span><span class="chev">›</span></summary><div class="a"><p>Jazigos que já existiam no Parque, retomados por processo legal concluído, e que voltaram à venda. Vendem-se como <strong>Perpétuo</strong>, com <strong>Uso Temporário a 20%</strong>.</p><p>Antes de liberar o contrato, a equipe abre o jazigo para conferir tampa e laterais (procedimento padrão — ficou muito tempo fechado). Vendeu, avise o Pedro, que aciona os sepultadores. Dia calmo, é rápido; dia cheio, pode ficar para o dia seguinte. <strong>O cliente precisa saber a origem do jazigo antes de assinar.</strong></p></div></details>
   </section>
   <div class="faq-foot">Material de apoio elaborado a partir do Regulamento Interno para Sepultamento de Animais Domésticos (versão em revisão). Para situações não previstas aqui, consultar a Administração do Parque da Saudade, que resolve os casos omissos com base na legislação aplicável.</div>
@@ -3045,7 +3051,7 @@ const state = {
   valor:0, entrada:0, prazo:60, dia:0,
   // seletor de jazigo (12/09): jaz = {quadra, jazigo, valor} escolhido na lista do Cofre;
   // modoValor '' (ainda sem lista) | 'jazigo' | 'mao'; campOn = interruptor da campanha
-  jaz:null, quadraSel:'', modoValor:'', campOn:true,
+  jaz:null, quadraSel:'', modoValor:'', campOn:true, bonusOn:false,
   m21Etapas:1   // M-21: 1 = só a 1ª etapa (50%) · 2 = as duas etapas agora (100%)
 };
 // Dia de vencimento das parcelas (2ª em diante): 05, 15 ou 25. O Facilita
@@ -3220,6 +3226,10 @@ function campAceitar(d){
   if(!iso(v.inicio) || !iso(v.fechamento_ate) || !pct(ds.avista) || !pct(ds.ate_21x) || !pct(ds.acima_21x)
      || !d.escopo || typeof d.escopo!=='object' || !d.nome) return null;
   if(d.lote!=null && typeof d.lote!=='object') return null;   // campanha.lote é opcional (18/09)
+  // Finados (27/10): desconto próprio do boleto e bônus de um dia são opcionais; presentes e malformados, a resposta é recusada.
+  if(ds.boleto!=null && !pct(ds.boleto)) return null;
+  if(d.bonus!=null && !(typeof d.bonus.valor==='number' && d.bonus.valor>0 && iso(d.bonus.inicio) && iso(d.bonus.fim)
+                        && d.bonus.fim>=d.bonus.inicio)) return null;
   return d;
 }
 // "Dentro da vigência" = do início até o FECHAMENTO: o desconto é oferecido no dia e o cliente
@@ -3254,9 +3264,28 @@ function campNoLote(quadra, jazigo){
 function campPctForma(){
   const ds = campResp.descontos;
   if(state.forma==='avista') return ds.avista;
+  if(state.meio==='boleto' && ds.boleto!=null) return ds.boleto;   // boleto tem percentual próprio, em qualquer prazo
   return state.prazo<=21 ? ds.ate_21x : ds.acima_21x;
 }
-function campFormaTxt(){ return state.forma==='avista' ? 'à vista' : (state.prazo<=21 ? (state.prazo===1 ? 'em 1x' : '2x a 21x') : '22x a 72x'); }
+function campFormaTxt(){
+  if(state.forma==='avista') return 'à vista';
+  if(state.meio==='boleto' && campResp.descontos.boleto!=null) return 'no boleto';
+  return state.prazo<=21 ? (state.prazo===1 ? 'em 1x' : '2x a 21x') : '22x a 72x';
+}
+// Bônus do período (Finados, 02/11 a 07/11): abatido da tabela ANTES do percentual. Só vale entre
+// bonus.inicio e bonus.fim, com o interruptor marcado pelo vendedor (cliente no Parque, contrato
+// assinado no dia). Na M-21 o valor simulado é 50% do total, então o bônus entra também pela metade — a conta é a mesma.
+function campBonusAgora(){
+  const b = campResp && campResp.bonus;
+  if(!b || !state.bonusOn || !campBonusHoje()) return 0;
+  const parte = (state.jaz && ehMista(state.jaz.quadra) && state.m21Etapas!==2) ? ETAPA_MISTA : 1;
+  return Math.min(b.valor*parte, Math.max(state.valor-1,0));
+}
+function campBonusHoje(){
+  const b = campResp && campResp.bonus; if(!b) return false;
+  const h = escHojeISO();
+  return h>=b.inicio && h<=b.fim;
+}
 // O estado da campanha para a simulação de agora.
 //   mostra: o interruptor aparece · aplica: o desconto entra · motivo: por que não entra
 function campSituacao(){
@@ -3551,6 +3580,7 @@ function simCliqueJazigo(e){
   state.jzConfirmar = '';
   state.jaz = {quadra:state.quadraSel, jazigo:u.jazigo, valor:u.valor, reservado};
   state.campOn = true;                 // campanha nasce ligada a cada jazigo escolhido
+  state.bonusOn = false;               // o bônus de um dia nasce desligado: o vendedor confirma a condição
   state.jzAberto = false;
   state.m21Etapas = 1;
   simSyncProdutos(); simAplicarValor(); simPintarJazigos(); syncProduto(); render();
@@ -3571,6 +3601,7 @@ $('#btnValorModo').addEventListener('click', ()=>{
   }
 });
 $('#campChk').addEventListener('change', e=>{ state.campOn = e.target.checked; render(); });
+$('#bonusChk').addEventListener('change', e=>{ state.bonusOn = e.target.checked; render(); });
 
 // ---- finance math ----
 function pmt(r,n,pv){ if(n<=0) return 0; if(r===0) return pv/n; return pv*r/(1-Math.pow(1+r,-n)); }
@@ -3601,7 +3632,7 @@ function descInfo(){
   const teto = descTetoMeio();
   // Campanha ligada SUBSTITUI a alçada: nada de descOn nem adicional por cima (não somam).
   const cs = campSituacao();
-  if(cs.aplica) return {base:0, extra:0, total:cs.pct, extraOn:false, teto, camp:{nome:cs.nome, pct:cs.pct, selo:cs.selo}};
+  if(cs.aplica) return {base:0, extra:0, total:cs.pct, extraOn:false, teto, camp:{nome:cs.nome, pct:cs.pct, selo:cs.selo, bonus:campBonusAgora()}};
   const base = (state.descOn && teto>0) ? teto : 0;  // desconto é OPCIONAL: só entra se marcado
   const extraOn = state.coord && bandExtra();
   const extra = extraOn ? 0.03 : 0;
@@ -3617,14 +3648,14 @@ function descLabelText(d){
 
 // O rótulo da linha de desconto — o MESMO na tela, no WhatsApp, na carta e no anúncio.
 function descLinha(d){
-  return d.camp ? d.camp.nome+': −'+pctTxt(d.camp.pct)
+  return d.camp ? d.camp.nome+': '+(d.camp.bonus>0 ? 'bônus '+brl(d.camp.bonus)+' e ' : '')+'−'+pctTxt(d.camp.pct)
                 : 'Desconto '+descLabelText(d)+' ('+(d.total*100).toFixed(0)+'%)';
 }
 function calc(){
   const v = state.valor;
   if(!v || v<=0) return null;
   const d = descInfo();
-  const comDesc = v*(1-d.total);
+  const comDesc = (v-(d.camp ? d.camp.bonus||0 : 0))*(1-d.total);   // bônus primeiro, percentual sobre o restante
   if(state.forma==='avista'){
     return {forma:'avista', meioAV:state.meioAV, tabela:v, comDesc, desconto:v-comDesc, di:d, total:comDesc, vp:comDesc};
   } else {
@@ -3689,6 +3720,10 @@ function render(){
     // Config e ficava na frente do cliente durante a simulação. Segue na resposta da rota.
     $('#campObs').hidden = true;
   }
+  // Bônus: o interruptor só existe no período dele, e só com a campanha aplicando à simulação.
+  const bonusVisivel = !!cs.aplica && campBonusHoje();
+  $('#bonusRow').hidden = !bonusVisivel;
+  if(bonusVisivel){ $('#bonusVal').textContent = brl(campResp.bonus.valor); $('#bonusChk').checked = !!state.bonusOn; }
   // Alçada desabilitada com a campanha ligada, com a razão ao lado.
   if(cs.aplica){
     state.descOn = false; state.coord = false;
