@@ -1240,6 +1240,23 @@ input.an-plain{padding-left:14px; font-size:16px}
 .mv-ver[hidden]{display:none}
 .modal .mv-nota{margin-top:8px}
 .mv-nota .pt{width:7px; height:7px; border-radius:50%; background:var(--warn); flex:0 0 auto}
+/* ---------- Meu mês · equipe (28/10/2026, mockup claude.ai QYMpSKk29EUZ3RuZ3FTYQF — "O que o vendedor vê no Pocket")
+   Só o papel vendedor: os números dele contra a média da equipe, o OTE simulado e os combinados dele. Sem toque. */
+.eqc{display:grid; gap:6px; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 2px rgba(66,39,12,.06), 0 6px 18px rgba(66,39,12,.08); padding:8px 12px 9px; color:var(--marrom)}
+.eqc[hidden]{display:none}
+.eqc .t{font-size:11px; letter-spacing:1.4px; text-transform:uppercase; color:var(--muted); font-weight:700}
+.eqc .t b{color:var(--marrom-2)}
+.eqc .r{display:grid; grid-template-columns:1fr auto; gap:6px; font-size:13px; align-items:baseline}
+.eqc .r b{font-variant-numeric:tabular-nums; color:var(--marrom-2)}
+.eqc .r small{color:var(--muted); font-weight:600}
+.eqc .br{height:6px; background:rgba(66,39,12,.10); border-radius:3px; position:relative}
+.eqc .br i{position:absolute; inset:0 auto 0 0; background:var(--dourado); border-radius:3px}
+.eqc .br s{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--muted)}
+.eqc .av{font-size:10.5px; color:var(--muted)}
+.eqc ul{list-style:none; margin:2px 0 0; padding:6px 0 0; border-top:1px solid var(--border); display:grid; gap:5px}
+.eqc li{font-size:12.5px; line-height:1.3}
+.eqc li .m{display:block; font-size:10.5px; color:var(--muted)}
+.eqc li .m b{color:var(--danger)}
 .mv.sem{opacity:.85}
 .mv.sem .n{color:var(--muted)}
 .mv.conf .mv-kpis, .mv.conf .mv-bar, .mv.conf .mv-eq{opacity:.55}   /* Sanidade vermelha: o KPI escurecido do Painel */
@@ -1364,6 +1381,10 @@ body.as-fab-on #view-home .hm-rodape{padding-right:68px; text-align:left}
       <div class="mv-eq" id="mvEq">Entre com o PIN para ver o seu mês</div>
       <div class="mv-sem" id="mvSem" hidden></div>
     </button>
+
+    <!-- (28/10) Meu mês · equipe: os números do vendedor da sessão contra a média da equipe (ação equipe_meu do Cofre,
+         Equipe.gs). Só o papel vendedor; gestão e consulta veem no Painel. Nunca o ranking nem os números dos colegas. -->
+    <div class="eqc" id="eqCard" hidden aria-live="polite"></div>
 
     <!-- "Agora": só o que pede ação. Cada linha nasce escondida; a faixa inteira some quando
          nenhuma está à mostra (:has).
@@ -4236,6 +4257,7 @@ function go(view, push){
   if(view==='home' && typeof ctPintarCard==='function') ctPintarCard();
   if(view==='home' && typeof window.exBuscar==='function') window.exBuscar();   // (05/10) extrato de comissão
   if(view==='home' && typeof window.mvBuscar==='function') window.mvBuscar();   // (27/09) Minhas vendas: busca a cada volta
+  if(view==='home' && typeof window.eqBuscar==='function') window.eqBuscar();   // (28/10) Meu mês · equipe
   if(view==='home' && typeof homeSaudar==='function') homeSaudar();
   if(view==='sim') estBuscar();
   if(push!==false){ try{ history.pushState({view}, '', '#'+view); }catch(e){} }
@@ -4957,6 +4979,7 @@ function cartSair(){
   }catch(e){}
   cartGuardarSessao(null); cartLote = []; cartPos = 0;
   try{ if(window.mvEsquecer) window.mvEsquecer(); }catch(e){}
+  try{ if(window.eqEsquecer) window.eqEsquecer(); }catch(e){}
   go('carteira');
   cartVer('login');
 }
@@ -5151,6 +5174,7 @@ async function cartEntrar(){
     try{ if(sessionStorage.getItem('extrato_voltar')){ sessionStorage.removeItem('extrato_voltar'); go('extrato'); } }catch(e){}
     // (27/09) Minhas vendas: o cartão ganha os números com o token novo; quem veio do cartão volta para a home.
     try{ if(sessionStorage.getItem('minhasvendas_voltar')){ sessionStorage.removeItem('minhasvendas_voltar'); go('home'); } if(window.mvBuscar) window.mvBuscar(); }catch(e){}
+    try{ if(window.eqBuscar) window.eqBuscar(); }catch(e){}   // (28/10) Meu mês · equipe, com o token novo
     // Tirar dúvida: quem veio do portão volta para a conversa; o cartão da home acende conforme o Cofre (assistente_estado).
     try{ if(window.asPintarTile) window.asPintarTile(); }catch(e){}
     try{ if(window.asConsultarEstado) window.asConsultarEstado(); }catch(e){}
@@ -7321,6 +7345,78 @@ function cartConcluir(texto){
   // Uma busca por abertura do app e outra a cada volta para a home (go('home') chama mvBuscar).
   mvPintarCard();
   mvBuscar();
+})();
+
+// ==================== MEU MÊS · EQUIPE (28/10/2026) ====================
+// A visão do vendedor da Governança da equipe (mockup claude.ai QYMpSKk29EUZ3RuZ3FTYQF, bloco "O que o vendedor vê no
+// Pocket"; decisão 2 do Ricardo): os números DELE, a média da equipe, o OTE simulado com o aviso "simulação · não é
+// pagamento" e os combinados dele, com prazo e status. Nunca o ranking nem os números dos colegas — o servidor
+// (ação equipe_meu, Equipe.gs) só devolve isso. Só o papel vendedor. Nada fica no aparelho: a resposta vive na memória.
+(function(){
+  const $eq = id => document.getElementById(id);
+  const EQ_MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  let eqDados = null, eqDono = '', eqBuscando = false;
+  const eqEsc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function eqSessao(){ try{ return JSON.parse(localStorage.getItem('carteira_sessao')||'null'); }catch(e){ return null; } }
+  const eqVendedor = s => !!(s && s.token && s.papel !== 'gestao' && s.papel !== 'consulta');
+  const eqTem = v => v !== null && v !== undefined && isFinite(v);
+  const eqPct = v => eqTem(v) ? Math.round(v * 100) + '%' : '—';
+  const eqMed = v => eqTem(v) ? (Math.abs(v) >= 20 || Math.abs(v - Math.round(v)) < 0.05 ? Math.round(v).toLocaleString('pt-BR') : v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })) : '—';
+  const eqDm = iso => { const m = String(iso||'').match(/^\d{4}-(\d{2})-(\d{2})/); return m ? m[2] + '/' + m[1] : ''; };
+  const eqBarra = (v, m, max) => '<div class="br"><i style="width:' + Math.min(100, (v || 0) / max * 100).toFixed(0) + '%"></i><s style="left:' + Math.min(100, (m || 0) / max * 100).toFixed(0) + '%"></s></div>';
+
+  function eqPintar(){
+    const card = $eq('eqCard'); if(!card) return;
+    const s = eqSessao();
+    if(!eqVendedor(s)){ card.hidden = true; return; }
+    const d = (eqDados && eqDono === s.vendedor) ? eqDados : null;
+    if(!d){
+      card.hidden = !eqBuscando;   // sem resposta ainda: só aparece enquanto confere
+      card.innerHTML = '<span class="t">Meu mês · equipe</span><span class="av">Conferindo os seus números…</span>';
+      return;
+    }
+    if(d.fora){ card.hidden = true; return; }
+    const e = d.eu, m = d.media, mes = d.mes && d.mes.de ? EQ_MESES[+d.mes.de.slice(5,7) - 1] : '';
+    const abertos = (d.combinados || []).filter(c => c.status === 'aberto');
+    let h = '<span class="t">Você · <b>' + eqEsc(mes) + '</b></span>' +
+      '<div class="r"><span>Vendas</span><b>' + e.vendas + ' <small>· média ' + eqMed(m.vendas) + '</small></b></div>' + eqBarra(e.vendas, m.vendas, Math.max(20, e.vendas, m.vendas || 0)) +
+      '<div class="r"><span>1º contato em até 2h</span><b>' + eqPct(e.r1) + ' <small>· média ' + eqPct(m.r1) + '</small></b></div>' + eqBarra(e.r1, m.r1, 1) +
+      '<div class="r"><span>Sem registro no Facilita</span><b>' + e.sem_registro + ' <small>· média ' + eqMed(m.sem_registro) + '</small></b></div>' +
+      '<div class="r"><span>Reservas</span><b>' + e.reservas + ' <small>· média ' + eqMed(m.reservas) + '</small></b></div>' +
+      '<div class="r"><span>OTE simulado · não é pagamento</span><b>' + eqPct(d.ote && d.ote.pct) + ' <small>do alvo</small></b></div>' +
+      '<div class="r"><span>Combinados abertos</span><b>' + abertos.length + '</b></div>';
+    if((d.combinados || []).length){
+      h += '<ul>' + d.combinados.map(c => '<li>' + eqEsc(c.texto) + '<span class="m">' + (c.prazo ? 'prazo ' + eqDm(c.prazo) + ' · ' : '') +
+        (c.atrasado ? '<b>atrasado</b>' : eqEsc(c.status)) + '</span></li>').join('') + '</ul>';
+    }
+    h += '<span class="av">Atendimento de ' + eqDm(d.atendimento && d.atendimento.de) + ' a ' + eqDm(d.atendimento && d.atendimento.ate) +
+      ' · a média é a da equipe · o OTE é simulação, não é pagamento</span>';
+    card.innerHTML = h; card.hidden = false;
+  }
+
+  async function eqBuscar(){
+    const s = eqSessao();
+    if(!eqVendedor(s)){ eqDados = null; eqPintar(); return; }
+    if(eqBuscando) return;
+    eqBuscando = true; eqPintar();
+    try{
+      const ctl = (typeof AbortController === 'function') ? new AbortController() : null;
+      const timer = ctl ? setTimeout(() => ctl.abort(), 30000) : null;
+      let j;
+      try{
+        // sem Content-Type de propósito: header customizado dispara preflight que o GAS não responde
+        const r = await fetch(CARTEIRA_API, { method:'POST', signal: ctl ? ctl.signal : undefined, body: JSON.stringify({ acao:'equipe_meu', token: s.token }) });
+        j = await r.json();
+      } finally { if(timer) clearTimeout(timer); }
+      if(j && j.ok === true){ eqDados = j; eqDono = s.vendedor; }
+      else if(j && (j.erro === 'SO_VENDEDOR' || j.erro === 'TOKEN_INVALIDO' || j.erro === 'VENDEDOR_INATIVO')){ eqDados = null; }
+    }catch(e){ /* sem conexão: a home fica com o que tinha, sem alerta */ }
+    finally{ eqBuscando = false; eqPintar(); }
+  }
+  window.eqBuscar = eqBuscar;
+  window.eqEsquecer = function(){ eqDados = null; eqDono = ''; eqPintar(); };
+  eqPintar();
+  eqBuscar();
 })();
 
 // ==================== COBRANÇA DA ORIGEM — tarefa 2 (14/10/2026) ====================
